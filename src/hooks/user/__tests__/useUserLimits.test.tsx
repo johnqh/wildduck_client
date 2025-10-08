@@ -37,8 +37,8 @@ describe("useUserLimits", () => {
         limits: {
           recipients: { allowed: 100, used: 25, ttl: 86400 },
           forwards: { allowed: 50, used: 10, ttl: 86400 },
-          imapMaxUpload: { allowed: 10485760, used: 1048576, ttl: 86400 },
-          imapMaxDownload: { allowed: 10485760, used: 2097152, ttl: 86400 },
+          imapUpload: { allowed: 10485760, used: 1048576, ttl: 86400 },
+          imapDownload: { allowed: 10485760, used: 2097152, ttl: 86400 },
         },
       };
 

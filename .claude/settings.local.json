@@ -9,7 +9,15 @@
       "Bash(for:*)",
       "Bash(do mv \"$file\" \"$file%x.tsx\")",
       "Bash(done)",
-      "Bash(do)"
+      "Bash(do)",
+      "Bash(npm install:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run test:integration:*)",
+      "Read(//Users/johnhuang/0xmail/mail_box_indexer_client/**)",
+      "Bash(node:*)",
+      "Bash(python3 -c \"import yaml; yaml.safe_load(open(''.github/workflows/ci-cd.yml''))\")",
+      "Bash(npm run check-all:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,229 @@
+---
+name: "CI/CD - Test and Release"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+env:
+  NPM_MODULE_NAME: "@johnqh/wildduck_client"
+
+jobs:
+  test:
+    name: "Run Tests"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+          - "20.x"
+          - "22.x"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Use Node.js ${{ matrix.node }}"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: "Install dependencies"
+        run: npm ci
+
+      - name: "Run type checking"
+        run: npm run typecheck
+
+      - name: "Run linting"
+        run: npm run lint
+
+      - name: "Run unit tests"
+        run: npm run test:run
+
+      - name: "Build project"
+        run: npm run build
+
+  check_for_release:
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      version: ${{ steps.check.outputs.version }}
+      version_tag: ${{ steps.check.outputs.version_tag }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Check if should trigger release"
+        id: check
+        run: |
+          # Skip only if explicitly marked with [skip ci] or [skip-ci]
+          COMMIT_MSG=$(git log -1 --pretty=%s)
+          echo "Commit message: $COMMIT_MSG"
+
+          # Skip release only for PR events that weren't merged
+          if [[ "${{ github.event_name }}" == "pull_request" ]] && [[ "${{ github.event.action }}" != "closed" || "${{ github.event.pull_request.merged }}" != "true" ]]; then
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "PR not merged, skipping release"
+            exit 0
+          fi
+
+          # Skip only if explicitly marked to skip CI
+          if [[ "$COMMIT_MSG" == *"[skip ci]"* ]] || [[ "$COMMIT_MSG" == *"[skip-ci]"* ]]; then
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "Commit marked to skip CI: $COMMIT_MSG"
+          else
+            echo "should_release=true" >> $GITHUB_OUTPUT
+
+            # Get current version from package.json
+            CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "version_tag=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "Will release version: $CURRENT_VERSION for commit: $COMMIT_MSG"
+          fi
+
+  release_npm:
+    needs:
+      - test
+      - check_for_release
+    if: ${{ needs.check_for_release.outputs.should_release == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: "Verify package version"
+        run: |
+          echo "Using version: ${{ needs.check_for_release.outputs.version }}"
+          echo "Package.json version: $(node -p "require('./package.json').version")"
+
+      - name: "Install dependencies"
+        run: npm ci
+
+      - name: "Run tests with coverage"
+        run: npm run test:coverage
+
+      - name: "Build project"
+        run: npm run build
+
+      - name: "Verify build output"
+        run: |
+          echo "Build output contents:"
+          ls -la dist/
+          echo "Main export file:"
+          head -10 dist/index.js
+          echo "Type definitions:"
+          head -10 dist/index.d.ts
+
+      - name: "Create GitHub Release"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.check_for_release.outputs.version_tag }}
+          name: "Release ${{ needs.check_for_release.outputs.version }}"
+          body: |
+            ## WildDuck Email Client v${{ needs.check_for_release.outputs.version }}
+
+            TypeScript client library for the WildDuck email API. Compatible with React and React Native applications.
+
+            ### Features
+            - ✅ Complete Type Safety - Full TypeScript support
+            - ✅ React Integration - Built-in hooks using @tanstack/react-query
+            - ✅ Crypto Authentication - SIWE (Sign-in with Ethereum) support
+            - ✅ Comprehensive API - User, mailbox, message, and autoreply management
+            - ✅ Development Mode - Mock data for testing without a server
+            - ✅ Integration Tests - Full test coverage with real server testing
+            - ✅ Cloudflare Worker Support - Optional worker URL configuration
+
+            ### Installation
+            ```bash
+            npm install @johnqh/wildduck_client@${{ needs.check_for_release.outputs.version }}
+            ```
+
+            ### Peer Dependencies
+            ```bash
+            npm install react @tanstack/react-query axios
+            ```
+
+            ### Quick Start
+            ```typescript
+            import { useWildduckAuth } from '@johnqh/wildduck_client';
+
+            function LoginComponent() {
+              const { authenticate, isAuthenticated } = useWildduckAuth(
+                'https://api.wildduck.example.com',
+                'your-api-token'
+              );
+
+              // Authenticate with crypto signature
+              const handleLogin = async () => {
+                await authenticate({
+                  username: 'user@example.com',
+                  signature: '0x...',
+                  message: 'Sign-in message',
+                  nonce: 'random-nonce',
+                  signer: '0xWalletAddress'
+                });
+              };
+            }
+            ```
+
+            ### API Coverage
+            - Authentication: ✅ Password & Crypto signature support
+            - User Management: ✅ CRUD operations, settings, limits
+            - Mailbox Management: ✅ Full mailbox operations
+            - Message Management: ✅ Read, send, upload, forward
+            - Autoreply: ✅ Complete autoreply configuration
+            - Integration Tests: ✅ Comprehensive test suite
+
+            ### Documentation
+            - [Integration Tests Guide](https://github.com/${{ github.repository }}/blob/main/INTEGRATION_TESTS.md)
+            - [API Documentation](https://github.com/${{ github.repository }}#readme)
+            - [Examples](https://github.com/${{ github.repository }}/blob/main/src)
+
+            ### Testing
+            ```bash
+            # Unit tests
+            npm run test:run
+
+            # Integration tests (requires WildDuck server)
+            WILDDUCK_ENDPOINT=http://localhost:8080 npm run test:integration
+            ```
+
+            ### What's New
+            See the auto-generated release notes below for detailed changes.
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Publish to NPM"
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: "Notify deployment success"
+        if: success()
+        run: |
+          echo "🚀 Release ${{ needs.check_for_release.outputs.version }} deployed successfully!"
+          echo "• NPM: https://www.npmjs.com/package/@johnqh/wildduck_client/v/${{ needs.check_for_release.outputs.version }}"
+          echo "• GitHub: https://github.com/${{ github.repository }}/releases/tag/${{ needs.check_for_release.outputs.version_tag }}"
+          echo "• Documentation: https://github.com/${{ github.repository }}#readme"
+
+      - name: "Notify deployment failure"
+        if: failure()
+        run: |
+          echo "❌ Release deployment FAILED for commit ${{ github.sha }}"
+          echo "Check: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
