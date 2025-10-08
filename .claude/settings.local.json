@@ -17,7 +17,10 @@
       "Read(//Users/johnhuang/0xmail/mail_box_indexer_client/**)",
       "Bash(node:*)",
       "Bash(python3 -c \"import yaml; yaml.safe_load(open(''.github/workflows/ci-cd.yml''))\")",
-      "Bash(npm run check-all:*)"
+      "Bash(npm run check-all:*)",
+      "Bash(npm outdated)",
+      "Bash(npm update:*)",
+      "Bash(npm version:*)"
     ],
     "deny": [],
     "ask": []
