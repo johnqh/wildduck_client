@@ -1,0 +1,70 @@
+import { UserInfo, WildDuckConfig } from "@johnqh/types";
+import { createWildDuckClient } from "./client";
+
+/**
+ * Get user information
+ * GET /users/:user
+ */
+export async function getUserInfo(
+  config: WildDuckConfig,
+  userId: string,
+): Promise<UserInfo> {
+  const client = createWildDuckClient(config);
+  const response = await client.get<UserInfo>(`/users/${userId}`);
+  return response.data;
+}
+
+/**
+ * Update user display name
+ * PUT /users/:user
+ */
+export async function updateUserName(
+  config: WildDuckConfig,
+  userId: string,
+  name: string,
+  sess?: string,
+  ip?: string,
+): Promise<{ success: boolean }> {
+  const client = createWildDuckClient(config);
+  const response = await client.put<any>(`/users/${userId}`, {
+    name,
+    sess,
+    ip,
+  });
+  return response.data;
+}
+
+/**
+ * Update user settings (general purpose)
+ * PUT /users/:user
+ */
+export async function updateUserSettings(
+  config: WildDuckConfig,
+  userId: string,
+  settings: {
+    name?: string;
+    language?: string;
+    retention?: number;
+    quota?: number;
+    recipients?: number;
+    forwards?: number;
+    filters?: number;
+    imapMaxUpload?: number;
+    imapMaxDownload?: number;
+    pop3MaxDownload?: number;
+    pop3MaxMessages?: number;
+    imapMaxConnections?: number;
+    receivedMax?: number;
+    disable2fa?: boolean;
+    tags?: string[];
+    disabledScopes?: string[];
+    disabled?: boolean;
+    suspended?: boolean;
+    sess?: string;
+    ip?: string;
+  },
+): Promise<{ success: boolean }> {
+  const client = createWildDuckClient(config);
+  const response = await client.put<any>(`/users/${userId}`, settings);
+  return response.data;
+}
