@@ -15,6 +15,24 @@ import type {
   WildDuckUserResponse,
 } from "@johnqh/types";
 import type { NetworkClient } from "@johnqh/di";
+import type {
+  AutoreplyRequest,
+  AutoreplyResponse,
+  CreateUserRequest,
+  CreateUserResponse,
+  ForwardMessageRequest,
+  MailboxResponse,
+  MessageResponse,
+  SubmitMessageRequest,
+  SubmitMessageResponse,
+  SuccessResponse,
+  UpdateMailboxRequest,
+  UpdateMessageRequest,
+  UpdateMessageResponse,
+  UpdateUserRequest,
+  UploadMessageRequest,
+  UploadMessageResponse,
+} from "../types/wildduck-types";
 
 // Platform-specific globals
 declare const sessionStorage: Storage;
@@ -490,6 +508,361 @@ class WildDuckAPI {
       {
         method: "POST",
         body: JSON.stringify(requestBody),
+      },
+    );
+  }
+
+  // ============================================================================
+  // User Management Methods
+  // ============================================================================
+
+  // Create a new user
+  async createUser(request: CreateUserRequest): Promise<CreateUserResponse> {
+    return this.request<CreateUserResponse>("/users", {
+      method: "POST",
+      body: request,
+    });
+  }
+
+  // Update user information
+  async updateUser(
+    userId: string,
+    request: UpdateUserRequest,
+  ): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    return this.request<SuccessResponse>(`/users/${validatedUserId}`, {
+      method: "PUT",
+      body: request,
+    });
+  }
+
+  // Delete a user
+  async deleteUser(userId: string): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    return this.request<SuccessResponse>(`/users/${validatedUserId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ============================================================================
+  // Mailbox Management Methods (Extended)
+  // ============================================================================
+
+  // Get specific mailbox information
+  async getMailbox(
+    userId: string,
+    mailboxId: string,
+  ): Promise<MailboxResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    return this.request<MailboxResponse>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}`,
+    );
+  }
+
+  // Update mailbox settings
+  async updateMailbox(
+    userId: string,
+    mailboxId: string,
+    request: UpdateMailboxRequest,
+  ): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    return this.request<SuccessResponse>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}`,
+      {
+        method: "PUT",
+        body: request,
+      },
+    );
+  }
+
+  // Delete a mailbox
+  async deleteMailbox(
+    userId: string,
+    mailboxId: string,
+  ): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    return this.request<SuccessResponse>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}`,
+      {
+        method: "DELETE",
+      },
+    );
+  }
+
+  // ============================================================================
+  // Message Management Methods (Extended)
+  // ============================================================================
+
+  // Get full message details from a specific mailbox
+  async getMessageFromMailbox(
+    userId: string,
+    mailboxId: string,
+    messageId: number,
+    options?: {
+      replaceCidLinks?: boolean;
+      markAsSeen?: boolean;
+    },
+  ): Promise<MessageResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    const queryParams = createURLSearchParams();
+    if (options?.replaceCidLinks !== undefined)
+      queryParams.append("replaceCidLinks", String(options.replaceCidLinks));
+    if (options?.markAsSeen !== undefined)
+      queryParams.append("markAsSeen", String(options.markAsSeen));
+
+    const query = queryParams.toString();
+    const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}${query ? `?${query}` : ""}`;
+
+    return this.request<MessageResponse>(endpoint);
+  }
+
+  // Upload/create a message in a mailbox (for drafts, imports, etc.)
+  async uploadMessage(
+    userId: string,
+    mailboxId: string,
+    request: UploadMessageRequest,
+  ): Promise<UploadMessageResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    return this.request<UploadMessageResponse>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}/messages`,
+      {
+        method: "POST",
+        body: request,
+      },
+    );
+  }
+
+  // Update message flags or move to different mailbox
+  async updateMessage(
+    userId: string,
+    mailboxId: string,
+    messageId: number,
+    request: UpdateMessageRequest,
+  ): Promise<UpdateMessageResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    return this.request<UpdateMessageResponse>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`,
+      {
+        method: "PUT",
+        body: request,
+      },
+    );
+  }
+
+  // Delete a message from mailbox
+  async deleteMessage(
+    userId: string,
+    mailboxId: string,
+    messageId: number,
+  ): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    return this.request<SuccessResponse>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`,
+      {
+        method: "DELETE",
+      },
+    );
+  }
+
+  // Get raw message source (RFC822 format)
+  async getMessageSource(
+    userId: string,
+    mailboxId: string,
+    messageId: number,
+  ): Promise<string> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    const url = `${this.baseUrl}/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/message.eml`;
+
+    const response = await this.networkClient.request<string>(url, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    return response.data as string;
+  }
+
+  // Download message attachment
+  async getMessageAttachment(
+    userId: string,
+    mailboxId: string,
+    messageId: number,
+    attachmentId: string,
+  ): Promise<Blob> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    const url = `${this.baseUrl}/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/attachments/${attachmentId}`;
+
+    const response = await this.networkClient.request<Blob>(url, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    return response.data as Blob;
+  }
+
+  // Forward a stored message
+  async forwardMessage(
+    userId: string,
+    mailboxId: string,
+    messageId: number,
+    request: ForwardMessageRequest,
+  ): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    return this.request<SuccessResponse>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/forward`,
+      {
+        method: "POST",
+        body: request,
+      },
+    );
+  }
+
+  // Submit a draft message for delivery
+  async submitDraft(
+    userId: string,
+    mailboxId: string,
+    messageId: number,
+  ): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
+
+    return this.request<SuccessResponse>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/submit`,
+      {
+        method: "POST",
+      },
+    );
+  }
+
+  // Submit a new message for delivery
+  async submitMessage(
+    userId: string,
+    request: SubmitMessageRequest,
+  ): Promise<SubmitMessageResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    return this.request<SubmitMessageResponse>(
+      `/users/${validatedUserId}/submit`,
+      {
+        method: "POST",
+        body: request,
+      },
+    );
+  }
+
+  // ============================================================================
+  // Autoreply Methods
+  // ============================================================================
+
+  // Get autoreply/vacation responder settings
+  async getAutoreply(userId: string): Promise<AutoreplyResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    return this.request<AutoreplyResponse>(
+      `/users/${validatedUserId}/autoreply`,
+    );
+  }
+
+  // Update autoreply/vacation responder settings
+  async updateAutoreply(
+    userId: string,
+    request: AutoreplyRequest,
+  ): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    return this.request<SuccessResponse>(
+      `/users/${validatedUserId}/autoreply`,
+      {
+        method: "PUT",
+        body: request,
+      },
+    );
+  }
+
+  // Disable autoreply/vacation responder
+  async deleteAutoreply(userId: string): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userId);
+
+    return this.request<SuccessResponse>(
+      `/users/${validatedUserId}/autoreply`,
+      {
+        method: "DELETE",
       },
     );
   }
