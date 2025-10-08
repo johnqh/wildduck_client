@@ -188,7 +188,9 @@ export interface UserResponse {
   username: string;
   name: string;
   address: string;
+  language?: string;
   retention: number;
+  uploadSentMessages?: boolean;
   enabled2fa: string[];
   autoreply: boolean;
   encryptMessages: boolean;
@@ -199,6 +201,7 @@ export interface UserResponse {
   metaData: Record<string, unknown>;
   internalData: Record<string, unknown>;
   targets: string[];
+  mtaRelay?: string;
   limits: Limits;
   fromWhitelist: string[];
   disabledScopes: string[];

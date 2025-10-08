@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)",
+      "Read(//Users/johnhuang/0xmail/wildduck/**)",
+      "Bash(for:*)",
+      "Bash(do mv \"$file\" \"$file%x.tsx\")",
+      "Bash(done)",
+      "Bash(do)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
