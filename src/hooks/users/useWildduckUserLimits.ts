@@ -2,12 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
 import type {
   Limits,
-  UserAuth,
   UserResponse,
+  WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 export interface UpdateLimitsParams {
-  userAuth: UserAuth;
+  userAuth: WildduckUserAuth;
   recipients?: number; // How many messages per 24 hour can be sent
   forwards?: number; // How many messages per 24 hour can be forwarded
   filters?: number; // How many filters are allowed
@@ -25,7 +25,7 @@ export interface UpdateLimitsParams {
  */
 export const useWildduckUserLimits = (
   api: WildDuckAPI,
-  userAuth?: UserAuth,
+  userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
   const userId = userAuth?.userId;

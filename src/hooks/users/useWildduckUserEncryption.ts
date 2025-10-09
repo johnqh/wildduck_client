@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
 import type {
   KeyInfo,
-  UserAuth,
   UserResponse,
+  WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 export interface EncryptionSettings {
@@ -14,7 +14,7 @@ export interface EncryptionSettings {
 }
 
 export interface UpdateEncryptionParams {
-  userAuth: UserAuth;
+  userAuth: WildduckUserAuth;
   encryptMessages?: boolean;
   encryptForwarded?: boolean;
   pubKey?: string; // Use empty string to remove the key
@@ -26,7 +26,7 @@ export interface UpdateEncryptionParams {
  */
 export const useWildduckUserEncryption = (
   api: WildDuckAPI,
-  userAuth?: UserAuth,
+  userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
   const userId = userAuth?.userId;
@@ -69,7 +69,7 @@ export const useWildduckUserEncryption = (
       userAuth,
       pubKey,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       pubKey: string;
     }) => {
       return await api.updateUser(userAuth, { pubKey });
@@ -86,7 +86,7 @@ export const useWildduckUserEncryption = (
 
   // Mutation to remove PGP public key
   const removePubKey = useMutation({
-    mutationFn: async (userAuth: UserAuth) => {
+    mutationFn: async (userAuth: WildduckUserAuth) => {
       return await api.updateUser(userAuth, { pubKey: "" });
     },
     onSuccess: (_, userAuth) => {

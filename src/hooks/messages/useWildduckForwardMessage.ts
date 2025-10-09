@@ -6,12 +6,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   ForwardMessageRequest,
   SuccessResponse,
-  UserAuth,
+  WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseWildduckForwardMessageReturn {
   forwardMessage: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     params: ForwardMessageRequest,
@@ -54,7 +54,7 @@ export const useWildduckForwardMessage = (
       messageId,
       params,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: number;
       params: ForwardMessageRequest;
@@ -87,7 +87,7 @@ export const useWildduckForwardMessage = (
 
   const forwardMessage = useCallback(
     async (
-      userAuth: UserAuth,
+      userAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: number,
       params: ForwardMessageRequest,

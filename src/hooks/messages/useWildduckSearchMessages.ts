@@ -8,7 +8,7 @@ import {
 } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
 import axios from "axios";
-import type { UserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface SearchMessagesOptions {
   limit?: number;
@@ -17,7 +17,7 @@ interface SearchMessagesOptions {
 
 interface UseWildduckSearchMessagesReturn {
   searchMessages: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     query: string,
     options?: SearchMessagesOptions,
   ) => Promise<Optional<WildDuckMessage[]>>;
@@ -52,7 +52,7 @@ export const useWildduckSearchMessages = (
   const searchMessages = useCallback(
     execute(
       async (
-        userAuth: UserAuth,
+        userAuth: WildduckUserAuth,
         query: string,
         options: SearchMessagesOptions = {},
       ): Promise<WildDuckMessage[]> => {

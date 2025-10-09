@@ -3,11 +3,11 @@ import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
-import type { UserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface UseWildduckGetMessageAttachmentReturn {
   getMessageAttachment: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     attachmentId: string,
@@ -43,7 +43,7 @@ export const useWildduckGetMessageAttachment = (
   const getMessageAttachment = useCallback(
     execute(
       async (
-        userAuth: UserAuth,
+        userAuth: WildduckUserAuth,
         mailboxId: string,
         messageId: number,
         attachmentId: string,

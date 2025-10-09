@@ -3,10 +3,15 @@ import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
-import type { AutoreplyResponse, UserAuth } from "../../types/wildduck-types";
+import type {
+  AutoreplyResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 interface UseWildduckGetAutoreplyReturn {
-  getAutoreply: (userAuth: UserAuth) => Promise<Optional<AutoreplyResponse>>;
+  getAutoreply: (
+    userAuth: WildduckUserAuth,
+  ) => Promise<Optional<AutoreplyResponse>>;
   isLoading: boolean;
   error: Optional<string>;
   clearError: () => void;
@@ -36,7 +41,7 @@ export const useWildduckGetAutoreply = (
   });
 
   const getAutoreply = useCallback(
-    execute(async (userAuth: UserAuth) => {
+    execute(async (userAuth: WildduckUserAuth) => {
       try {
         return await wildduckClient.getAutoreply(userAuth);
       } catch (err) {

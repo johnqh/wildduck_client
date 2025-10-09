@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { UserAuth, UserResponse } from "../../types/wildduck-types";
+import type {
+  UserResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 export interface UserProfile {
   username: string;
@@ -19,7 +22,7 @@ export interface UserProfile {
 }
 
 export interface UpdateProfileParams {
-  userAuth: UserAuth;
+  userAuth: WildduckUserAuth;
   name?: string;
   language?: string;
   retention?: number;
@@ -32,7 +35,7 @@ export interface UpdateProfileParams {
 }
 
 export interface UpdatePasswordParams {
-  userAuth: UserAuth;
+  userAuth: WildduckUserAuth;
   existingPassword?: string;
   password: string;
   hashedPassword?: boolean;
@@ -45,7 +48,7 @@ export interface UpdatePasswordParams {
  */
 export const useWildduckUserProfile = (
   api: WildDuckAPI,
-  userAuth?: UserAuth,
+  userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
   const userId = userAuth?.userId;
@@ -110,7 +113,7 @@ export const useWildduckUserProfile = (
       userAuth,
       tags,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       tags: string[];
     }) => {
       return await api.updateUser(userAuth, { tags });
@@ -132,7 +135,7 @@ export const useWildduckUserProfile = (
       disabled,
       suspended,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       disabled?: boolean;
       suspended?: boolean;
     }) => {

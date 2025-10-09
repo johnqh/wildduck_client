@@ -6,12 +6,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   UpdateMessageRequest,
   UpdateMessageResponse,
-  UserAuth,
+  WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseWildduckUpdateMessageReturn {
   updateMessage: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     params: UpdateMessageRequest,
@@ -54,7 +54,7 @@ export const useWildduckUpdateMessage = (
       messageId,
       params,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: number;
       params: UpdateMessageRequest;
@@ -94,7 +94,7 @@ export const useWildduckUpdateMessage = (
 
   const updateMessage = useCallback(
     async (
-      userAuth: UserAuth,
+      userAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: number,
       params: UpdateMessageRequest,

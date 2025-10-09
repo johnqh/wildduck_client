@@ -7,10 +7,12 @@ import {
   type WildDuckUserResponse,
 } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
-import type { UserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface UseGetUserReturn {
-  getUser: (userAuth: UserAuth) => Promise<Optional<WildDuckUserResponse>>;
+  getUser: (
+    userAuth: WildduckUserAuth,
+  ) => Promise<Optional<WildDuckUserResponse>>;
   isLoading: boolean;
   error: Optional<string>;
   clearError: () => void;
@@ -40,7 +42,7 @@ export const useWildduckGetUser = (
   });
 
   const getUser = useCallback(
-    execute(async (userAuth: UserAuth) => {
+    execute(async (userAuth: WildduckUserAuth) => {
       try {
         return await wildduckClient.getUser(userAuth);
       } catch (err) {

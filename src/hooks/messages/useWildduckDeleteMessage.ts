@@ -3,11 +3,14 @@ import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { SuccessResponse, UserAuth } from "../../types/wildduck-types";
+import type {
+  SuccessResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 interface UseWildduckDeleteMessageReturn {
   deleteMessage: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
   ) => Promise<SuccessResponse>;
@@ -48,7 +51,7 @@ export const useWildduckDeleteMessage = (
       mailboxId,
       messageId,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: number;
     }): Promise<SuccessResponse> => {
@@ -85,7 +88,11 @@ export const useWildduckDeleteMessage = (
   });
 
   const deleteMessage = useCallback(
-    async (userAuth: UserAuth, mailboxId: string, messageId: number) => {
+    async (
+      userAuth: WildduckUserAuth,
+      mailboxId: string,
+      messageId: number,
+    ) => {
       return deleteMutation.mutateAsync({ userAuth, mailboxId, messageId });
     },
     [deleteMutation],

@@ -9,11 +9,11 @@ import {
 } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { WildDuckMockData } from "../mocks";
-import type { UserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface UseWildduckCreateMailboxReturn {
   createMailbox: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     params: CreateMailboxRequest,
   ) => Promise<WildDuckMailboxResponse>;
   isLoading: boolean;
@@ -52,7 +52,7 @@ export const useWildduckCreateMailbox = (
       userAuth,
       params,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       params: CreateMailboxRequest;
     }): Promise<WildDuckMailboxResponse> => {
       try {
@@ -78,7 +78,7 @@ export const useWildduckCreateMailbox = (
   });
 
   const createMailbox = useCallback(
-    async (userAuth: UserAuth, params: CreateMailboxRequest) => {
+    async (userAuth: WildduckUserAuth, params: CreateMailboxRequest) => {
       return createMutation.mutateAsync({ userAuth, params });
     },
     [createMutation],

@@ -7,11 +7,11 @@ import {
   type WildDuckConfig,
 } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
-import type { UserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface UseWildduckGetAddressesReturn {
   getAddresses: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
   ) => Promise<Optional<WildDuckAddressResponse>>;
   isLoading: boolean;
   error: Optional<string>;
@@ -42,7 +42,7 @@ export const useWildduckGetAddresses = (
   });
 
   const getAddresses = useCallback(
-    execute(async (userAuth: UserAuth) => {
+    execute(async (userAuth: WildduckUserAuth) => {
       try {
         return await wildduckClient.getAddresses(userAuth);
       } catch (err) {

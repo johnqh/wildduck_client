@@ -8,11 +8,11 @@ import {
   type WildDuckMailboxResponse,
 } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
-import type { UserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface UseWildduckGetMailboxesReturn {
   getMailboxes: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
   ) => Promise<Optional<WildDuckMailboxResponse>>;
   isLoading: boolean;
@@ -46,7 +46,7 @@ export const useWildduckGetMailboxes = (
   const getMailboxes = useCallback(
     execute(
       async (
-        userAuth: UserAuth,
+        userAuth: WildduckUserAuth,
         options?: Omit<GetMailboxesRequest, "sess" | "ip">,
       ) => {
         try {

@@ -6,12 +6,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   AutoreplyRequest,
   SuccessResponse,
-  UserAuth,
+  WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseWildduckUpdateAutoreplyReturn {
   updateAutoreply: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     params: AutoreplyRequest,
   ) => Promise<SuccessResponse>;
   isLoading: boolean;
@@ -50,7 +50,7 @@ export const useWildduckUpdateAutoreply = (
       userAuth,
       params,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       params: AutoreplyRequest;
     }): Promise<SuccessResponse> => {
       try {
@@ -75,7 +75,7 @@ export const useWildduckUpdateAutoreply = (
   });
 
   const updateAutoreply = useCallback(
-    async (userAuth: UserAuth, params: AutoreplyRequest) => {
+    async (userAuth: WildduckUserAuth, params: AutoreplyRequest) => {
       return updateMutation.mutateAsync({ userAuth, params });
     },
     [updateMutation],

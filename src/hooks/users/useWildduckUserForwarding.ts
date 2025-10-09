@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { UserAuth, UserResponse } from "../../types/wildduck-types";
+import type {
+  UserResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 export interface ForwardingSettings {
   targets: string[]; // List of forwarding email addresses or URLs
@@ -8,7 +11,7 @@ export interface ForwardingSettings {
 }
 
 export interface UpdateForwardingParams {
-  userAuth: UserAuth;
+  userAuth: WildduckUserAuth;
   targets?: string[]; // Array of email addresses or relay URLs
   mtaRelay?: string; // SMTP relay URL (e.g., "smtp://mx2.zone.eu:25")
 }
@@ -19,7 +22,7 @@ export interface UpdateForwardingParams {
  */
 export const useWildduckUserForwarding = (
   api: WildDuckAPI,
-  userAuth?: UserAuth,
+  userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
   const userId = userAuth?.userId;
@@ -60,7 +63,7 @@ export const useWildduckUserForwarding = (
       userAuth,
       target,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       target: string;
     }) => {
       // Get current targets and add new one
@@ -85,7 +88,7 @@ export const useWildduckUserForwarding = (
       userAuth,
       target,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       target: string;
     }) => {
       // Get current targets and remove specified one
@@ -106,7 +109,7 @@ export const useWildduckUserForwarding = (
 
   // Mutation to clear all forwarding targets
   const clearTargets = useMutation({
-    mutationFn: async (userAuth: UserAuth) => {
+    mutationFn: async (userAuth: WildduckUserAuth) => {
       return await api.updateUser(userAuth, { targets: [] });
     },
     onSuccess: (_, userAuth) => {

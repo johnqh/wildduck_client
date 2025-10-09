@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { UserAuth, UserResponse } from "../../types/wildduck-types";
+import type {
+  UserResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 export interface UserQuotaInfo {
   allowed: number;
@@ -8,7 +11,7 @@ export interface UserQuotaInfo {
 }
 
 export interface UpdateQuotaParams {
-  userAuth: UserAuth;
+  userAuth: WildduckUserAuth;
   quota: number; // Allowed quota in bytes
 }
 
@@ -22,7 +25,10 @@ export interface RecalculateQuotaResult {
  * Hook for managing user storage quota
  * Provides query for current quota usage and mutations for updating/recalculating quota
  */
-export const useWildduckUserQuota = (api: WildDuckAPI, userAuth?: UserAuth) => {
+export const useWildduckUserQuota = (
+  api: WildDuckAPI,
+  userAuth?: WildduckUserAuth,
+) => {
   const queryClient = useQueryClient();
   const userId = userAuth?.userId;
 

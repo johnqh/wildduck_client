@@ -6,12 +6,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   SuccessResponse,
   UpdateUserRequest,
-  UserAuth,
+  WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseUpdateUserReturn {
   updateUser: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     params: UpdateUserRequest,
   ) => Promise<SuccessResponse>;
   isLoading: boolean;
@@ -50,7 +50,7 @@ export const useWildduckUpdateUser = (
       userAuth,
       params,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       params: UpdateUserRequest;
     }): Promise<SuccessResponse> => {
       try {
@@ -78,7 +78,7 @@ export const useWildduckUpdateUser = (
   });
 
   const updateUser = useCallback(
-    async (userAuth: UserAuth, params: UpdateUserRequest) => {
+    async (userAuth: WildduckUserAuth, params: UpdateUserRequest) => {
       return updateMutation.mutateAsync({ userAuth, params });
     },
     [updateMutation],

@@ -3,11 +3,14 @@ import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
-import type { MailboxResponse, UserAuth } from "../../types/wildduck-types";
+import type {
+  MailboxResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 interface UseWildduckGetMailboxReturn {
   getMailbox: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     mailboxId: string,
   ) => Promise<Optional<MailboxResponse>>;
   isLoading: boolean;
@@ -39,7 +42,7 @@ export const useWildduckGetMailbox = (
   });
 
   const getMailbox = useCallback(
-    execute(async (userAuth: UserAuth, mailboxId: string) => {
+    execute(async (userAuth: WildduckUserAuth, mailboxId: string) => {
       try {
         return await wildduckClient.getMailbox(userAuth, mailboxId);
       } catch (err) {

@@ -8,11 +8,11 @@ import {
 } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
 import { WildDuckMockData } from "../mocks";
-import type { UserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface UseWildduckGetMessageReturn {
   getMessage: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     messageId: string,
   ) => Promise<Optional<WildDuckMessageResponse>>;
   isLoading: boolean;
@@ -44,7 +44,7 @@ export const useWildduckGetMessage = (
   });
 
   const getMessage = useCallback(
-    execute(async (userAuth: UserAuth, messageId: string) => {
+    execute(async (userAuth: WildduckUserAuth, messageId: string) => {
       try {
         return await wildduckClient.getMessage(userAuth, messageId);
       } catch (err) {

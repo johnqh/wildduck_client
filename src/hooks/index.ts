@@ -72,8 +72,8 @@ export type {
   WildDuckMailboxResponse as WildduckMailboxesResponse,
 } from "@johnqh/types";
 
-// Export UserAuth type for authentication
-export type { UserAuth } from "../types/wildduck-types";
+// Export WildduckUserAuth type for authentication
+export type { WildduckUserAuth } from "../types/wildduck-types";
 
 // ============================================================================
 // Utilities

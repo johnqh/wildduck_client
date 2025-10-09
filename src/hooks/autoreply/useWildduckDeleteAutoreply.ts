@@ -3,10 +3,13 @@ import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { SuccessResponse, UserAuth } from "../../types/wildduck-types";
+import type {
+  SuccessResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 interface UseWildduckDeleteAutoreplyReturn {
-  deleteAutoreply: (userAuth: UserAuth) => Promise<SuccessResponse>;
+  deleteAutoreply: (userAuth: WildduckUserAuth) => Promise<SuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -39,7 +42,9 @@ export const useWildduckDeleteAutoreply = (
       "wildduck-delete-autoreply",
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
-    mutationFn: async (userAuth: UserAuth): Promise<SuccessResponse> => {
+    mutationFn: async (
+      userAuth: WildduckUserAuth,
+    ): Promise<SuccessResponse> => {
       try {
         return await wildduckClient.deleteAutoreply(userAuth);
       } catch (err) {
@@ -62,7 +67,7 @@ export const useWildduckDeleteAutoreply = (
   });
 
   const deleteAutoreply = useCallback(
-    async (userAuth: UserAuth) => {
+    async (userAuth: WildduckUserAuth) => {
       return deleteMutation.mutateAsync(userAuth);
     },
     [deleteMutation],

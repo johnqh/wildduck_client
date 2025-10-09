@@ -1,13 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { UserAuth, UserResponse } from "../../types/wildduck-types";
+import type {
+  UserResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 export interface TwoFASettings {
   enabled2fa: string[]; // List of enabled 2FA methods (e.g., ['totp', 'u2f'])
 }
 
 export interface DisableTwoFAParams {
-  userAuth: UserAuth;
+  userAuth: WildduckUserAuth;
 }
 
 /**
@@ -18,7 +21,10 @@ export interface DisableTwoFAParams {
  * that are not yet implemented in this client. This hook currently
  * supports querying 2FA status and disabling all 2FA methods.
  */
-export const useWildduckUser2FA = (api: WildDuckAPI, userAuth?: UserAuth) => {
+export const useWildduckUser2FA = (
+  api: WildDuckAPI,
+  userAuth?: WildduckUserAuth,
+) => {
   const queryClient = useQueryClient();
   const userId = userAuth?.userId;
 

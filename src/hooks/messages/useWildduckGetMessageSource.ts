@@ -3,11 +3,11 @@ import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useApiCall } from "@johnqh/di";
-import type { UserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface UseWildduckGetMessageSourceReturn {
   getMessageSource: (
-    userAuth: UserAuth,
+    userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
   ) => Promise<Optional<string>>;
@@ -41,7 +41,11 @@ export const useWildduckGetMessageSource = (
 
   const getMessageSource = useCallback(
     execute(
-      async (userAuth: UserAuth, mailboxId: string, messageId: number) => {
+      async (
+        userAuth: WildduckUserAuth,
+        mailboxId: string,
+        messageId: number,
+      ) => {
         try {
           return await wildduckClient.getMessageSource(
             userAuth,

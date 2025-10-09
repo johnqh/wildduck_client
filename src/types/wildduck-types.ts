@@ -58,7 +58,7 @@ export interface KeyInfo {
 // Authentication Types
 // ============================================================================
 
-export interface UserAuth {
+export interface WildduckUserAuth {
   userId: string;
   accessToken: string;
 }

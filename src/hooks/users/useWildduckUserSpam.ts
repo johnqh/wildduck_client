@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { UserAuth, UserResponse } from "../../types/wildduck-types";
+import type {
+  UserResponse,
+  WildduckUserAuth,
+} from "../../types/wildduck-types";
 
 interface SpamSettingsInternal {
   spamLevel: number; // 0-100, where 0 = everything is spam, 100 = nothing is spam
@@ -8,7 +11,7 @@ interface SpamSettingsInternal {
 }
 
 export interface UpdateSpamParams {
-  userAuth: UserAuth;
+  userAuth: WildduckUserAuth;
   spamLevel?: number; // 0-100
   fromWhitelist?: string[]; // Array of email addresses or patterns (wildcards allowed)
 }
@@ -17,7 +20,10 @@ export interface UpdateSpamParams {
  * Hook for managing user spam filtering settings
  * Controls spam detection sensitivity and whitelisted senders
  */
-export const useWildduckUserSpam = (api: WildDuckAPI, userAuth?: UserAuth) => {
+export const useWildduckUserSpam = (
+  api: WildDuckAPI,
+  userAuth?: WildduckUserAuth,
+) => {
   const queryClient = useQueryClient();
   const userId = userAuth?.userId;
 
@@ -57,7 +63,7 @@ export const useWildduckUserSpam = (api: WildDuckAPI, userAuth?: UserAuth) => {
       userAuth,
       spamLevel,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       spamLevel: number;
     }) => {
       if (spamLevel < 0 || spamLevel > 100) {
@@ -81,7 +87,7 @@ export const useWildduckUserSpam = (api: WildDuckAPI, userAuth?: UserAuth) => {
       userAuth,
       address,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       address: string;
     }) => {
       const user = (await api.getUser(userAuth)) as unknown as UserResponse;
@@ -105,7 +111,7 @@ export const useWildduckUserSpam = (api: WildDuckAPI, userAuth?: UserAuth) => {
       userAuth,
       address,
     }: {
-      userAuth: UserAuth;
+      userAuth: WildduckUserAuth;
       address: string;
     }) => {
       const user = (await api.getUser(userAuth)) as unknown as UserResponse;
@@ -127,7 +133,7 @@ export const useWildduckUserSpam = (api: WildDuckAPI, userAuth?: UserAuth) => {
 
   // Mutation to clear whitelist
   const clearWhitelist = useMutation({
-    mutationFn: async (userAuth: UserAuth) => {
+    mutationFn: async (userAuth: WildduckUserAuth) => {
       return await api.updateUser(userAuth, { fromWhitelist: [] });
     },
     onSuccess: (_, userAuth) => {
