@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
 import type {
-  UserResponse,
   WildduckUserAuth,
+  WildduckUserResponse,
 } from "../../types/wildduck-types";
 
 interface SpamSettingsInternal {
@@ -32,7 +32,9 @@ export const useWildduckUserSpam = (
     queryKey: ["user", userId, "spam"],
     queryFn: async (): Promise<SpamSettingsInternal | undefined> => {
       if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       return {
         spamLevel: user.spamLevel,
         fromWhitelist: user.fromWhitelist || [],
@@ -90,7 +92,9 @@ export const useWildduckUserSpam = (
       userAuth: WildduckUserAuth;
       address: string;
     }) => {
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       const currentWhitelist = user.fromWhitelist || [];
       const newWhitelist = [...currentWhitelist, address];
       return await api.updateUser(userAuth, { fromWhitelist: newWhitelist });
@@ -114,7 +118,9 @@ export const useWildduckUserSpam = (
       userAuth: WildduckUserAuth;
       address: string;
     }) => {
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       const currentWhitelist = user.fromWhitelist || [];
       const newWhitelist = currentWhitelist.filter(
         (a: string) => a !== address,

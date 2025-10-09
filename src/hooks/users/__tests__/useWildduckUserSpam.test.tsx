@@ -4,7 +4,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUserSpam } from "../useWildduckUserSpam";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
-import type { UserResponse } from "../../../types/wildduck-types";
+import type { WildduckUserResponse } from "../../../types/wildduck-types";
 
 const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
 
@@ -34,7 +34,7 @@ describe("useUserSpam", () => {
 
   describe("query", () => {
     it("should fetch user spam settings successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 75,
         fromWhitelist: ["trusted@example.com", "*@trusted-domain.com"],
@@ -61,7 +61,7 @@ describe("useUserSpam", () => {
     });
 
     it("should handle empty whitelist", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: [],
@@ -104,7 +104,7 @@ describe("useUserSpam", () => {
 
   describe("updateSpam mutation", () => {
     it("should update spam settings successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: [],
@@ -136,7 +136,7 @@ describe("useUserSpam", () => {
 
   describe("updateSpamLevel mutation", () => {
     it("should update spam level successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: [],
@@ -162,7 +162,7 @@ describe("useUserSpam", () => {
     });
 
     it("should reject spam level below 0", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: [],
@@ -185,7 +185,7 @@ describe("useUserSpam", () => {
     });
 
     it("should reject spam level above 100", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: [],
@@ -208,7 +208,7 @@ describe("useUserSpam", () => {
     });
 
     it("should accept spam level at boundaries", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: [],
@@ -243,7 +243,7 @@ describe("useUserSpam", () => {
 
   describe("addToWhitelist mutation", () => {
     it("should add address to whitelist successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: ["existing@example.com"],
@@ -270,7 +270,7 @@ describe("useUserSpam", () => {
     });
 
     it("should add address to empty whitelist", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: [],
@@ -298,7 +298,7 @@ describe("useUserSpam", () => {
 
   describe("removeFromWhitelist mutation", () => {
     it("should remove address from whitelist successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: ["keep@example.com", "remove@example.com"],
@@ -325,7 +325,7 @@ describe("useUserSpam", () => {
     });
 
     it("should handle removing non-existent address", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: ["existing@example.com"],
@@ -353,7 +353,7 @@ describe("useUserSpam", () => {
 
   describe("clearWhitelist mutation", () => {
     it("should clear all whitelist entries successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: ["addr1@example.com", "addr2@example.com"],
@@ -376,7 +376,7 @@ describe("useUserSpam", () => {
     });
 
     it("should invalidate queries after clearing whitelist", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         spamLevel: 50,
         fromWhitelist: ["addr@example.com"],

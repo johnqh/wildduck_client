@@ -4,7 +4,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUser2FA } from "../useWildduckUser2FA";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
-import type { UserResponse } from "../../../types/wildduck-types";
+import type { WildduckUserResponse } from "../../../types/wildduck-types";
 
 const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
 
@@ -34,7 +34,7 @@ describe("useUser2FA", () => {
 
   describe("query", () => {
     it("should fetch user 2FA settings successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: ["totp", "u2f"],
       };
@@ -56,7 +56,7 @@ describe("useUser2FA", () => {
     });
 
     it("should handle no 2FA enabled", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: [],
       };
@@ -99,7 +99,7 @@ describe("useUser2FA", () => {
 
   describe("helper methods", () => {
     it("should correctly identify TOTP method", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: ["totp"],
       };
@@ -120,7 +120,7 @@ describe("useUser2FA", () => {
     });
 
     it("should correctly identify U2F method", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: ["u2f"],
       };
@@ -139,7 +139,7 @@ describe("useUser2FA", () => {
     });
 
     it("should correctly identify WebAuthn method", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: ["webauthn"],
       };
@@ -158,7 +158,7 @@ describe("useUser2FA", () => {
     });
 
     it("should handle multiple 2FA methods", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: ["totp", "u2f", "webauthn"],
       };
@@ -180,7 +180,7 @@ describe("useUser2FA", () => {
 
   describe("disable2FA mutation", () => {
     it("should disable all 2FA methods successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: ["totp", "u2f"],
       };
@@ -204,7 +204,7 @@ describe("useUser2FA", () => {
     });
 
     it("should invalidate queries after disabling 2FA", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: ["totp"],
       };
@@ -231,7 +231,7 @@ describe("useUser2FA", () => {
     });
 
     it("should handle disable errors", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: ["totp"],
       };
@@ -255,7 +255,7 @@ describe("useUser2FA", () => {
     });
 
     it("should work when 2FA is already disabled", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         enabled2fa: [],
       };

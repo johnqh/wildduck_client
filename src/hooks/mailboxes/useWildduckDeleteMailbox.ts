@@ -4,7 +4,7 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  SuccessResponse,
+  WildduckSuccessResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
@@ -12,7 +12,7 @@ interface UseWildduckDeleteMailboxReturn {
   deleteMailbox: (
     userAuth: WildduckUserAuth,
     mailboxId: string,
-  ) => Promise<SuccessResponse>;
+  ) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -51,7 +51,7 @@ export const useWildduckDeleteMailbox = (
     }: {
       userAuth: WildduckUserAuth;
       mailboxId: string;
-    }): Promise<SuccessResponse> => {
+    }): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.deleteMailbox(userAuth, mailboxId);
       } catch (err) {

@@ -4,8 +4,8 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  ForwardMessageRequest,
-  SuccessResponse,
+  WildduckForwardMessageRequest,
+  WildduckSuccessResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
@@ -14,8 +14,8 @@ interface UseWildduckForwardMessageReturn {
     userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
-    params: ForwardMessageRequest,
-  ) => Promise<SuccessResponse>;
+    params: WildduckForwardMessageRequest,
+  ) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -57,8 +57,8 @@ export const useWildduckForwardMessage = (
       userAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: number;
-      params: ForwardMessageRequest;
-    }): Promise<SuccessResponse> => {
+      params: WildduckForwardMessageRequest;
+    }): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.forwardMessage(
           userAuth,
@@ -90,7 +90,7 @@ export const useWildduckForwardMessage = (
       userAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: number,
-      params: ForwardMessageRequest,
+      params: WildduckForwardMessageRequest,
     ) => {
       return forwardMutation.mutateAsync({
         userAuth,

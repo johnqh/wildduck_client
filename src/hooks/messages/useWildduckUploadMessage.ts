@@ -4,8 +4,8 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  UploadMessageRequest,
-  UploadMessageResponse,
+  WildduckUploadMessageRequest,
+  WildduckUploadMessageResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
@@ -13,8 +13,8 @@ interface UseWildduckUploadMessageReturn {
   uploadMessage: (
     userAuth: WildduckUserAuth,
     mailboxId: string,
-    params: UploadMessageRequest,
-  ) => Promise<UploadMessageResponse>;
+    params: WildduckUploadMessageRequest,
+  ) => Promise<WildduckUploadMessageResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -55,8 +55,8 @@ export const useWildduckUploadMessage = (
     }: {
       userAuth: WildduckUserAuth;
       mailboxId: string;
-      params: UploadMessageRequest;
-    }): Promise<UploadMessageResponse> => {
+      params: WildduckUploadMessageRequest;
+    }): Promise<WildduckUploadMessageResponse> => {
       try {
         return await wildduckClient.uploadMessage(userAuth, mailboxId, params);
       } catch (err) {
@@ -68,7 +68,7 @@ export const useWildduckUploadMessage = (
           return {
             success: true,
             message: { id: Date.now(), mailbox: mailboxId },
-          } as UploadMessageResponse;
+          } as WildduckUploadMessageResponse;
         }
         throw err;
       }
@@ -92,7 +92,7 @@ export const useWildduckUploadMessage = (
     async (
       userAuth: WildduckUserAuth,
       mailboxId: string,
-      params: UploadMessageRequest,
+      params: WildduckUploadMessageRequest,
     ) => {
       return uploadMutation.mutateAsync({ userAuth, mailboxId, params });
     },

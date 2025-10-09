@@ -4,8 +4,8 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  SuccessResponse,
-  UpdateMailboxRequest,
+  WildduckSuccessResponse,
+  WildduckUpdateMailboxRequest,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
@@ -13,8 +13,8 @@ interface UseWildduckUpdateMailboxReturn {
   updateMailbox: (
     userAuth: WildduckUserAuth,
     mailboxId: string,
-    params: UpdateMailboxRequest,
-  ) => Promise<SuccessResponse>;
+    params: WildduckUpdateMailboxRequest,
+  ) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -54,8 +54,8 @@ export const useWildduckUpdateMailbox = (
     }: {
       userAuth: WildduckUserAuth;
       mailboxId: string;
-      params: UpdateMailboxRequest;
-    }): Promise<SuccessResponse> => {
+      params: WildduckUpdateMailboxRequest;
+    }): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.updateMailbox(userAuth, mailboxId, params);
       } catch (err) {
@@ -88,7 +88,7 @@ export const useWildduckUpdateMailbox = (
     async (
       userAuth: WildduckUserAuth,
       mailboxId: string,
-      params: UpdateMailboxRequest,
+      params: WildduckUpdateMailboxRequest,
     ) => {
       return updateMutation.mutateAsync({ userAuth, mailboxId, params });
     },

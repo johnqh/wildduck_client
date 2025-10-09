@@ -1,16 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
 import type {
-  KeyInfo,
-  UserResponse,
+  WildduckKeyInfo,
   WildduckUserAuth,
+  WildduckUserResponse,
 } from "../../types/wildduck-types";
 
 export interface EncryptionSettings {
   encryptMessages: boolean; // If true then received messages are encrypted
   encryptForwarded: boolean; // If true then forwarded messages are encrypted
   pubKey: string; // Public PGP key for encryption
-  keyInfo?: KeyInfo; // Information about the public key
+  keyInfo?: WildduckKeyInfo; // Information about the public key
 }
 
 export interface UpdateEncryptionParams {
@@ -36,7 +36,9 @@ export const useWildduckUserEncryption = (
     queryKey: ["user", userId, "encryption"],
     queryFn: async (): Promise<EncryptionSettings | undefined> => {
       if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       return {
         encryptMessages: user.encryptMessages,
         encryptForwarded: user.encryptForwarded,

@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
 import type {
-  UserResponse,
   WildduckUserAuth,
+  WildduckUserResponse,
 } from "../../types/wildduck-types";
 
 export interface UserQuotaInfo {
@@ -37,7 +37,9 @@ export const useWildduckUserQuota = (
     queryKey: ["user", userId, "quota"],
     queryFn: async () => {
       if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       return user.limits?.quota;
     },
     enabled: !!userAuth,

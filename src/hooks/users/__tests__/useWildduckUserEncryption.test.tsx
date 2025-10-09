@@ -4,7 +4,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUserEncryption } from "../useWildduckUserEncryption";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
-import type { UserResponse } from "../../../types/wildduck-types";
+import type { WildduckUserResponse } from "../../../types/wildduck-types";
 
 const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
 
@@ -34,7 +34,7 @@ describe("useUserEncryption", () => {
 
   describe("query", () => {
     it("should fetch user encryption settings successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         encryptMessages: true,
         encryptForwarded: false,
@@ -101,7 +101,7 @@ describe("useUserEncryption", () => {
 
   describe("updateEncryption mutation", () => {
     it("should update encryption settings successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         encryptMessages: false,
         encryptForwarded: false,
@@ -133,7 +133,7 @@ describe("useUserEncryption", () => {
     });
 
     it("should invalidate queries after successful update", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         encryptMessages: false,
         encryptForwarded: false,
@@ -168,7 +168,7 @@ describe("useUserEncryption", () => {
 
   describe("updatePubKey mutation", () => {
     it("should update PGP public key successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         encryptMessages: false,
         encryptForwarded: false,
@@ -198,7 +198,7 @@ describe("useUserEncryption", () => {
     });
 
     it("should handle update errors", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         encryptMessages: false,
         encryptForwarded: false,
@@ -228,7 +228,7 @@ describe("useUserEncryption", () => {
 
   describe("removePubKey mutation", () => {
     it("should remove PGP public key successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         encryptMessages: true,
         encryptForwarded: false,
@@ -253,7 +253,7 @@ describe("useUserEncryption", () => {
     });
 
     it("should invalidate queries after removing key", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         encryptMessages: true,
         encryptForwarded: false,

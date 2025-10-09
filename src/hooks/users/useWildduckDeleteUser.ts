@@ -4,12 +4,12 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  SuccessResponse,
+  WildduckSuccessResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseDeleteUserReturn {
-  deleteUser: (userAuth: WildduckUserAuth) => Promise<SuccessResponse>;
+  deleteUser: (userAuth: WildduckUserAuth) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -44,7 +44,7 @@ export const useWildduckDeleteUser = (
     ],
     mutationFn: async (
       userAuth: WildduckUserAuth,
-    ): Promise<SuccessResponse> => {
+    ): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.deleteUser(userAuth);
       } catch (err) {

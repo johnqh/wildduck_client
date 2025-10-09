@@ -4,12 +4,14 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  CreateUserRequest,
-  CreateUserResponse,
+  WildduckCreateUserRequest,
+  WildduckCreateUserResponse,
 } from "../../types/wildduck-types";
 
 interface UseCreateUserReturn {
-  createUser: (params: CreateUserRequest) => Promise<CreateUserResponse>;
+  createUser: (
+    params: WildduckCreateUserRequest,
+  ) => Promise<WildduckCreateUserResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -43,8 +45,8 @@ export const useWildduckCreateUser = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async (
-      params: CreateUserRequest,
-    ): Promise<CreateUserResponse> => {
+      params: WildduckCreateUserRequest,
+    ): Promise<WildduckCreateUserResponse> => {
       try {
         return await wildduckClient.createUser(params);
       } catch (err) {
@@ -70,7 +72,7 @@ export const useWildduckCreateUser = (
   });
 
   const createUser = useCallback(
-    async (params: CreateUserRequest) => {
+    async (params: WildduckCreateUserRequest) => {
       return createMutation.mutateAsync(params);
     },
     [createMutation],

@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
 import type {
-  UserResponse,
   WildduckUserAuth,
+  WildduckUserResponse,
 } from "../../types/wildduck-types";
 
 export interface TwoFASettings {
@@ -33,7 +33,9 @@ export const useWildduckUser2FA = (
     queryKey: ["user", userId, "2fa"],
     queryFn: async (): Promise<TwoFASettings | undefined> => {
       if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       return {
         enabled2fa: user.enabled2fa || [],
       };

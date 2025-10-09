@@ -4,7 +4,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUserQuota } from "../useWildduckUserQuota";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
-import type { UserResponse } from "../../../types/wildduck-types";
+import type { WildduckUserResponse } from "../../../types/wildduck-types";
 
 const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
 
@@ -34,7 +34,7 @@ describe("useUserQuota", () => {
 
   describe("query", () => {
     it("should fetch user quota successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         limits: {
           quota: { allowed: 1073741824, used: 536870912 },
@@ -67,7 +67,7 @@ describe("useUserQuota", () => {
     });
 
     it("should handle missing quota in user response", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         limits: {},
       };
@@ -99,7 +99,7 @@ describe("useUserQuota", () => {
 
   describe("updateQuota mutation", () => {
     it("should update quota successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         limits: {
           quota: { allowed: 1073741824, used: 536870912 },
@@ -128,7 +128,7 @@ describe("useUserQuota", () => {
     });
 
     it("should invalidate queries after successful update", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         limits: {
           quota: { allowed: 1073741824, used: 536870912 },
@@ -160,7 +160,7 @@ describe("useUserQuota", () => {
     });
 
     it("should handle update errors", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         limits: {
           quota: { allowed: 1073741824, used: 536870912 },
@@ -189,7 +189,7 @@ describe("useUserQuota", () => {
 
   describe("recalculateQuota mutation", () => {
     it("should throw not implemented error", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         limits: {
           quota: { allowed: 1073741824, used: 536870912 },

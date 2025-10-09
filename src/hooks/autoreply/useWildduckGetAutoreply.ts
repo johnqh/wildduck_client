@@ -4,7 +4,7 @@ import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import { type WildDuckConfig } from "@johnqh/types";
 import type {
-  AutoreplyResponse,
+  WildduckAutoreplyResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
@@ -56,7 +56,7 @@ export const useWildduckGetAutoreply = (
             html: "",
             start: false,
             end: false,
-          } as AutoreplyResponse;
+          } as WildduckAutoreplyResponse;
         }
         throw err;
       }

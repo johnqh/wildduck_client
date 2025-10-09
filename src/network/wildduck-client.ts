@@ -1,10 +1,8 @@
 import type {
-  AuthenticateRequest,
   CreateMailboxRequest,
   GetMailboxesRequest,
   GetMessagesRequest,
   Optional,
-  PreAuthRequest,
   WildDuckAddressResponse,
   WildDuckAuthResponse,
   WildDuckConfig,
@@ -16,22 +14,24 @@ import type {
 } from "@johnqh/types";
 import type { NetworkClient } from "@johnqh/di";
 import type {
-  AutoreplyRequest,
-  AutoreplyResponse,
-  CreateUserRequest,
-  CreateUserResponse,
-  ForwardMessageRequest,
-  MailboxResponse,
-  MessageResponse,
-  SubmitMessageRequest,
-  SubmitMessageResponse,
-  SuccessResponse,
-  UpdateMailboxRequest,
-  UpdateMessageRequest,
-  UpdateMessageResponse,
-  UpdateUserRequest,
-  UploadMessageRequest,
-  UploadMessageResponse,
+  WildduckAuthenticateRequest,
+  WildduckAutoreplyRequest,
+  WildduckAutoreplyResponse,
+  WildduckCreateUserRequest,
+  WildduckCreateUserResponse,
+  WildduckForwardMessageRequest,
+  WildduckMailboxResponse,
+  WildduckMessageResponse,
+  WildduckPreAuthRequest,
+  WildduckSubmitMessageRequest,
+  WildduckSubmitMessageResponse,
+  WildduckSuccessResponse,
+  WildduckUpdateMailboxRequest,
+  WildduckUpdateMessageRequest,
+  WildduckUpdateMessageResponse,
+  WildduckUpdateUserRequest,
+  WildduckUploadMessageRequest,
+  WildduckUploadMessageResponse,
   WildduckUserAuth,
 } from "../types/wildduck-types";
 
@@ -275,8 +275,10 @@ class WildDuckAPI {
   }
 
   // Pre-authenticate user to check if username exists
-  async preAuth(request: PreAuthRequest): Promise<WildDuckPreAuthResponse> {
-    const requestBody: PreAuthRequest = {
+  async preAuth(
+    request: WildduckPreAuthRequest,
+  ): Promise<WildDuckPreAuthResponse> {
+    const requestBody: WildduckPreAuthRequest = {
       username: request.username,
       scope: request.scope || "master",
       sess: request.sess || "api-session",
@@ -293,13 +295,13 @@ class WildDuckAPI {
 
   // Authenticate user with WildDuck using blockchain signature
   async authenticate(
-    request: AuthenticateRequest,
+    request: WildduckAuthenticateRequest,
   ): Promise<WildDuckAuthResponse> {
-    const requestBody: AuthenticateRequest = {
+    const requestBody: WildduckAuthenticateRequest = {
       username: request.username,
-      signature: request.signature, // Signature that was created by signing the message
-      message: request.message, // SIWE/SIWS message that was signed
-      signer: request.signer, // The wallet address that created the signature
+      ...(request.signature && { signature: request.signature }), // Signature that was created by signing the message
+      ...(request.message && { message: request.message }), // SIWE/SIWS message that was signed
+      ...(request.signer && { signer: request.signer }), // The wallet address that created the signature
       // WildDuck handles ENS/SNS resolution internally
       scope: request.scope || "master", // master scope for full access
       token: request.token !== undefined ? request.token : true, // Request a token to get access token in response
@@ -537,8 +539,10 @@ class WildDuckAPI {
   // ============================================================================
 
   // Create a new user
-  async createUser(request: CreateUserRequest): Promise<CreateUserResponse> {
-    return this.request<CreateUserResponse>("/users", {
+  async createUser(
+    request: WildduckCreateUserRequest,
+  ): Promise<WildduckCreateUserResponse> {
+    return this.request<WildduckCreateUserResponse>("/users", {
       method: "POST",
       body: request,
     });
@@ -547,11 +551,11 @@ class WildDuckAPI {
   // Update user information
   async updateUser(
     userAuth: WildduckUserAuth,
-    request: UpdateUserRequest,
-  ): Promise<SuccessResponse> {
+    request: WildduckUpdateUserRequest,
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
-    return this.request<SuccessResponse>(`/users/${validatedUserId}`, {
+    return this.request<WildduckSuccessResponse>(`/users/${validatedUserId}`, {
       method: "PUT",
       body: request,
       userAuth,
@@ -559,10 +563,12 @@ class WildDuckAPI {
   }
 
   // Delete a user
-  async deleteUser(userAuth: WildduckUserAuth): Promise<SuccessResponse> {
+  async deleteUser(
+    userAuth: WildduckUserAuth,
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
-    return this.request<SuccessResponse>(`/users/${validatedUserId}`, {
+    return this.request<WildduckSuccessResponse>(`/users/${validatedUserId}`, {
       method: "DELETE",
       userAuth,
     });
@@ -576,7 +582,7 @@ class WildDuckAPI {
   async getMailbox(
     userAuth: WildduckUserAuth,
     mailboxId: string,
-  ): Promise<MailboxResponse> {
+  ): Promise<WildduckMailboxResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -585,7 +591,7 @@ class WildDuckAPI {
       );
     }
 
-    return this.request<MailboxResponse>(
+    return this.request<WildduckMailboxResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}`,
       {
         userAuth,
@@ -597,8 +603,8 @@ class WildDuckAPI {
   async updateMailbox(
     userAuth: WildduckUserAuth,
     mailboxId: string,
-    request: UpdateMailboxRequest,
-  ): Promise<SuccessResponse> {
+    request: WildduckUpdateMailboxRequest,
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -607,7 +613,7 @@ class WildDuckAPI {
       );
     }
 
-    return this.request<SuccessResponse>(
+    return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}`,
       {
         method: "PUT",
@@ -621,7 +627,7 @@ class WildDuckAPI {
   async deleteMailbox(
     userAuth: WildduckUserAuth,
     mailboxId: string,
-  ): Promise<SuccessResponse> {
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -630,7 +636,7 @@ class WildDuckAPI {
       );
     }
 
-    return this.request<SuccessResponse>(
+    return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}`,
       {
         method: "DELETE",
@@ -652,7 +658,7 @@ class WildDuckAPI {
       replaceCidLinks?: boolean;
       markAsSeen?: boolean;
     },
-  ): Promise<MessageResponse> {
+  ): Promise<WildduckMessageResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -670,7 +676,7 @@ class WildDuckAPI {
     const query = queryParams.toString();
     const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}${query ? `?${query}` : ""}`;
 
-    return this.request<MessageResponse>(endpoint, {
+    return this.request<WildduckMessageResponse>(endpoint, {
       userAuth,
     });
   }
@@ -679,8 +685,8 @@ class WildDuckAPI {
   async uploadMessage(
     userAuth: WildduckUserAuth,
     mailboxId: string,
-    request: UploadMessageRequest,
-  ): Promise<UploadMessageResponse> {
+    request: WildduckUploadMessageRequest,
+  ): Promise<WildduckUploadMessageResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -689,7 +695,7 @@ class WildDuckAPI {
       );
     }
 
-    return this.request<UploadMessageResponse>(
+    return this.request<WildduckUploadMessageResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages`,
       {
         method: "POST",
@@ -704,8 +710,8 @@ class WildDuckAPI {
     userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
-    request: UpdateMessageRequest,
-  ): Promise<UpdateMessageResponse> {
+    request: WildduckUpdateMessageRequest,
+  ): Promise<WildduckUpdateMessageResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -714,7 +720,7 @@ class WildDuckAPI {
       );
     }
 
-    return this.request<UpdateMessageResponse>(
+    return this.request<WildduckUpdateMessageResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`,
       {
         method: "PUT",
@@ -729,7 +735,7 @@ class WildDuckAPI {
     userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
-  ): Promise<SuccessResponse> {
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -738,7 +744,7 @@ class WildDuckAPI {
       );
     }
 
-    return this.request<SuccessResponse>(
+    return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`,
       {
         method: "DELETE",
@@ -811,8 +817,8 @@ class WildDuckAPI {
     userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
-    request: ForwardMessageRequest,
-  ): Promise<SuccessResponse> {
+    request: WildduckForwardMessageRequest,
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -821,7 +827,7 @@ class WildDuckAPI {
       );
     }
 
-    return this.request<SuccessResponse>(
+    return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/forward`,
       {
         method: "POST",
@@ -836,7 +842,7 @@ class WildDuckAPI {
     userAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
-  ): Promise<SuccessResponse> {
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
@@ -845,7 +851,7 @@ class WildDuckAPI {
       );
     }
 
-    return this.request<SuccessResponse>(
+    return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/submit`,
       {
         method: "POST",
@@ -857,11 +863,11 @@ class WildDuckAPI {
   // Submit a new message for delivery
   async submitMessage(
     userAuth: WildduckUserAuth,
-    request: SubmitMessageRequest,
-  ): Promise<SubmitMessageResponse> {
+    request: WildduckSubmitMessageRequest,
+  ): Promise<WildduckSubmitMessageResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
-    return this.request<SubmitMessageResponse>(
+    return this.request<WildduckSubmitMessageResponse>(
       `/users/${validatedUserId}/submit`,
       {
         method: "POST",
@@ -876,10 +882,12 @@ class WildDuckAPI {
   // ============================================================================
 
   // Get autoreply/vacation responder settings
-  async getAutoreply(userAuth: WildduckUserAuth): Promise<AutoreplyResponse> {
+  async getAutoreply(
+    userAuth: WildduckUserAuth,
+  ): Promise<WildduckAutoreplyResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
-    return this.request<AutoreplyResponse>(
+    return this.request<WildduckAutoreplyResponse>(
       `/users/${validatedUserId}/autoreply`,
       {
         userAuth,
@@ -890,11 +898,11 @@ class WildDuckAPI {
   // Update autoreply/vacation responder settings
   async updateAutoreply(
     userAuth: WildduckUserAuth,
-    request: AutoreplyRequest,
-  ): Promise<SuccessResponse> {
+    request: WildduckAutoreplyRequest,
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
-    return this.request<SuccessResponse>(
+    return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/autoreply`,
       {
         method: "PUT",
@@ -905,10 +913,12 @@ class WildDuckAPI {
   }
 
   // Disable autoreply/vacation responder
-  async deleteAutoreply(userAuth: WildduckUserAuth): Promise<SuccessResponse> {
+  async deleteAutoreply(
+    userAuth: WildduckUserAuth,
+  ): Promise<WildduckSuccessResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
-    return this.request<SuccessResponse>(
+    return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/autoreply`,
       {
         method: "DELETE",

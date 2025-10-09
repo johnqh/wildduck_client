@@ -7,14 +7,14 @@
 // Common Types
 // ============================================================================
 
-export type ObjectId = string; // 24-character hex string
+export type WildduckObjectId = string; // 24-character hex string
 
-export interface Address {
+export interface WildduckAddress {
   name?: string;
   address: string;
 }
 
-export interface Attachment {
+export interface WildduckAttachment {
   id: string;
   hash?: string;
   filename: string;
@@ -25,19 +25,19 @@ export interface Attachment {
   sizeKb: number;
 }
 
-export interface ContentType {
+export interface WildduckContentType {
   value: string;
   params: Record<string, unknown>;
 }
 
-export interface BimiInfo {
+export interface WildduckBimiInfo {
   certified: boolean;
   url: string;
   image: string;
   type?: "VMC" | "CMC";
 }
 
-export interface Limits {
+export interface WildduckLimits {
   quota?: { allowed: number; used: number };
   recipients?: { allowed: number; used: number; ttl: number };
   forwards?: { allowed: number; used: number; ttl: number };
@@ -48,7 +48,7 @@ export interface Limits {
   imapMaxConnections?: { allowed: number; used: number };
 }
 
-export interface KeyInfo {
+export interface WildduckKeyInfo {
   name: string;
   address: string;
   fingerprint: string;
@@ -63,14 +63,14 @@ export interface WildduckUserAuth {
   accessToken: string;
 }
 
-export interface PreAuthRequest {
+export interface WildduckPreAuthRequest {
   username: string;
   scope?: string;
   sess?: string;
   ip?: string;
 }
 
-export interface PreAuthResponse {
+export interface WildduckPreAuthResponse {
   success: boolean;
   id: string;
   username: string;
@@ -79,7 +79,7 @@ export interface PreAuthResponse {
   require2fa: string[];
 }
 
-export interface AuthenticateRequest {
+export interface WildduckAuthenticateRequest {
   username: string;
   password?: string;
   emailDomain?: string;
@@ -94,7 +94,7 @@ export interface AuthenticateRequest {
   ip?: string;
 }
 
-export interface AuthenticateResponse {
+export interface WildduckAuthenticateResponse {
   success: boolean;
   id: string;
   username: string;
@@ -109,7 +109,7 @@ export interface AuthenticateResponse {
 // User Types
 // ============================================================================
 
-export interface CreateUserRequest {
+export interface WildduckCreateUserRequest {
   username: string;
   password?: string;
   hashedPassword?: boolean;
@@ -146,12 +146,12 @@ export interface CreateUserRequest {
   [key: string]: unknown;
 }
 
-export interface CreateUserResponse {
+export interface WildduckCreateUserResponse {
   success: boolean;
   id: string;
 }
 
-export interface UpdateUserRequest {
+export interface WildduckUpdateUserRequest {
   existingPassword?: string;
   password?: string;
   hashedPassword?: boolean;
@@ -186,7 +186,7 @@ export interface UpdateUserRequest {
   [key: string]: unknown;
 }
 
-export interface UserResponse {
+export interface WildduckUserResponse {
   success: boolean;
   id: string;
   username: string;
@@ -201,12 +201,12 @@ export interface UserResponse {
   encryptForwarded: boolean;
   pubKey: string;
   spamLevel: number;
-  keyInfo: KeyInfo;
+  keyInfo: WildduckKeyInfo;
   metaData: Record<string, unknown>;
   internalData: Record<string, unknown>;
   targets: string[];
   mtaRelay?: string;
-  limits: Limits;
+  limits: WildduckLimits;
   fromWhitelist: string[];
   disabledScopes: string[];
   hasPasswordSet: boolean;
@@ -216,7 +216,7 @@ export interface UserResponse {
   tags: string[];
 }
 
-export interface UserListItem {
+export interface WildduckUserListItem {
   id: string;
   username: string;
   name: string;
@@ -239,40 +239,40 @@ export interface UserListItem {
   suspended: boolean;
 }
 
-export interface UserListResponse {
+export interface WildduckUserListResponse {
   success: boolean;
   query: string;
   total: number;
   page: number;
   previousCursor: string | false;
   nextCursor: string | false;
-  results: UserListItem[];
+  results: WildduckUserListItem[];
 }
 
-export interface ResolveUserResponse {
+export interface WildduckResolveUserResponse {
   success: boolean;
   id: string;
 }
 
-export interface LogoutUserRequest {
+export interface WildduckLogoutUserRequest {
   reason?: string;
   sess?: string;
   ip?: string;
 }
 
-export interface QuotaResetResponse {
+export interface WildduckQuotaResetResponse {
   success: boolean;
   storageUsed: number;
   previousStorageUsed: number;
 }
 
-export interface PasswordResetRequest {
+export interface WildduckPasswordResetRequest {
   validAfter?: string;
   sess?: string;
   ip?: string;
 }
 
-export interface PasswordResetResponse {
+export interface WildduckPasswordResetResponse {
   success: boolean;
   password: string;
   validAfter: string;
@@ -282,7 +282,7 @@ export interface PasswordResetResponse {
 // Mailbox Types
 // ============================================================================
 
-export interface MailboxListItem {
+export interface WildduckMailboxListItem {
   id: string;
   name: string;
   path: string;
@@ -295,12 +295,12 @@ export interface MailboxListItem {
   size?: number;
 }
 
-export interface MailboxListResponse {
+export interface WildduckMailboxListResponse {
   success: boolean;
-  results: MailboxListItem[];
+  results: WildduckMailboxListItem[];
 }
 
-export interface CreateMailboxRequest {
+export interface WildduckCreateMailboxRequest {
   path: string;
   hidden?: boolean;
   retention?: number;
@@ -308,12 +308,12 @@ export interface CreateMailboxRequest {
   ip?: string;
 }
 
-export interface CreateMailboxResponse {
+export interface WildduckCreateMailboxResponse {
   success: boolean;
   id: string;
 }
 
-export interface MailboxResponse {
+export interface WildduckMailboxResponse {
   success: boolean;
   id: string;
   name: string;
@@ -326,7 +326,7 @@ export interface MailboxResponse {
   unseen: number;
 }
 
-export interface UpdateMailboxRequest {
+export interface WildduckUpdateMailboxRequest {
   path?: string;
   retention?: number;
   subscribed?: boolean;
@@ -340,22 +340,22 @@ export interface UpdateMailboxRequest {
 // Message Types
 // ============================================================================
 
-export interface MessageListItem {
+export interface WildduckMessageListItem {
   id: number;
   mailbox: string;
   thread: string;
   threadMessageCount?: number;
-  from: Address;
-  to: Address[];
-  cc: Address[];
-  bcc: Address[];
+  from: WildduckAddress;
+  to: WildduckAddress[];
+  cc: WildduckAddress[];
+  bcc: WildduckAddress[];
   messageId: string;
   subject: string;
   date: string;
   idate?: string;
   intro: string;
   attachments: boolean;
-  attachmentsList?: Attachment[];
+  attachmentsList?: WildduckAttachment[];
   size: number;
   seen: boolean;
   deleted: boolean;
@@ -364,24 +364,24 @@ export interface MessageListItem {
   answered: boolean;
   forwarded: boolean;
   references: string[];
-  bimi?: BimiInfo;
-  contentType: ContentType;
+  bimi?: WildduckBimiInfo;
+  contentType: WildduckContentType;
   encrypted?: boolean;
   metaData?: Record<string, unknown>;
   headers?: Record<string, string>;
 }
 
-export interface MessageListResponse {
+export interface WildduckMessageListResponse {
   success: boolean;
   total: number;
   page: number;
   previousCursor: string | false;
   nextCursor: string | false;
   specialUse: string;
-  results: MessageListItem[];
+  results: WildduckMessageListItem[];
 }
 
-export interface MessageResponse {
+export interface WildduckMessageResponse {
   success: boolean;
   id: number;
   mailbox: string;
@@ -394,11 +394,11 @@ export interface MessageResponse {
     }>;
   };
   thread: string;
-  from: Address;
-  replyTo?: Address;
-  to?: Address;
-  cc?: Address;
-  bcc?: Address;
+  from: WildduckAddress;
+  replyTo?: WildduckAddress;
+  to?: WildduckAddress;
+  cc?: WildduckAddress;
+  bcc?: WildduckAddress;
   subject: string;
   messageId: string;
   date: string;
@@ -415,14 +415,14 @@ export interface MessageResponse {
   draft: boolean;
   html?: string[];
   text?: string;
-  attachments?: Attachment[];
+  attachments?: WildduckAttachment[];
   verificationResults?: {
     tls?: { name: unknown; version: unknown };
     spf?: unknown;
     dkim?: unknown;
   };
-  bimi?: BimiInfo;
-  contentType: ContentType;
+  bimi?: WildduckBimiInfo;
+  contentType: WildduckContentType;
   metaData?: Record<string, unknown>;
   references: string[];
   files?: Record<string, unknown>;
@@ -434,7 +434,7 @@ export interface MessageResponse {
   encrypted?: boolean;
 }
 
-export interface SearchMessagesRequest {
+export interface WildduckSearchMessagesRequest {
   q?: string;
   mailbox?: string;
   id?: string;
@@ -467,7 +467,8 @@ export interface SearchMessagesRequest {
   ip?: string;
 }
 
-export interface SearchApplyRequest extends SearchMessagesRequest {
+export interface WildduckSearchApplyRequest
+  extends WildduckSearchMessagesRequest {
   action: {
     moveTo?: string;
     seen?: boolean;
@@ -475,13 +476,13 @@ export interface SearchApplyRequest extends SearchMessagesRequest {
   };
 }
 
-export interface SearchApplyResponse {
+export interface WildduckSearchApplyResponse {
   success: boolean;
   scheduled: string;
   existing: boolean;
 }
 
-export interface UpdateMessageRequest {
+export interface WildduckUpdateMessageRequest {
   message?: string;
   moveTo?: string;
   seen?: boolean;
@@ -495,24 +496,24 @@ export interface UpdateMessageRequest {
   [key: string]: unknown;
 }
 
-export interface UpdateMessageResponse {
+export interface WildduckUpdateMessageResponse {
   success: boolean;
   id?: Array<[number, number]>;
   mailbox?: string;
   updated?: number;
 }
 
-export interface UploadMessageRequest {
+export interface WildduckUploadMessageRequest {
   date?: string;
   unseen?: boolean;
   flagged?: boolean;
   draft?: boolean;
   raw?: string;
-  from?: Address;
-  replyTo?: Address;
-  to?: Address[];
-  cc?: Address[];
-  bcc?: Address[];
+  from?: WildduckAddress;
+  replyTo?: WildduckAddress;
+  to?: WildduckAddress[];
+  cc?: WildduckAddress[];
+  bcc?: WildduckAddress[];
   headers?: Array<{ key: string; value: string }>;
   subject?: string;
   text?: string;
@@ -544,7 +545,7 @@ export interface UploadMessageRequest {
   [key: string]: unknown;
 }
 
-export interface UploadMessageResponse {
+export interface WildduckUploadMessageResponse {
   success: boolean;
   message: {
     id: number;
@@ -552,18 +553,18 @@ export interface UploadMessageResponse {
   };
 }
 
-export interface ForwardMessageRequest {
+export interface WildduckForwardMessageRequest {
   target: number;
   sess?: string;
   ip?: string;
   [key: string]: unknown;
 }
 
-export interface SubmitMessageRequest {
-  from?: Address;
-  to: Address[];
-  cc?: Address[];
-  bcc?: Address[];
+export interface WildduckSubmitMessageRequest {
+  from?: WildduckAddress;
+  to: WildduckAddress[];
+  cc?: WildduckAddress[];
+  bcc?: WildduckAddress[];
   subject?: string;
   text?: string;
   html?: string;
@@ -580,7 +581,7 @@ export interface SubmitMessageRequest {
   [key: string]: unknown;
 }
 
-export interface SubmitMessageResponse {
+export interface WildduckSubmitMessageResponse {
   success: boolean;
   message: {
     id: string;
@@ -593,7 +594,7 @@ export interface SubmitMessageResponse {
 // Address Types
 // ============================================================================
 
-export interface AddressListItem {
+export interface WildduckAddressListItem {
   id: string;
   name: string;
   address: string;
@@ -602,12 +603,12 @@ export interface AddressListItem {
   created: string;
 }
 
-export interface AddressListResponse {
+export interface WildduckAddressListResponse {
   success: boolean;
-  results: AddressListItem[];
+  results: WildduckAddressListItem[];
 }
 
-export interface CreateAddressRequest {
+export interface WildduckCreateAddressRequest {
   address: string;
   name?: string;
   main?: boolean;
@@ -616,12 +617,12 @@ export interface CreateAddressRequest {
   ip?: string;
 }
 
-export interface CreateAddressResponse {
+export interface WildduckCreateAddressResponse {
   success: boolean;
   id: string;
 }
 
-export interface UpdateAddressRequest {
+export interface WildduckUpdateAddressRequest {
   name?: string;
   main?: boolean;
   tags?: string[];
@@ -629,7 +630,7 @@ export interface UpdateAddressRequest {
   ip?: string;
 }
 
-export interface ForwardedAddressListItem {
+export interface WildduckForwardedAddressListItem {
   id: string;
   address: string;
   name: string;
@@ -640,12 +641,12 @@ export interface ForwardedAddressListItem {
   created: string;
 }
 
-export interface ForwardedAddressListResponse {
+export interface WildduckForwardedAddressListResponse {
   success: boolean;
-  results: ForwardedAddressListItem[];
+  results: WildduckForwardedAddressListItem[];
 }
 
-export interface CreateForwardedAddressRequest {
+export interface WildduckCreateForwardedAddressRequest {
   address: string;
   name?: string;
   targets: string[];
@@ -656,7 +657,7 @@ export interface CreateForwardedAddressRequest {
   ip?: string;
 }
 
-export interface UpdateForwardedAddressRequest {
+export interface WildduckUpdateForwardedAddressRequest {
   name?: string;
   targets?: string[];
   forwards?: number;
@@ -666,7 +667,7 @@ export interface UpdateForwardedAddressRequest {
   ip?: string;
 }
 
-export interface ResolveAddressResponse {
+export interface WildduckResolveAddressResponse {
   success: boolean;
   id: string;
 }
@@ -675,7 +676,7 @@ export interface ResolveAddressResponse {
 // Filter Types
 // ============================================================================
 
-export interface FilterQuery {
+export interface WildduckFilterQuery {
   from?: string;
   to?: string;
   subject?: string;
@@ -684,7 +685,7 @@ export interface FilterQuery {
   size?: number;
 }
 
-export interface FilterAction {
+export interface WildduckFilterAction {
   seen?: boolean;
   flag?: boolean;
   delete?: boolean;
@@ -694,49 +695,49 @@ export interface FilterAction {
   forward?: string;
 }
 
-export interface FilterListItem {
+export interface WildduckFilterListItem {
   id: string;
   name: string;
-  query: FilterQuery;
-  action: FilterAction;
+  query: WildduckFilterQuery;
+  action: WildduckFilterAction;
   disabled: boolean;
   created: string;
 }
 
-export interface FilterListResponse {
+export interface WildduckFilterListResponse {
   success: boolean;
-  results: FilterListItem[];
+  results: WildduckFilterListItem[];
 }
 
-export interface CreateFilterRequest {
+export interface WildduckCreateFilterRequest {
   name: string;
-  query: FilterQuery;
-  action: FilterAction;
+  query: WildduckFilterQuery;
+  action: WildduckFilterAction;
   disabled?: boolean;
   sess?: string;
   ip?: string;
 }
 
-export interface CreateFilterResponse {
+export interface WildduckCreateFilterResponse {
   success: boolean;
   id: string;
 }
 
-export interface UpdateFilterRequest {
+export interface WildduckUpdateFilterRequest {
   name?: string;
-  query?: FilterQuery;
-  action?: FilterAction;
+  query?: WildduckFilterQuery;
+  action?: WildduckFilterAction;
   disabled?: boolean;
   sess?: string;
   ip?: string;
 }
 
-export interface FilterResponse {
+export interface WildduckFilterResponse {
   success: boolean;
   id: string;
   name: string;
-  query: FilterQuery;
-  action: FilterAction;
+  query: WildduckFilterQuery;
+  action: WildduckFilterAction;
   disabled: boolean;
   created: string;
 }
@@ -745,7 +746,7 @@ export interface FilterResponse {
 // Autoreply Types
 // ============================================================================
 
-export interface AutoreplyRequest {
+export interface WildduckAutoreplyRequest {
   status?: boolean;
   name?: string;
   subject?: string;
@@ -758,7 +759,7 @@ export interface AutoreplyRequest {
   [key: string]: unknown;
 }
 
-export interface AutoreplyResponse {
+export interface WildduckAutoreplyResponse {
   success: boolean;
   status: boolean;
   name: string;
@@ -773,7 +774,7 @@ export interface AutoreplyResponse {
 // Application-Specific Password Types
 // ============================================================================
 
-export interface ASPListItem {
+export interface WildduckASPListItem {
   id: string;
   description: string;
   scopes: string[];
@@ -786,12 +787,12 @@ export interface ASPListItem {
   created: string;
 }
 
-export interface ASPListResponse {
+export interface WildduckASPListResponse {
   success: boolean;
-  results: ASPListItem[];
+  results: WildduckASPListItem[];
 }
 
-export interface CreateASPRequest {
+export interface WildduckCreateASPRequest {
   description: string;
   scopes: string[];
   generateMobileconfig?: boolean;
@@ -799,14 +800,14 @@ export interface CreateASPRequest {
   ip?: string;
 }
 
-export interface CreateASPResponse {
+export interface WildduckCreateASPResponse {
   success: boolean;
   id: string;
   password: string;
   mobileconfig?: string;
 }
 
-export interface ASPResponse {
+export interface WildduckASPResponse {
   success: boolean;
   id: string;
   description: string;
@@ -824,7 +825,7 @@ export interface ASPResponse {
 // Storage Types
 // ============================================================================
 
-export interface StorageUploadRequest {
+export interface WildduckStorageUploadRequest {
   filename: string;
   contentType: string;
   encoding?: string;
@@ -833,12 +834,12 @@ export interface StorageUploadRequest {
   ip?: string;
 }
 
-export interface StorageUploadResponse {
+export interface WildduckStorageUploadResponse {
   success: boolean;
   id: string;
 }
 
-export interface StorageListItem {
+export interface WildduckStorageListItem {
   id: string;
   filename: string;
   contentType: string;
@@ -846,33 +847,33 @@ export interface StorageListItem {
   created: string;
 }
 
-export interface StorageListResponse {
+export interface WildduckStorageListResponse {
   success: boolean;
-  results: StorageListItem[];
+  results: WildduckStorageListItem[];
 }
 
 // ============================================================================
 // Settings Types
 // ============================================================================
 
-export interface SettingItem {
+export interface WildduckSettingItem {
   key: string;
   value: unknown;
   description: string;
 }
 
-export interface SettingsListResponse {
+export interface WildduckSettingsListResponse {
   success: boolean;
-  results: SettingItem[];
+  results: WildduckSettingItem[];
 }
 
-export interface SettingResponse {
+export interface WildduckSettingResponse {
   success: boolean;
   key: string;
   value: unknown;
 }
 
-export interface UpdateSettingRequest {
+export interface WildduckUpdateSettingRequest {
   value: unknown;
 }
 
@@ -880,7 +881,7 @@ export interface UpdateSettingRequest {
 // Health Types
 // ============================================================================
 
-export interface HealthResponse {
+export interface WildduckHealthResponse {
   success: boolean;
   version: string;
   mongodb: {
@@ -903,7 +904,7 @@ export interface HealthResponse {
 // Webhook Types
 // ============================================================================
 
-export interface WebhookListItem {
+export interface WildduckWebhookListItem {
   id: string;
   type: string;
   user: string;
@@ -911,12 +912,12 @@ export interface WebhookListItem {
   created: string;
 }
 
-export interface WebhookListResponse {
+export interface WildduckWebhookListResponse {
   success: boolean;
-  results: WebhookListItem[];
+  results: WildduckWebhookListItem[];
 }
 
-export interface CreateWebhookRequest {
+export interface WildduckCreateWebhookRequest {
   type: string;
   user: string;
   url: string;
@@ -924,7 +925,7 @@ export interface CreateWebhookRequest {
   ip?: string;
 }
 
-export interface CreateWebhookResponse {
+export interface WildduckCreateWebhookResponse {
   success: boolean;
   id: string;
 }
@@ -933,7 +934,7 @@ export interface CreateWebhookResponse {
 // Audit Types
 // ============================================================================
 
-export interface CreateAuditRequest {
+export interface WildduckCreateAuditRequest {
   user: string;
   start: string;
   end: string;
@@ -942,12 +943,12 @@ export interface CreateAuditRequest {
   ip?: string;
 }
 
-export interface CreateAuditResponse {
+export interface WildduckCreateAuditResponse {
   success: boolean;
   id: string;
 }
 
-export interface AuditResponse {
+export interface WildduckAuditResponse {
   success: boolean;
   id: string;
   user: string;
@@ -965,7 +966,7 @@ export interface AuditResponse {
 // DKIM Types
 // ============================================================================
 
-export interface DKIMListItem {
+export interface WildduckDKIMListItem {
   id: string;
   domain: string;
   selector: string;
@@ -974,12 +975,12 @@ export interface DKIMListItem {
   created: string;
 }
 
-export interface DKIMListResponse {
+export interface WildduckDKIMListResponse {
   success: boolean;
-  results: DKIMListItem[];
+  results: WildduckDKIMListItem[];
 }
 
-export interface CreateDKIMRequest {
+export interface WildduckCreateDKIMRequest {
   domain: string;
   selector: string;
   description?: string;
@@ -988,7 +989,7 @@ export interface CreateDKIMRequest {
   ip?: string;
 }
 
-export interface CreateDKIMResponse {
+export interface WildduckCreateDKIMResponse {
   success: boolean;
   id: string;
   domain: string;
@@ -1003,11 +1004,11 @@ export interface CreateDKIMResponse {
 // Success Response Types
 // ============================================================================
 
-export interface SuccessResponse {
+export interface WildduckSuccessResponse {
   success: boolean;
 }
 
-export interface DeleteResponse {
+export interface WildduckDeleteResponse {
   success: boolean;
 }
 
@@ -1015,7 +1016,7 @@ export interface DeleteResponse {
 // Error Response
 // ============================================================================
 
-export interface ErrorResponse {
+export interface WildduckErrorResponse {
   error: string;
   code: string;
   details?: unknown;
@@ -1025,7 +1026,7 @@ export interface ErrorResponse {
 // Common Query Parameters
 // ============================================================================
 
-export interface PaginationParams {
+export interface WildduckPaginationParams {
   limit?: number;
   next?: string;
   previous?: string;
@@ -1034,7 +1035,7 @@ export interface PaginationParams {
   ip?: string;
 }
 
-export interface SessionParams {
+export interface WildduckSessionParams {
   sess?: string;
   ip?: string;
 }

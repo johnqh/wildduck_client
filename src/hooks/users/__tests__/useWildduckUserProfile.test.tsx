@@ -4,7 +4,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUserProfile } from "../useWildduckUserProfile";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
-import type { UserResponse } from "../../../types/wildduck-types";
+import type { WildduckUserResponse } from "../../../types/wildduck-types";
 
 const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
 
@@ -34,7 +34,7 @@ describe("useUserProfile", () => {
 
   describe("query", () => {
     it("should fetch user profile successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -82,7 +82,7 @@ describe("useUserProfile", () => {
     });
 
     it("should handle minimal user profile", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "minimal",
         name: "Minimal User",
@@ -135,7 +135,7 @@ describe("useUserProfile", () => {
 
   describe("updateProfile mutation", () => {
     it("should update profile successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -173,7 +173,7 @@ describe("useUserProfile", () => {
     });
 
     it("should invalidate queries after successful update", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -214,7 +214,7 @@ describe("useUserProfile", () => {
 
   describe("updatePassword mutation", () => {
     it("should update password successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -248,7 +248,7 @@ describe("useUserProfile", () => {
     });
 
     it("should update password with existing password verification", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -286,7 +286,7 @@ describe("useUserProfile", () => {
 
   describe("updateTags mutation", () => {
     it("should update tags successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -322,7 +322,7 @@ describe("useUserProfile", () => {
 
   describe("setAccountStatus mutation", () => {
     it("should disable account successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -356,7 +356,7 @@ describe("useUserProfile", () => {
     });
 
     it("should suspend account successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -390,7 +390,7 @@ describe("useUserProfile", () => {
     });
 
     it("should update both disabled and suspended status", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -426,7 +426,7 @@ describe("useUserProfile", () => {
     });
 
     it("should handle only undefined values correctly", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",
@@ -457,7 +457,7 @@ describe("useUserProfile", () => {
     });
 
     it("should invalidate queries after status update", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         username: "testuser",
         name: "Test User",

@@ -4,16 +4,16 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  SuccessResponse,
-  UpdateUserRequest,
+  WildduckSuccessResponse,
+  WildduckUpdateUserRequest,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseUpdateUserReturn {
   updateUser: (
     userAuth: WildduckUserAuth,
-    params: UpdateUserRequest,
-  ) => Promise<SuccessResponse>;
+    params: WildduckUpdateUserRequest,
+  ) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -51,8 +51,8 @@ export const useWildduckUpdateUser = (
       params,
     }: {
       userAuth: WildduckUserAuth;
-      params: UpdateUserRequest;
-    }): Promise<SuccessResponse> => {
+      params: WildduckUpdateUserRequest;
+    }): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.updateUser(userAuth, params);
       } catch (err) {
@@ -78,7 +78,7 @@ export const useWildduckUpdateUser = (
   });
 
   const updateUser = useCallback(
-    async (userAuth: WildduckUserAuth, params: UpdateUserRequest) => {
+    async (userAuth: WildduckUserAuth, params: WildduckUpdateUserRequest) => {
       return updateMutation.mutateAsync({ userAuth, params });
     },
     [updateMutation],

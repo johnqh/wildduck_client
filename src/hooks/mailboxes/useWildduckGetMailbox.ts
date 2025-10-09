@@ -4,7 +4,7 @@ import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import { type WildDuckConfig } from "@johnqh/types";
 import type {
-  MailboxResponse,
+  WildduckMailboxResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
@@ -60,7 +60,7 @@ export const useWildduckGetMailbox = (
             hidden: false,
             total: 0,
             unseen: 0,
-          } as MailboxResponse;
+          } as WildduckMailboxResponse;
         }
         throw err;
       }

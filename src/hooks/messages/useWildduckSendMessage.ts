@@ -4,16 +4,16 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  SubmitMessageRequest,
-  SubmitMessageResponse,
+  WildduckSubmitMessageRequest,
+  WildduckSubmitMessageResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseWildduckSendMessageReturn {
   sendMessage: (
     userAuth: WildduckUserAuth,
-    params: SubmitMessageRequest,
-  ) => Promise<SubmitMessageResponse>;
+    params: WildduckSubmitMessageRequest,
+  ) => Promise<WildduckSubmitMessageResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -51,8 +51,8 @@ export const useWildduckSendMessage = (
       params,
     }: {
       userAuth: WildduckUserAuth;
-      params: SubmitMessageRequest;
-    }): Promise<SubmitMessageResponse> => {
+      params: WildduckSubmitMessageRequest;
+    }): Promise<WildduckSubmitMessageResponse> => {
       try {
         return await wildduckClient.submitMessage(userAuth, params);
       } catch (err) {
@@ -68,7 +68,7 @@ export const useWildduckSendMessage = (
               from: "mock@example.com",
               to: ["recipient@example.com"],
             },
-          } as SubmitMessageResponse;
+          } as WildduckSubmitMessageResponse;
         }
         throw err;
       }
@@ -82,7 +82,10 @@ export const useWildduckSendMessage = (
   });
 
   const sendMessage = useCallback(
-    async (userAuth: WildduckUserAuth, params: SubmitMessageRequest) => {
+    async (
+      userAuth: WildduckUserAuth,
+      params: WildduckSubmitMessageRequest,
+    ) => {
       return sendMutation.mutateAsync({ userAuth, params });
     },
     [sendMutation],

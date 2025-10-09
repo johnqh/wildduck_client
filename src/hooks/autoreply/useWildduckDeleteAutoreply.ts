@@ -4,12 +4,14 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  SuccessResponse,
+  WildduckSuccessResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseWildduckDeleteAutoreplyReturn {
-  deleteAutoreply: (userAuth: WildduckUserAuth) => Promise<SuccessResponse>;
+  deleteAutoreply: (
+    userAuth: WildduckUserAuth,
+  ) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -44,7 +46,7 @@ export const useWildduckDeleteAutoreply = (
     ],
     mutationFn: async (
       userAuth: WildduckUserAuth,
-    ): Promise<SuccessResponse> => {
+    ): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.deleteAutoreply(userAuth);
       } catch (err) {

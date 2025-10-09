@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
 import type {
-  Limits,
-  UserResponse,
+  WildduckLimits,
   WildduckUserAuth,
+  WildduckUserResponse,
 } from "../../types/wildduck-types";
 
-export interface UpdateLimitsParams {
+export interface UpdateWildduckLimitsParams {
   userAuth: WildduckUserAuth;
   recipients?: number; // How many messages per 24 hour can be sent
   forwards?: number; // How many messages per 24 hour can be forwarded
@@ -33,9 +33,11 @@ export const useWildduckUserLimits = (
   // Query to get user limits
   const limitsQuery = useQuery({
     queryKey: ["user", userId, "limits"],
-    queryFn: async (): Promise<Limits | undefined> => {
+    queryFn: async (): Promise<WildduckLimits | undefined> => {
       if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       return user.limits;
     },
     enabled: !!userAuth,
@@ -43,7 +45,7 @@ export const useWildduckUserLimits = (
 
   // Mutation to update limits
   const updateLimits = useMutation({
-    mutationFn: async (params: UpdateLimitsParams) => {
+    mutationFn: async (params: UpdateWildduckLimitsParams) => {
       const { userAuth, ...limits } = params;
       return await api.updateUser(userAuth, limits);
     },

@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
 import type {
-  UserResponse,
   WildduckUserAuth,
+  WildduckUserResponse,
 } from "../../types/wildduck-types";
 
 export interface ForwardingSettings {
@@ -32,7 +32,9 @@ export const useWildduckUserForwarding = (
     queryKey: ["user", userId, "forwarding"],
     queryFn: async (): Promise<ForwardingSettings | undefined> => {
       if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       return {
         targets: user.targets || [],
         mtaRelay: user.mtaRelay,
@@ -67,7 +69,9 @@ export const useWildduckUserForwarding = (
       target: string;
     }) => {
       // Get current targets and add new one
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       const currentTargets = user.targets || [];
       const newTargets = [...currentTargets, target];
       return await api.updateUser(userAuth, { targets: newTargets });
@@ -92,7 +96,9 @@ export const useWildduckUserForwarding = (
       target: string;
     }) => {
       // Get current targets and remove specified one
-      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
+      const user = (await api.getUser(
+        userAuth,
+      )) as unknown as WildduckUserResponse;
       const currentTargets = user.targets || [];
       const newTargets = currentTargets.filter((t: string) => t !== target);
       return await api.updateUser(userAuth, { targets: newTargets });

@@ -4,16 +4,16 @@ import { type NetworkClient } from "@johnqh/di";
 import { type Optional, type WildDuckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  AutoreplyRequest,
-  SuccessResponse,
+  WildduckAutoreplyRequest,
+  WildduckSuccessResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
 interface UseWildduckUpdateAutoreplyReturn {
   updateAutoreply: (
     userAuth: WildduckUserAuth,
-    params: AutoreplyRequest,
-  ) => Promise<SuccessResponse>;
+    params: WildduckAutoreplyRequest,
+  ) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -51,8 +51,8 @@ export const useWildduckUpdateAutoreply = (
       params,
     }: {
       userAuth: WildduckUserAuth;
-      params: AutoreplyRequest;
-    }): Promise<SuccessResponse> => {
+      params: WildduckAutoreplyRequest;
+    }): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.updateAutoreply(userAuth, params);
       } catch (err) {
@@ -75,7 +75,7 @@ export const useWildduckUpdateAutoreply = (
   });
 
   const updateAutoreply = useCallback(
-    async (userAuth: WildduckUserAuth, params: AutoreplyRequest) => {
+    async (userAuth: WildduckUserAuth, params: WildduckAutoreplyRequest) => {
       return updateMutation.mutateAsync({ userAuth, params });
     },
     [updateMutation],

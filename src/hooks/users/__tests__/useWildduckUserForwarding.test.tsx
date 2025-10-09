@@ -4,7 +4,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUserForwarding } from "../useWildduckUserForwarding";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
-import type { UserResponse } from "../../../types/wildduck-types";
+import type { WildduckUserResponse } from "../../../types/wildduck-types";
 
 const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
 
@@ -34,7 +34,7 @@ describe("useUserForwarding", () => {
 
   describe("query", () => {
     it("should fetch user forwarding settings successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: ["forward@example.com", "backup@example.org"],
         mtaRelay: "smtp://mx.example.com:25",
@@ -62,7 +62,7 @@ describe("useUserForwarding", () => {
     });
 
     it("should handle empty targets array", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: [],
       };
@@ -108,7 +108,7 @@ describe("useUserForwarding", () => {
 
   describe("updateForwarding mutation", () => {
     it("should update forwarding settings successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: [],
       };
@@ -140,7 +140,7 @@ describe("useUserForwarding", () => {
 
   describe("addTarget mutation", () => {
     it("should add forwarding target successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: ["existing@example.com"],
       };
@@ -167,7 +167,7 @@ describe("useUserForwarding", () => {
     });
 
     it("should add target to empty list", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: [],
       };
@@ -195,7 +195,7 @@ describe("useUserForwarding", () => {
 
   describe("removeTarget mutation", () => {
     it("should remove forwarding target successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: ["keep@example.com", "remove@example.com"],
       };
@@ -222,7 +222,7 @@ describe("useUserForwarding", () => {
     });
 
     it("should handle removing non-existent target", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: ["existing@example.com"],
       };
@@ -250,7 +250,7 @@ describe("useUserForwarding", () => {
 
   describe("clearTargets mutation", () => {
     it("should clear all forwarding targets successfully", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: ["target1@example.com", "target2@example.com"],
       };
@@ -273,7 +273,7 @@ describe("useUserForwarding", () => {
     });
 
     it("should invalidate queries after clearing targets", async () => {
-      const mockUser: Partial<UserResponse> = {
+      const mockUser: Partial<WildduckUserResponse> = {
         id: "user123",
         targets: ["target@example.com"],
       };
