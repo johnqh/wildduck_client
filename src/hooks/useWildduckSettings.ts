@@ -1,8 +1,8 @@
-import { Optional } from "@johnqh/types";
 import { useCallback, useState } from "react";
 import axios from "axios";
-import { WildDuckConfig } from "@johnqh/types";
-import { WildDuckMockData } from "./mocks";
+import type { Optional } from "@johnqh/types";
+import type { WildduckConfig } from "../types/wildduck-types";
+import { WildduckMockData } from "./mocks";
 
 interface WildduckSettings {
   [key: string]: any;
@@ -20,10 +20,10 @@ interface UseWildduckSettingsReturn {
 }
 
 /**
- * Hook for WildDuck settings management operations
+ * Hook for Wildduck settings management operations
  */
 const useWildduckSettings = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckSettingsReturn => {
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +66,7 @@ const useWildduckSettings = (
           "[DevMode] Get settings failed, returning mock data:",
           err,
         );
-        const mockData = WildDuckMockData.getSettings();
+        const mockData = WildduckMockData.getSettings();
         const mockSettings = mockData.data.settings.reduce(
           (acc: WildduckSettings, setting: any) => {
             acc[setting.key] = setting.value;
@@ -125,7 +125,7 @@ const useWildduckSettings = (
             err,
           );
           setSettings((prev) => ({ ...prev, [key]: value }));
-          return WildDuckMockData.getUpdateSetting();
+          return WildduckMockData.getUpdateSetting();
         }
 
         const errorMessage =
@@ -180,7 +180,7 @@ const useWildduckSettings = (
             const { [key]: _removed, ...rest } = prev;
             return rest;
           });
-          return WildDuckMockData.getDeleteSetting();
+          return WildduckMockData.getDeleteSetting();
         }
 
         const errorMessage =

@@ -1,8 +1,8 @@
-import { Optional } from "@johnqh/types";
 import { useCallback, useState } from "react";
 import axios from "axios";
-import { WildDuckConfig } from "@johnqh/types";
-import { WildDuckMockData } from "./mocks";
+import type { Optional } from "@johnqh/types";
+import type { WildduckConfig } from "../types/wildduck-types";
+import { WildduckMockData } from "./mocks";
 
 interface WildduckFilter {
   id: string;
@@ -96,10 +96,10 @@ interface UseWildduckFiltersReturn {
 }
 
 /**
- * Hook for WildDuck filter management operations
+ * Hook for Wildduck filter management operations
  */
 const useWildduckFilters = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckFiltersReturn => {
   const [isLoading, setIsLoading] = useState(false);
@@ -144,7 +144,7 @@ const useWildduckFilters = (
             "[DevMode] Get filters failed, returning mock data:",
             err,
           );
-          const mockData = WildDuckMockData.getFilters();
+          const mockData = WildduckMockData.getFilters();
           const mockFilters = mockData.data
             .filters as unknown as WildduckFilter[];
           setFilters(mockFilters);
@@ -195,7 +195,7 @@ const useWildduckFilters = (
             "[DevMode] Get filter failed, returning mock data:",
             err,
           );
-          const mockData = WildDuckMockData.getFilter(filterId);
+          const mockData = WildduckMockData.getFilter(filterId);
           return mockData.data.filter as unknown as WildduckFilter;
         }
 
@@ -246,7 +246,7 @@ const useWildduckFilters = (
             "[DevMode] Create filter failed, returning mock success:",
             err,
           );
-          return WildDuckMockData.getCreateFilter();
+          return WildduckMockData.getCreateFilter();
         }
 
         const errorMessage =
@@ -297,7 +297,7 @@ const useWildduckFilters = (
             "[DevMode] Update filter failed, returning mock success:",
             err,
           );
-          return WildDuckMockData.getUpdateFilter();
+          return WildduckMockData.getUpdateFilter();
         }
 
         const errorMessage =
@@ -343,7 +343,7 @@ const useWildduckFilters = (
             "[DevMode] Delete filter failed, returning mock success:",
             err,
           );
-          return WildDuckMockData.getDeleteFilter();
+          return WildduckMockData.getDeleteFilter();
         }
 
         const errorMessage =

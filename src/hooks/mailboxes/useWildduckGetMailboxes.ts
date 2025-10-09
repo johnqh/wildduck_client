@@ -1,8 +1,11 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { WildDuckAPI } from "../../network/wildduck-client";
+import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type GetMailboxesRequest, type WildDuckConfig } from "@johnqh/types";
+import {
+  type GetMailboxesRequest,
+  type WildduckConfig,
+} from "../../types/wildduck-types";
 import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 export interface UseWildduckGetMailboxesParams {
@@ -16,19 +19,19 @@ export interface UseWildduckGetMailboxesParams {
  * Requires user authentication
  *
  * @param networkClient - Network client for API calls
- * @param config - WildDuck API configuration
+ * @param config - Wildduck API configuration
  * @param params - Query parameters including userAuth and optional filters
  * @returns React Query result with mailboxes list
  */
 export const useWildduckGetMailboxes = (
   networkClient: NetworkClient,
-  config: WildDuckConfig,
+  config: WildduckConfig,
   params: UseWildduckGetMailboxesParams = {},
 ) => {
   const { userAuth, options, devMode = false } = params;
 
   const api = useMemo(
-    () => new WildDuckAPI(networkClient, config),
+    () => new WildduckAPI(networkClient, config),
     [networkClient, config],
   );
 

@@ -3,14 +3,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUserLimits } from "../useWildduckUserLimits";
-import type { WildDuckAPI } from "../../../network/wildduck-client";
+import type { WildduckAPI } from "../../../network/wildduck-client";
 import type { WildduckUserResponse } from "../../../types/wildduck-types";
 
 const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
 
 describe("useUserLimits", () => {
   let queryClient: QueryClient;
-  let mockApi: WildDuckAPI;
+  let mockApi: WildduckAPI;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -23,7 +23,7 @@ describe("useUserLimits", () => {
     mockApi = {
       getUser: vi.fn(),
       updateUser: vi.fn(),
-    } as unknown as WildDuckAPI;
+    } as unknown as WildduckAPI;
 
     vi.clearAllMocks();
   });

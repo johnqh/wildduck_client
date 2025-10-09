@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WildDuckAPI } from "../../network/wildduck-client";
+import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
   WildduckUserAuth,
   WildduckUserResponse,
@@ -21,7 +21,7 @@ export interface UpdateSpamParams {
  * Controls spam detection sensitivity and whitelisted senders
  */
 export const useWildduckUserSpam = (
-  api: WildDuckAPI,
+  api: WildduckAPI,
   userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();

@@ -1,5 +1,5 @@
 /**
- * Individual hooks for WildDuck Messages API
+ * Individual hooks for Wildduck Messages API
  * Each hook is isolated with its own state management
  */
 

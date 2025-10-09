@@ -1,21 +1,21 @@
+import type { Optional } from "@johnqh/types";
 import { useCallback, useMemo } from "react";
-import { WildDuckAPI } from "../../network/wildduck-client";
+import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
 import {
   type CreateMailboxRequest,
-  type Optional,
-  type WildDuckConfig,
-  type WildDuckMailboxResponse,
-} from "@johnqh/types";
+  type WildduckConfig,
+  type WildduckMailboxResponse,
+} from "../../types/wildduck-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { WildDuckMockData } from "../mocks";
+import { WildduckMockData } from "../mocks";
 import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 interface UseWildduckCreateMailboxReturn {
   createMailbox: (
     userAuth: WildduckUserAuth,
     params: CreateMailboxRequest,
-  ) => Promise<WildDuckMailboxResponse>;
+  ) => Promise<WildduckMailboxResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -27,19 +27,19 @@ interface UseWildduckCreateMailboxReturn {
  * Requires user authentication
  *
  * @param networkClient - Network client for API calls
- * @param config - WildDuck API configuration
+ * @param config - Wildduck API configuration
  * @param devMode - Whether to use mock data on errors
  * @returns Object with createMailbox function and state
  */
 export const useWildduckCreateMailbox = (
   networkClient: NetworkClient,
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckCreateMailboxReturn => {
   const queryClient = useQueryClient();
 
   const wildduckClient = useMemo(
-    () => new WildDuckAPI(networkClient, config),
+    () => new WildduckAPI(networkClient, config),
     [networkClient, config],
   );
 
@@ -54,7 +54,7 @@ export const useWildduckCreateMailbox = (
     }: {
       userAuth: WildduckUserAuth;
       params: CreateMailboxRequest;
-    }): Promise<WildDuckMailboxResponse> => {
+    }): Promise<WildduckMailboxResponse> => {
       try {
         return await wildduckClient.createMailbox(userAuth, params);
       } catch (err) {
@@ -63,8 +63,8 @@ export const useWildduckCreateMailbox = (
             "[DevMode] createMailbox failed, returning mock data:",
             err,
           );
-          const mockResponse = WildDuckMockData.getCreateMailbox();
-          return mockResponse as unknown as WildDuckMailboxResponse;
+          const mockResponse = WildduckMockData.getCreateMailbox();
+          return mockResponse as unknown as WildduckMailboxResponse;
         }
         throw err;
       }

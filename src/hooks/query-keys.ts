@@ -1,14 +1,14 @@
 /**
- * Query Key Factory for WildDuck TanStack Query
+ * Query Key Factory for Wildduck TanStack Query
  *
- * Provides type-safe, consistent query keys for WildDuck API endpoints.
+ * Provides type-safe, consistent query keys for Wildduck API endpoints.
  * Following TanStack Query best practices for key structure.
  */
 
 const wildduckBase = () => ["wildduck"] as const;
 
 export const queryKeys = {
-  // WildDuck API keys
+  // Wildduck API keys
   wildduck: {
     all: wildduckBase,
 

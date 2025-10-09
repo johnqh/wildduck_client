@@ -1,8 +1,8 @@
-import { Optional } from "@johnqh/types";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { WildDuckConfig } from "@johnqh/types";
-import { WildDuckMockData } from "./mocks";
+import type { Optional } from "@johnqh/types";
+import type { WildduckConfig } from "../types/wildduck-types";
+import { WildduckMockData } from "./mocks";
 
 interface WildduckHealthStatus {
   success: boolean;
@@ -47,10 +47,10 @@ interface UseWildduckHealthReturn {
 }
 
 /**
- * Hook for WildDuck health monitoring and status operations
+ * Hook for Wildduck health monitoring and status operations
  */
 const useWildduckHealth = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckHealthReturn => {
   const [isLoading, setIsLoading] = useState(false);
@@ -103,7 +103,7 @@ const useWildduckHealth = (
           err,
         );
         const mockHealthData =
-          WildDuckMockData.getHealth() as WildduckHealthStatus;
+          WildduckMockData.getHealth() as WildduckHealthStatus;
         setHealthStatus(mockHealthData);
         return mockHealthData;
       }

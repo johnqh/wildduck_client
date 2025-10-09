@@ -1,9 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
-import { Optional } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { WildDuckConfig } from "@johnqh/types";
-import { WildDuckMockData } from "./mocks";
+import type { Optional } from "@johnqh/types";
+import type { WildduckConfig } from "../types/wildduck-types";
+import { WildduckMockData } from "./mocks";
 
 interface WildduckAddress {
   id: string;
@@ -86,11 +86,11 @@ interface UseWildduckAddressesReturn {
 }
 
 /**
- * Hook for WildDuck address management operations using React Query
+ * Hook for Wildduck address management operations using React Query
  * Mutations automatically invalidate related address queries
  */
 const useWildduckAddresses = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckAddressesReturn => {
   const queryClient = useQueryClient();
@@ -157,7 +157,7 @@ const useWildduckAddresses = (
           "[DevMode] Get user addresses failed, returning mock data:",
           errorMessage,
         );
-        const mockData = WildDuckMockData.getUserAddresses();
+        const mockData = WildduckMockData.getUserAddresses();
         const mockAddresses = mockData.data.addresses as WildduckAddress[];
         setAddresses(mockAddresses);
 
@@ -195,7 +195,7 @@ const useWildduckAddresses = (
           "[DevMode] Get forwarded addresses failed, returning mock data:",
           errorMessage,
         );
-        const mockData = WildDuckMockData.getForwardedAddresses();
+        const mockData = WildduckMockData.getForwardedAddresses();
         return mockData.data.addresses as ForwardedAddress[];
       }
 
@@ -227,7 +227,7 @@ const useWildduckAddresses = (
           "[DevMode] Resolve address failed, returning mock success:",
           errorMessage,
         );
-        return WildDuckMockData.getResolveAddress(address);
+        return WildduckMockData.getResolveAddress(address);
       }
 
       throw new Error(errorMessage);
@@ -268,7 +268,7 @@ const useWildduckAddresses = (
             "[DevMode] Create address failed, returning mock success:",
             errorMessage,
           );
-          return WildDuckMockData.getCreateAddress();
+          return WildduckMockData.getCreateAddress();
         }
 
         throw new Error(errorMessage);
@@ -318,7 +318,7 @@ const useWildduckAddresses = (
             "[DevMode] Update address failed, returning mock success:",
             errorMessage,
           );
-          return WildDuckMockData.getUpdateAddress();
+          return WildduckMockData.getUpdateAddress();
         }
 
         throw new Error(errorMessage);
@@ -365,7 +365,7 @@ const useWildduckAddresses = (
             "[DevMode] Delete address failed, returning mock success:",
             errorMessage,
           );
-          return WildDuckMockData.getDeleteAddress();
+          return WildduckMockData.getDeleteAddress();
         }
 
         throw new Error(errorMessage);
@@ -415,7 +415,7 @@ const useWildduckAddresses = (
             "[DevMode] Create forwarded address failed, returning mock success:",
             errorMessage,
           );
-          return WildDuckMockData.getCreateForwardedAddress();
+          return WildduckMockData.getCreateForwardedAddress();
         }
 
         throw new Error(errorMessage);
@@ -458,7 +458,7 @@ const useWildduckAddresses = (
             "[DevMode] Delete forwarded address failed, returning mock success:",
             errorMessage,
           );
-          return WildDuckMockData.getDeleteForwardedAddress();
+          return WildduckMockData.getDeleteForwardedAddress();
         }
 
         throw new Error(errorMessage);

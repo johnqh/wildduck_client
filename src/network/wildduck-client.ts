@@ -1,28 +1,23 @@
+import type { NetworkClient } from "@johnqh/di";
+import type { Optional } from "@johnqh/types";
 import type {
   CreateMailboxRequest,
   GetMailboxesRequest,
   GetMessagesRequest,
-  Optional,
-  WildDuckAddressResponse,
-  WildDuckAuthResponse,
-  WildDuckConfig,
-  WildDuckMailboxResponse,
-  WildDuckMessageResponse,
-  WildDuckMessagesResponse,
-  WildDuckPreAuthResponse,
-  WildDuckUserResponse,
-} from "@johnqh/types";
-import type { NetworkClient } from "@johnqh/di";
-import type {
+  WildduckAddressResponse,
   WildduckAuthenticateRequest,
+  WildduckAuthResponse,
   WildduckAutoreplyRequest,
   WildduckAutoreplyResponse,
+  WildduckConfig,
   WildduckCreateUserRequest,
   WildduckCreateUserResponse,
   WildduckForwardMessageRequest,
   WildduckMailboxResponse,
   WildduckMessageResponse,
+  WildduckMessagesResponse,
   WildduckPreAuthRequest,
+  WildduckPreAuthResponse,
   WildduckSubmitMessageRequest,
   WildduckSubmitMessageResponse,
   WildduckSuccessResponse,
@@ -33,13 +28,14 @@ import type {
   WildduckUploadMessageRequest,
   WildduckUploadMessageResponse,
   WildduckUserAuth,
+  WildduckUserResponse,
 } from "../types/wildduck-types";
 
 // Platform-specific globals
 declare const sessionStorage: Storage;
 
 // Storage keys utility
-const getWildDuckStorageKeys = (username: string) => ({
+const getWildduckStorageKeys = (username: string) => ({
   token: `wildduck_token_${username}`,
   userId: `wildduck_userId_${username}`,
   session: `wildduck_session_${username}`,
@@ -66,7 +62,7 @@ const createURLSearchParams = () => {
 };
 
 // Determine API base URL based on Cloudflare worker configuration
-const getApiBaseUrl = (config: WildDuckConfig): string => {
+const getApiBaseUrl = (config: WildduckConfig): string => {
   if (config.cloudflareWorkerUrl) {
     return config.cloudflareWorkerUrl;
   }
@@ -74,14 +70,14 @@ const getApiBaseUrl = (config: WildDuckConfig): string => {
   return config.backendUrl;
 };
 
-// WildDuck API configuration factory
-const createApiConfig = (config: WildDuckConfig) => ({
+// Wildduck API configuration factory
+const createApiConfig = (config: WildduckConfig) => ({
   BASE_URL: getApiBaseUrl(config),
   BACKEND_URL: config.backendUrl, // Direct backend URL for non-API calls
   API_TOKEN: config.apiToken, // API access token
   USE_CLOUDFLARE: !!config.cloudflareWorkerUrl,
   ENDPOINTS: {
-    // WildDuck API endpoints
+    // Wildduck API endpoints
     // Authentication
     AUTHENTICATE: "/authenticate",
 
@@ -113,10 +109,10 @@ const createApiConfig = (config: WildDuckConfig) => ({
   },
 });
 
-// Removed: Legacy API_CONFIG - consumers must provide their own WildDuckConfig
+// Removed: Legacy API_CONFIG - consumers must provide their own WildduckConfig
 
-// WildDuck API client
-class WildDuckAPI {
+// Wildduck API client
+class WildduckAPI {
   private baseUrl: string;
   private headers: Record<string, string>;
   private apiToken: string;
@@ -125,7 +121,7 @@ class WildDuckAPI {
   private useCloudflare: boolean;
   private config: ReturnType<typeof createApiConfig>;
 
-  constructor(networkClient: NetworkClient, config: WildDuckConfig) {
+  constructor(networkClient: NetworkClient, config: WildduckConfig) {
     this.config = createApiConfig(config);
     this.baseUrl = this.config.BASE_URL;
     this.apiToken = this.config.API_TOKEN;
@@ -151,12 +147,12 @@ class WildDuckAPI {
 
     if (this.useCloudflare) {
       // When using Cloudflare worker, send token in a different header
-      // The worker will extract it and forward as X-Access-Token to WildDuck
+      // The worker will extract it and forward as X-Access-Token to Wildduck
       this.headers["Authorization"] = `Bearer ${activeToken}`;
       // Add a custom header to identify requests from the app
       this.headers["X-App-Source"] = "0xmail-box";
     } else {
-      // Direct connection to WildDuck API
+      // Direct connection to Wildduck API
       // For user tokens, use Authorization: Bearer (recommended)
       // For API tokens, use X-Access-Token (backward compatibility)
       if (this.userToken) {
@@ -176,7 +172,7 @@ class WildDuckAPI {
   setUserToken(token: string): void {
     this.userToken = token;
     this.updateHeaders();
-    console.log("✅ User token set for WildDuck API");
+    console.log("✅ User token set for Wildduck API");
   }
 
   /**
@@ -195,7 +191,7 @@ class WildDuckAPI {
    */
   loadUserTokenFromStorage(username: string): boolean {
     try {
-      const keys = getWildDuckStorageKeys(username);
+      const keys = getWildduckStorageKeys(username);
       const storedToken = sessionStorage.getItem(keys.token);
 
       if (storedToken) {
@@ -277,7 +273,7 @@ class WildDuckAPI {
   // Pre-authenticate user to check if username exists
   async preAuth(
     request: WildduckPreAuthRequest,
-  ): Promise<WildDuckPreAuthResponse> {
+  ): Promise<WildduckPreAuthResponse> {
     const requestBody: WildduckPreAuthRequest = {
       username: request.username,
       scope: request.scope || "master",
@@ -285,7 +281,7 @@ class WildDuckAPI {
       ip: request.ip || "127.0.0.1",
     };
 
-    const response = await this.request<WildDuckPreAuthResponse>("/preauth", {
+    const response = await this.request<WildduckPreAuthResponse>("/preauth", {
       method: "POST",
       body: JSON.stringify(requestBody),
     });
@@ -293,16 +289,16 @@ class WildDuckAPI {
     return response;
   }
 
-  // Authenticate user with WildDuck using blockchain signature
+  // Authenticate user with Wildduck using blockchain signature
   async authenticate(
     request: WildduckAuthenticateRequest,
-  ): Promise<WildDuckAuthResponse> {
+  ): Promise<WildduckAuthResponse> {
     const requestBody: WildduckAuthenticateRequest = {
       username: request.username,
       ...(request.signature && { signature: request.signature }), // Signature that was created by signing the message
       ...(request.message && { message: request.message }), // SIWE/SIWS message that was signed
       ...(request.signer && { signer: request.signer }), // The wallet address that created the signature
-      // WildDuck handles ENS/SNS resolution internally
+      // Wildduck handles ENS/SNS resolution internally
       scope: request.scope || "master", // master scope for full access
       token: request.token !== undefined ? request.token : true, // Request a token to get access token in response
       protocol: request.protocol || "API", // Application identifier for security logs
@@ -311,7 +307,7 @@ class WildDuckAPI {
       ...(request.appId && { appId: request.appId }),
     };
 
-    const response = await this.request<WildDuckAuthResponse>("/authenticate", {
+    const response = await this.request<WildduckAuthResponse>("/authenticate", {
       method: "POST",
       body: JSON.stringify(requestBody),
     });
@@ -319,7 +315,7 @@ class WildDuckAPI {
     // Store the user ID and token in session storage if authentication is successful
     if (response.success && response.id) {
       try {
-        const keys = getWildDuckStorageKeys(request.username);
+        const keys = getWildduckStorageKeys(request.username);
         sessionStorage.setItem(keys.userId, response.id);
 
         // Store the user token if provided
@@ -334,12 +330,12 @@ class WildDuckAPI {
       }
     } else {
       console.error(
-        "❌ WildDuck authentication failed or returned no user ID:",
+        "❌ Wildduck authentication failed or returned no user ID:",
         response,
       );
       if (response.success && !response.id) {
         console.error(
-          "📝 Authentication succeeded but no user ID returned - this suggests user doesn't exist in WildDuck database",
+          "📝 Authentication succeeded but no user ID returned - this suggests user doesn't exist in Wildduck database",
         );
       }
     }
@@ -348,17 +344,17 @@ class WildDuckAPI {
   }
 
   // Legacy password-based authentication (fallback for testing)
-  // Note: WildDuck primarily uses blockchain authentication, password auth may be limited
+  // Note: Wildduck primarily uses blockchain authentication, password auth may be limited
   async authenticateWithPassword(
     username: string,
     password: string,
     scope?: string,
-  ): Promise<WildDuckAuthResponse> {
-    const response = await this.request<WildDuckAuthResponse>("/authenticate", {
+  ): Promise<WildduckAuthResponse> {
+    const response = await this.request<WildduckAuthResponse>("/authenticate", {
       method: "POST",
       body: {
         username,
-        password, // This might not work with current WildDuck - blockchain auth is preferred
+        password, // This might not work with current Wildduck - blockchain auth is preferred
         scope: scope || "master", // master scope for full access
         token: true, // Request a token
         protocol: "API",
@@ -370,7 +366,7 @@ class WildDuckAPI {
     // Store the user ID and token in session storage if authentication is successful
     if (response.success && response.id) {
       try {
-        const keys = getWildDuckStorageKeys(username);
+        const keys = getWildduckStorageKeys(username);
         sessionStorage.setItem(keys.userId, response.id);
 
         // Store the user token if provided
@@ -389,11 +385,11 @@ class WildDuckAPI {
   }
 
   // Get user info
-  async getUser(userAuth: WildduckUserAuth): Promise<WildDuckUserResponse> {
+  async getUser(userAuth: WildduckUserAuth): Promise<WildduckUserResponse> {
     // Validate user ID format
     const validatedUserId = validateUserId(userAuth.userId);
 
-    return this.request<WildDuckUserResponse>(`/users/${validatedUserId}`, {
+    return this.request<WildduckUserResponse>(`/users/${validatedUserId}`, {
       userAuth,
     });
   }
@@ -402,7 +398,7 @@ class WildDuckAPI {
   async getMailboxes(
     userAuth: WildduckUserAuth,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
-  ): Promise<WildDuckMailboxResponse> {
+  ): Promise<WildduckMailboxResponse> {
     // Validate user ID format
     const validatedUserId = validateUserId(userAuth.userId);
 
@@ -420,7 +416,7 @@ class WildDuckAPI {
     const query = queryParams.toString();
     const endpoint = `/users/${validatedUserId}/mailboxes${query ? `?${query}` : ""}`;
 
-    return this.request<WildDuckMailboxResponse>(endpoint, {
+    return this.request<WildduckMailboxResponse>(endpoint, {
       userAuth,
     });
   }
@@ -430,7 +426,7 @@ class WildDuckAPI {
     userAuth: WildduckUserAuth,
     mailboxId: string,
     options?: Omit<GetMessagesRequest, "sess" | "ip">,
-  ): Promise<WildDuckMessagesResponse> {
+  ): Promise<WildduckMessagesResponse> {
     // Validate user ID format
     const validatedUserId = validateUserId(userAuth.userId);
 
@@ -464,7 +460,7 @@ class WildDuckAPI {
     const query = queryParams.toString();
     const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages${query ? `?${query}` : ""}`;
 
-    return this.request<WildDuckMessagesResponse>(endpoint, {
+    return this.request<WildduckMessagesResponse>(endpoint, {
       userAuth,
     });
   }
@@ -473,7 +469,7 @@ class WildDuckAPI {
   async getMessage(
     userAuth: WildduckUserAuth,
     messageId: string,
-  ): Promise<WildDuckMessageResponse> {
+  ): Promise<WildduckMessageResponse> {
     // Validate user ID format
     const validatedUserId = validateUserId(userAuth.userId);
 
@@ -486,7 +482,7 @@ class WildDuckAPI {
 
     const endpoint = `/users/${validatedUserId}/messages/${messageId}`;
 
-    return this.request<WildDuckMessageResponse>(endpoint, {
+    return this.request<WildduckMessageResponse>(endpoint, {
       userAuth,
     });
   }
@@ -494,13 +490,13 @@ class WildDuckAPI {
   // Get user addresses (email addresses)
   async getAddresses(
     userAuth: WildduckUserAuth,
-  ): Promise<WildDuckAddressResponse> {
+  ): Promise<WildduckAddressResponse> {
     // Validate user ID format
     const validatedUserId = validateUserId(userAuth.userId);
 
     const endpoint = `/users/${validatedUserId}/addresses`;
 
-    return this.request<WildDuckAddressResponse>(endpoint, {
+    return this.request<WildduckAddressResponse>(endpoint, {
       userAuth,
     });
   }
@@ -509,7 +505,7 @@ class WildDuckAPI {
   async createMailbox(
     userAuth: WildduckUserAuth,
     request: CreateMailboxRequest,
-  ): Promise<WildDuckMailboxResponse> {
+  ): Promise<WildduckMailboxResponse> {
     const validatedUserId = validateUserId(userAuth.userId);
 
     const requestBody: Record<string, any> = {
@@ -524,7 +520,7 @@ class WildDuckAPI {
     if (request.sess !== undefined) requestBody.sess = request.sess;
     if (request.ip !== undefined) requestBody.ip = request.ip;
 
-    return this.request<WildDuckMailboxResponse>(
+    return this.request<WildduckMailboxResponse>(
       `/users/${validatedUserId}/mailboxes`,
       {
         method: "POST",
@@ -928,23 +924,23 @@ class WildDuckAPI {
   }
 }
 
-// Factory function to create WildDuck API client with dependencies
-const createWildDuckAPI = (
+// Factory function to create Wildduck API client with dependencies
+const createWildduckAPI = (
   networkClient: NetworkClient,
-  config: WildDuckConfig,
-): WildDuckAPI => {
-  return new WildDuckAPI(networkClient, config);
+  config: WildduckConfig,
+): WildduckAPI => {
+  return new WildduckAPI(networkClient, config);
 };
 
-// Export the main WildDuckAPI class
-export { WildDuckAPI };
+// Export the main WildduckAPI class
+export { WildduckAPI };
 
 // Helper function to validate MongoDB ObjectId format
 const isValidObjectId = (id: string): boolean => {
   return /^[a-f0-9]{24}$/i.test(id);
 };
 
-// Helper function to get WildDuck user ID for an email address
+// Helper function to get Wildduck user ID for an email address
 // This retrieves the actual MongoDB ObjectId from session storage after authentication
 const emailToUserId = (emailAddress: string): string => {
   // Extract the wallet address part from email if it's in email format
@@ -955,7 +951,7 @@ const emailToUserId = (emailAddress: string): string => {
   }
 
   try {
-    const keys = getWildDuckStorageKeys(username);
+    const keys = getWildduckStorageKeys(username);
 
     // Check storage keys in priority order
     const storageKeys = [
@@ -995,10 +991,10 @@ const emailToUserId = (emailAddress: string): string => {
   // Fallback: No stored user ID found
   console.error(`❌ No stored user ID found for ${username}`);
   console.error(
-    "📝 This usually means authentication failed or the user doesn't exist in WildDuck",
+    "📝 This usually means authentication failed or the user doesn't exist in Wildduck",
   );
   console.error(
-    "📝 Check the authentication response and ensure the user was created in WildDuck",
+    "📝 Check the authentication response and ensure the user was created in Wildduck",
   );
   console.error(
     "📝 Expected: 24-character hexadecimal string (MongoDB ObjectId)",
@@ -1006,11 +1002,11 @@ const emailToUserId = (emailAddress: string): string => {
 
   // Instead of returning a fake user ID, throw an error to surface the real issue
   throw new Error(
-    `No WildDuck user ID found for ${username}. Authentication may have failed or user doesn't exist in database.`,
+    `No Wildduck user ID found for ${username}. Authentication may have failed or user doesn't exist in database.`,
   );
 };
 
-// Helper function to ensure a string is a valid user ID for WildDuck API calls
+// Helper function to ensure a string is a valid user ID for Wildduck API calls
 const validateUserId = (userId: string): string => {
   if (!userId) {
     throw new Error("User ID is required");
@@ -1025,4 +1021,4 @@ const validateUserId = (userId: string): string => {
   return userId;
 };
 
-export { createWildDuckAPI, emailToUserId, validateUserId, isValidObjectId };
+export { createWildduckAPI, emailToUserId, validateUserId, isValidObjectId };

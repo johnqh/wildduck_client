@@ -1,15 +1,15 @@
-import { SpamSettings, WildDuckConfig } from "@johnqh/types";
-import { createWildDuckClient } from "./client";
+import type { SpamSettings, WildduckConfig } from "../types/wildduck-types";
+import { createWildduckClient } from "./client";
 
 /**
  * Get current spam settings (spam level and from whitelist)
  * GET /users/:user
  */
 export async function getSpamSettings(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
 ): Promise<SpamSettings> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.get<any>(`/users/${userId}`);
   return {
     success: response.data.success,
@@ -24,13 +24,13 @@ export async function getSpamSettings(
  * @param spamLevel - Spam filtering level (0-100, higher = more aggressive)
  */
 export async function updateSpamLevel(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   spamLevel: number,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}`, {
     spamLevel,
     sess,
@@ -45,13 +45,13 @@ export async function updateSpamLevel(
  * @param fromWhitelist - Array of email addresses or domains to whitelist
  */
 export async function updateFromWhitelist(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   fromWhitelist: string[],
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}`, {
     fromWhitelist,
     sess,
@@ -65,7 +65,7 @@ export async function updateFromWhitelist(
  * GET /users/:user -> PUT /users/:user
  */
 export async function addToFromWhitelist(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   emailOrDomain: string,
   sess?: string,
@@ -88,7 +88,7 @@ export async function addToFromWhitelist(
  * GET /users/:user -> PUT /users/:user
  */
 export async function removeFromWhitelist(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   emailOrDomain: string,
   sess?: string,
@@ -107,7 +107,7 @@ export async function removeFromWhitelist(
  * PUT /users/:user
  */
 export async function updateSpamSettings(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   settings: {
     spamLevel?: number;
@@ -116,7 +116,7 @@ export async function updateSpamSettings(
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}`, {
     ...settings,
     sess,

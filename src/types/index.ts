@@ -1,76 +1,10 @@
 /**
  * Type exports for @johnqh/wildduck_client
- * Re-exporting WildDuck types from @johnqh/types for convenience
+ * Re-exporting all Wildduck types from local types file
  */
 
-export * from "@johnqh/types";
+// Re-export all Wildduck types from local file
+export * from "./wildduck-types";
 
-// Export only new types not present in @johnqh/types
-export type {
-  WildduckCreateUserResponse,
-  WildduckUserResponse,
-  WildduckUserListItem,
-  WildduckUserListResponse,
-  WildduckResolveUserResponse,
-  WildduckQuotaResetResponse,
-  WildduckPasswordResetRequest,
-  WildduckPasswordResetResponse,
-  WildduckMailboxListItem,
-  WildduckMailboxListResponse,
-  WildduckCreateMailboxResponse,
-  WildduckMailboxResponse,
-  WildduckMessageListItem,
-  WildduckMessageListResponse,
-  WildduckMessageResponse,
-  WildduckSearchMessagesRequest,
-  WildduckSearchApplyRequest,
-  WildduckSearchApplyResponse,
-  WildduckUpdateMessageResponse,
-  WildduckUploadMessageResponse,
-  WildduckSubmitMessageResponse,
-  WildduckAddressListItem,
-  WildduckAddressListResponse,
-  WildduckCreateAddressRequest,
-  WildduckCreateAddressResponse,
-  WildduckUpdateAddressRequest,
-  WildduckForwardedAddressListItem,
-  WildduckForwardedAddressListResponse,
-  WildduckResolveAddressResponse,
-  WildduckFilterListItem,
-  WildduckFilterListResponse,
-  WildduckCreateFilterResponse,
-  WildduckAutoreplyResponse,
-  WildduckASPListItem,
-  WildduckASPListResponse,
-  WildduckCreateASPRequest,
-  WildduckCreateASPResponse,
-  WildduckASPResponse,
-  WildduckStorageUploadRequest,
-  WildduckStorageUploadResponse,
-  WildduckStorageListItem,
-  WildduckStorageListResponse,
-  WildduckSettingItem,
-  WildduckSettingsListResponse,
-  WildduckSettingResponse,
-  WildduckUpdateSettingRequest,
-  WildduckWebhookListItem,
-  WildduckWebhookListResponse,
-  WildduckCreateWebhookRequest,
-  WildduckCreateWebhookResponse,
-  WildduckCreateAuditRequest,
-  WildduckCreateAuditResponse,
-  WildduckAuditResponse,
-  WildduckDKIMListItem,
-  WildduckDKIMListResponse,
-  WildduckCreateDKIMRequest,
-  WildduckCreateDKIMResponse,
-  WildduckSuccessResponse,
-  WildduckDeleteResponse,
-  WildduckPaginationParams,
-  WildduckSessionParams,
-  WildduckAttachment,
-  WildduckContentType,
-  WildduckBimiInfo,
-  WildduckLimits,
-  WildduckKeyInfo,
-} from "./wildduck-types";
+// Re-export non-Wildduck types from @johnqh/types that are still needed
+export type { Optional, NetworkClient } from "@johnqh/types";

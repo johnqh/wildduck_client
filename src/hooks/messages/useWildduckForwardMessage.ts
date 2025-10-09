@@ -1,7 +1,8 @@
+import type { Optional } from "@johnqh/types";
 import { useCallback, useMemo } from "react";
-import { WildDuckAPI } from "../../network/wildduck-client";
+import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type Optional, type WildDuckConfig } from "@johnqh/types";
+import { type WildduckConfig } from "../../types/wildduck-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   WildduckForwardMessageRequest,
@@ -27,19 +28,19 @@ interface UseWildduckForwardMessageReturn {
  * Requires user authentication
  *
  * @param networkClient - Network client for API calls
- * @param config - WildDuck API configuration
+ * @param config - Wildduck API configuration
  * @param devMode - Whether to use mock data on errors
  * @returns Object with forwardMessage function and state
  */
 export const useWildduckForwardMessage = (
   networkClient: NetworkClient,
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckForwardMessageReturn => {
   const queryClient = useQueryClient();
 
   const wildduckClient = useMemo(
-    () => new WildDuckAPI(networkClient, config),
+    () => new WildduckAPI(networkClient, config),
     [networkClient, config],
   );
 

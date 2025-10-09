@@ -1,5 +1,5 @@
 /**
- * Individual hooks for WildDuck Autoreply API
+ * Individual hooks for Wildduck Autoreply API
  * Each hook is isolated with its own state management
  */
 

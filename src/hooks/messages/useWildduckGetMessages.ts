@@ -1,8 +1,11 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { WildDuckAPI } from "../../network/wildduck-client";
+import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type GetMessagesRequest, type WildDuckConfig } from "@johnqh/types";
+import {
+  type GetMessagesRequest,
+  type WildduckConfig,
+} from "../../types/wildduck-types";
 import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 export interface UseWildduckGetMessagesParams {
@@ -17,19 +20,19 @@ export interface UseWildduckGetMessagesParams {
  * Includes caching and automatic refetching
  *
  * @param networkClient - Network client for API calls
- * @param config - WildDuck API configuration
+ * @param config - Wildduck API configuration
  * @param params - Query parameters (userAuth, mailboxId, options)
  * @returns React Query result with messages data and state
  */
 export const useWildduckGetMessages = (
   networkClient: NetworkClient,
-  config: WildDuckConfig,
+  config: WildduckConfig,
   params: UseWildduckGetMessagesParams = {},
 ) => {
   const { userAuth, mailboxId, options } = params;
 
   const api = useMemo(
-    () => new WildDuckAPI(networkClient, config),
+    () => new WildduckAPI(networkClient, config),
     [networkClient, config],
   );
 

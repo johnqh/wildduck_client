@@ -1,7 +1,7 @@
 /**
  * User Settings Hooks
  *
- * Specialized hooks for managing different aspects of user settings in WildDuck.
+ * Specialized hooks for managing different aspects of user settings in Wildduck.
  * Each hook focuses on a specific category of user settings for better organization
  * and reusability.
  */

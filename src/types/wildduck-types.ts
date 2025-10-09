@@ -9,7 +9,30 @@
 
 export type WildduckObjectId = string; // 24-character hex string
 
+// ============================================================================
+// Configuration Types
+// ============================================================================
+
+/**
+ * Wildduck Configuration
+ */
+export interface WildduckConfig {
+  backendUrl: string;
+  apiToken: string;
+  cloudflareWorkerUrl?: string;
+}
+
 export interface WildduckAddress {
+  id: string;
+  address: string;
+  name?: string;
+  main: boolean;
+  created?: string;
+  metaData?: Record<string, unknown>;
+  tags?: string[];
+}
+
+export interface WildduckMessageAddress {
   name?: string;
   address: string;
 }
@@ -72,11 +95,14 @@ export interface WildduckPreAuthRequest {
 
 export interface WildduckPreAuthResponse {
   success: boolean;
-  id: string;
-  username: string;
-  address: string;
-  scope: string;
-  require2fa: string[];
+  id?: string;
+  username?: string;
+  address?: string;
+  scope?: string[];
+  require2fa?: string[];
+  requirePasswordChange?: boolean;
+  message?: string;
+  nonce?: string;
 }
 
 export interface WildduckAuthenticateRequest {
@@ -94,20 +120,110 @@ export interface WildduckAuthenticateRequest {
   ip?: string;
 }
 
-export interface WildduckAuthenticateResponse {
+export interface WildduckAuthResponse {
   success: boolean;
-  id: string;
-  username: string;
-  address: string;
-  scope: string;
-  require2fa: string[];
-  requirePasswordChange: boolean;
+  id?: string;
+  username?: string;
+  address?: string;
+  scope?: string[];
   token?: string;
+  require2fa?: string[];
+  requirePasswordChange?: boolean;
+  message?: string;
+  error?: string;
+}
+
+// Request builder functions
+export function createPreAuthRequest(
+  username: string,
+  options?: Partial<WildduckPreAuthRequest>,
+): WildduckPreAuthRequest {
+  return {
+    username,
+    scope: "master",
+    ...options,
+  };
+}
+
+export function createAuthenticateRequest(
+  username: string,
+  signature?: string,
+  message?: string,
+  options?: Partial<WildduckAuthenticateRequest>,
+): WildduckAuthenticateRequest {
+  return {
+    username,
+    ...(signature && { signature }),
+    ...(message && { message }),
+    protocol: "API",
+    scope: "master",
+    token: false,
+    ...options,
+  };
 }
 
 // ============================================================================
 // User Types
 // ============================================================================
+
+/**
+ * Simplified Wildduck User type (from @johnqh/types pattern)
+ */
+export interface WildduckUser {
+  id: string;
+  username: string;
+  name?: string;
+  address?: string;
+  language?: string;
+  retention?: number;
+  quota?: {
+    allowed: number;
+    used: number;
+  };
+  disabled: boolean;
+  suspended: boolean;
+  tags?: string[];
+  hasPasswordSet?: boolean;
+  activated?: boolean;
+  created?: string;
+}
+
+// Use the detailed response type as the main WildduckUserResponse (for test compatibility)
+export interface WildduckUserResponse {
+  success: boolean;
+  id: string;
+  username: string;
+  name: string;
+  address: string;
+  language?: string;
+  retention: number;
+  uploadSentMessages?: boolean;
+  enabled2fa: string[];
+  autoreply: boolean;
+  encryptMessages: boolean;
+  encryptForwarded: boolean;
+  pubKey: string;
+  spamLevel: number;
+  keyInfo: WildduckKeyInfo;
+  metaData: Record<string, unknown>;
+  internalData: Record<string, unknown>;
+  targets: string[];
+  mtaRelay?: string;
+  limits: WildduckLimits;
+  fromWhitelist: string[];
+  disabledScopes: string[];
+  hasPasswordSet: boolean;
+  activated: boolean;
+  disabled: boolean;
+  suspended: boolean;
+  tags: string[];
+}
+
+export interface WildduckSimpleUserResponse {
+  success: boolean;
+  id?: string;
+  error?: string;
+}
 
 export interface WildduckCreateUserRequest {
   username: string;
@@ -186,36 +302,6 @@ export interface WildduckUpdateUserRequest {
   [key: string]: unknown;
 }
 
-export interface WildduckUserResponse {
-  success: boolean;
-  id: string;
-  username: string;
-  name: string;
-  address: string;
-  language?: string;
-  retention: number;
-  uploadSentMessages?: boolean;
-  enabled2fa: string[];
-  autoreply: boolean;
-  encryptMessages: boolean;
-  encryptForwarded: boolean;
-  pubKey: string;
-  spamLevel: number;
-  keyInfo: WildduckKeyInfo;
-  metaData: Record<string, unknown>;
-  internalData: Record<string, unknown>;
-  targets: string[];
-  mtaRelay?: string;
-  limits: WildduckLimits;
-  fromWhitelist: string[];
-  disabledScopes: string[];
-  hasPasswordSet: boolean;
-  activated: boolean;
-  disabled: boolean;
-  suspended: boolean;
-  tags: string[];
-}
-
 export interface WildduckUserListItem {
   id: string;
   username: string;
@@ -282,6 +368,79 @@ export interface WildduckPasswordResetResponse {
 // Mailbox Types
 // ============================================================================
 
+/**
+ * Simplified Wildduck Mailbox type (from @johnqh/types pattern)
+ */
+export interface WildduckMailbox {
+  id: string;
+  name: string;
+  path: string;
+  specialUse?: "Inbox" | "Sent" | "Trash" | "Drafts" | "Junk" | "Archive";
+  modifyIndex: number;
+  subscribed: boolean;
+  hidden: boolean;
+  total?: number;
+  unseen?: number;
+  size?: number;
+}
+
+export interface WildduckMailboxResponse {
+  success: boolean;
+  results: WildduckMailbox[];
+  error?: string;
+}
+
+/** Get mailboxes request */
+export interface GetMailboxesRequest {
+  sess?: string;
+  ip?: string;
+  limit?: number;
+  page?: number;
+  next?: string;
+  previous?: string;
+  specialUse?: boolean;
+  showHidden?: boolean;
+  counters?: boolean;
+  sizes?: boolean;
+}
+
+/** Get messages request */
+export interface GetMessagesRequest {
+  sess?: string;
+  ip?: string;
+  limit?: number;
+  page?: number;
+  next?: string;
+  previous?: string;
+  order?: "asc" | "desc";
+  unseen?: boolean;
+  flagged?: boolean;
+  thread?: string;
+  includeHeaders?: string[];
+  uid?: boolean;
+}
+
+/** Create new mailbox request */
+export interface CreateMailboxRequest {
+  path: string;
+  hidden?: boolean;
+  retention?: number;
+  encryptMessages?: boolean;
+  sess?: string;
+  ip?: string;
+}
+
+/** Update existing mailbox request */
+export interface UpdateMailboxRequest {
+  path?: string;
+  retention?: number;
+  subscribed?: boolean;
+  encryptMessages?: boolean;
+  hidden?: boolean;
+  sess?: string;
+  ip?: string;
+}
+
 export interface WildduckMailboxListItem {
   id: string;
   name: string;
@@ -313,7 +472,7 @@ export interface WildduckCreateMailboxResponse {
   id: string;
 }
 
-export interface WildduckMailboxResponse {
+export interface WildduckDetailedMailboxResponse {
   success: boolean;
   id: string;
   name: string;
@@ -340,15 +499,73 @@ export interface WildduckUpdateMailboxRequest {
 // Message Types
 // ============================================================================
 
+export interface WildduckMessageAttachment {
+  id: string;
+  filename: string;
+  contentType: string;
+  size: number;
+  hash?: string;
+}
+
+export interface WildduckMessageBase {
+  id: string;
+  mailbox: string;
+  thread: string;
+  from?: WildduckMessageAddress;
+  to: WildduckMessageAddress[];
+  cc?: WildduckMessageAddress[];
+  bcc?: WildduckMessageAddress[];
+  subject: string;
+  date: string;
+  intro: string;
+  seen: boolean;
+  deleted: boolean;
+  flagged: boolean;
+  draft: boolean;
+  answered: boolean;
+  size: number;
+  ha: boolean; // has attachments
+}
+
+export interface WildduckMessage extends WildduckMessageBase {
+  attachments: boolean;
+}
+
+export interface WildduckMessageDetail extends WildduckMessageBase {
+  user: string;
+  html?: string;
+  text?: string;
+  headers?: Record<string, string | string[]>;
+  attachments: WildduckMessageAttachment[];
+  references?: string[];
+  inReplyTo?: string;
+}
+
+export interface WildduckMessagesResponse {
+  success: boolean;
+  total: number;
+  page: number;
+  previousCursor?: string;
+  nextCursor?: string;
+  results: WildduckMessage[];
+  error?: string;
+}
+
+export interface WildduckMessageResponse {
+  success: boolean;
+  data?: WildduckMessageDetail;
+  error?: string;
+}
+
 export interface WildduckMessageListItem {
   id: number;
   mailbox: string;
   thread: string;
   threadMessageCount?: number;
-  from: WildduckAddress;
-  to: WildduckAddress[];
-  cc: WildduckAddress[];
-  bcc: WildduckAddress[];
+  from: WildduckMessageAddress;
+  to: WildduckMessageAddress[];
+  cc: WildduckMessageAddress[];
+  bcc: WildduckMessageAddress[];
   messageId: string;
   subject: string;
   date: string;
@@ -381,7 +598,7 @@ export interface WildduckMessageListResponse {
   results: WildduckMessageListItem[];
 }
 
-export interface WildduckMessageResponse {
+export interface WildduckDetailedMessageResponse {
   success: boolean;
   id: number;
   mailbox: string;
@@ -394,11 +611,11 @@ export interface WildduckMessageResponse {
     }>;
   };
   thread: string;
-  from: WildduckAddress;
-  replyTo?: WildduckAddress;
-  to?: WildduckAddress;
-  cc?: WildduckAddress;
-  bcc?: WildduckAddress;
+  from: WildduckMessageAddress;
+  replyTo?: WildduckMessageAddress;
+  to?: WildduckMessageAddress;
+  cc?: WildduckMessageAddress;
+  bcc?: WildduckMessageAddress;
   subject: string;
   messageId: string;
   date: string;
@@ -594,6 +811,12 @@ export interface WildduckSubmitMessageResponse {
 // Address Types
 // ============================================================================
 
+export interface WildduckAddressResponse {
+  success: boolean;
+  results?: WildduckAddress[];
+  error?: string;
+}
+
 export interface WildduckAddressListItem {
   id: string;
   name: string;
@@ -676,6 +899,27 @@ export interface WildduckResolveAddressResponse {
 // Filter Types
 // ============================================================================
 
+/** Message filter query conditions */
+export interface FilterQuery {
+  from?: string;
+  to?: string;
+  subject?: string;
+  listId?: string;
+  text?: string;
+  ha?: boolean;
+  size?: number;
+}
+
+/** Actions to take on filtered messages */
+export interface FilterAction {
+  seen?: boolean;
+  flag?: boolean;
+  delete?: boolean;
+  spam?: boolean;
+  mailbox?: string;
+  targets?: string[];
+}
+
 export interface WildduckFilterQuery {
   from?: string;
   to?: string;
@@ -740,6 +984,21 @@ export interface WildduckFilterResponse {
   action: WildduckFilterAction;
   disabled: boolean;
   created: string;
+}
+
+/** Email filter */
+export interface EmailFilter {
+  id: string;
+  name: string;
+  query: FilterQuery;
+  action: FilterAction;
+  disabled?: boolean;
+}
+
+/** Response from filter operations */
+export interface FilterResponse {
+  success: boolean;
+  id?: string;
 }
 
 // ============================================================================
@@ -875,6 +1134,131 @@ export interface WildduckSettingResponse {
 
 export interface WildduckUpdateSettingRequest {
   value: unknown;
+}
+
+/**
+ * User information response (detailed)
+ */
+export interface UserInfo {
+  success: boolean;
+  id: string;
+  username: string;
+  name?: string;
+  address: string;
+  retention?: number;
+  enabled2fa?: string[];
+  autoreply?: boolean;
+  encryptMessages?: boolean;
+  encryptForwarded?: boolean;
+  pubKey?: string;
+  metaData?: Record<string, unknown>;
+  internalData?: Record<string, unknown>;
+  hasPasswordSet?: boolean;
+  activated?: boolean;
+  disabled?: boolean;
+  suspended?: boolean;
+  quota: {
+    allowed: number;
+    used: number;
+  };
+  targets?: string[];
+  spamLevel?: number;
+  uploadSentMessages?: boolean;
+  mtaRelay?: string;
+  limits: {
+    quota: {
+      allowed: number;
+      used: number;
+    };
+    recipients?: {
+      allowed: number;
+      used: number;
+      ttl: number;
+    };
+    forwards?: {
+      allowed: number;
+      used: number;
+      ttl: number;
+    };
+    received?: {
+      allowed: number;
+      used: number;
+      ttl: number;
+    };
+    imapUpload?: {
+      allowed: number;
+      used: number;
+      ttl: number;
+    };
+    imapDownload?: {
+      allowed: number;
+      used: number;
+      ttl: number;
+    };
+    pop3Download?: {
+      allowed: number;
+      used: number;
+      ttl: number;
+    };
+    imapMaxConnections?: {
+      allowed: number;
+    };
+  };
+  tags?: string[];
+  disabledScopes?: string[];
+  fromWhitelist?: string[];
+}
+
+/**
+ * Auto-reply (out of office) settings response
+ */
+export interface AutoReplySettings {
+  success: boolean;
+  status?: boolean;
+  name?: string;
+  subject?: string;
+  text?: string;
+  html?: string;
+  start?: string;
+  end?: string;
+}
+
+/**
+ * Forwarding target response types
+ * Forwarding target - can be email, SMTP relay, or HTTP webhook
+ */
+export type ForwardingTarget = string;
+
+/**
+ * Spam settings response
+ */
+export interface SpamSettings {
+  success: boolean;
+  spamLevel?: number;
+  fromWhitelist?: string[];
+}
+
+/**
+ * SMTP relay configuration
+ */
+export interface SMTPRelay {
+  enabled: boolean;
+  host?: string;
+  port?: number;
+  secure?: boolean;
+  auth?: {
+    user: string;
+    pass: string;
+  };
+}
+
+/**
+ * Advanced settings response
+ */
+export interface AdvancedSettings {
+  success: boolean;
+  uploadSentMessages?: boolean;
+  smtpRelay?: SMTPRelay;
 }
 
 // ============================================================================
@@ -1039,3 +1423,29 @@ export interface WildduckSessionParams {
   sess?: string;
   ip?: string;
 }
+
+// ============================================================================
+// Type Guards
+// ============================================================================
+
+export const isWildduckAuthResponse = (
+  obj: unknown,
+): obj is WildduckAuthResponse => {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "success" in obj &&
+    typeof (obj as WildduckAuthResponse).success === "boolean"
+  );
+};
+
+export const isWildduckMessage = (obj: unknown): obj is WildduckMessage => {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "id" in obj &&
+    "subject" in obj &&
+    typeof (obj as WildduckMessage).id === "string" &&
+    typeof (obj as WildduckMessage).subject === "string"
+  );
+};

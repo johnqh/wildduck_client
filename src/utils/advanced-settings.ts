@@ -1,15 +1,19 @@
-import { AdvancedSettings, SMTPRelay, WildDuckConfig } from "@johnqh/types";
-import { createWildDuckClient } from "./client";
+import type {
+  AdvancedSettings,
+  SMTPRelay,
+  WildduckConfig,
+} from "../types/wildduck-types";
+import { createWildduckClient } from "./client";
 
 /**
  * Get advanced settings (uploadSentMessages flag from user info)
  * GET /users/:user
  */
 export async function getAdvancedSettings(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
 ): Promise<AdvancedSettings> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.get<any>(`/users/${userId}`);
   return {
     success: response.data.success,
@@ -23,13 +27,13 @@ export async function getAdvancedSettings(
  * When enabled, messages sent through SMTP are automatically uploaded to the Sent folder
  */
 export async function updateUploadSentMessages(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   uploadSentMessages: boolean,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}`, {
     uploadSentMessages,
     sess,
@@ -42,14 +46,14 @@ export async function updateUploadSentMessages(
  * Get SMTP relay settings for a user
  * GET /users/:user (mtaRelay is part of user object)
  *
- * WildDuck stores mtaRelay as a URL string like "smtp://host:port" or "smtps://host:port"
+ * Wildduck stores mtaRelay as a URL string like "smtp://host:port" or "smtps://host:port"
  * The secure protocol (smtps://) indicates TLS should be used
  */
 export async function getSMTPRelay(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
 ): Promise<SMTPRelay> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   try {
     const response = await client.get<any>(`/users/${userId}`);
     const mtaRelay = response.data.mtaRelay;
@@ -95,13 +99,13 @@ export async function getSMTPRelay(
  * @param secure - Use TLS encryption
  * @param auth - SMTP authentication credentials
  *
- * WildDuck expects mtaRelay as a URL string: "smtp://host:port" or "smtps://host:port"
+ * Wildduck expects mtaRelay as a URL string: "smtp://host:port" or "smtps://host:port"
  * - Use "smtps://" for secure connections
  * - Include auth in URL: "smtp://user:pass@host:port"
  * - To disable/delete, set mtaRelay to empty string
  */
 export async function updateSMTPRelay(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   settings: {
     enabled: boolean;
@@ -116,7 +120,7 @@ export async function updateSMTPRelay(
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
 
   let mtaRelay: string | undefined = undefined;
 
@@ -151,7 +155,7 @@ export async function updateSMTPRelay(
  * PUT /users/:user/smtp
  */
 export async function enableSMTPRelay(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   relay: {
     host: string;
@@ -182,7 +186,7 @@ export async function enableSMTPRelay(
  * PUT /users/:user/smtp
  */
 export async function disableSMTPRelay(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   sess?: string,
   ip?: string,
@@ -202,15 +206,15 @@ export async function disableSMTPRelay(
  * Delete SMTP relay configuration
  * PUT /users/:user with empty mtaRelay
  *
- * In WildDuck, you delete the mtaRelay by setting it to an empty string
+ * In Wildduck, you delete the mtaRelay by setting it to an empty string
  */
 export async function deleteSMTPRelay(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}`, {
     mtaRelay: "",
     sess,

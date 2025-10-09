@@ -1,7 +1,7 @@
 /**
- * WildDuck API Integration Tests
+ * Wildduck API Integration Tests
  *
- * These tests run against a live WildDuck server in crypto mode.
+ * These tests run against a live Wildduck server in crypto mode.
  * Set WILDDUCK_ENDPOINT environment variable to enable these tests.
  *
  * Example:
@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { WildDuckAPI } from '../../network/wildduck-client';
+import { WildduckAPI } from '../../network/wildduck-client';
 import { NetworkClient, NetworkResponse, NetworkRequestOptions } from '@johnqh/di';
 import axios, { AxiosResponse } from 'axios';
 import {
@@ -79,7 +79,7 @@ class AxiosNetworkClient implements NetworkClient {
   }
 }
 
-describe('WildDuck API Integration Tests', () => {
+describe('Wildduck API Integration Tests', () => {
   const skipCheck = skipIfNoIntegrationEnv();
 
   if (skipCheck.skip) {
@@ -87,7 +87,7 @@ describe('WildDuck API Integration Tests', () => {
     return;
   }
 
-  let api: WildDuckAPI;
+  let api: WildduckAPI;
   let networkClient: NetworkClient;
   let testUserId: string;
   let authToken: string;
@@ -97,7 +97,7 @@ describe('WildDuck API Integration Tests', () => {
   beforeAll(async () => {
     networkClient = new AxiosNetworkClient();
 
-    api = new WildDuckAPI(networkClient, {
+    api = new WildduckAPI(networkClient, {
       backendUrl: INTEGRATION_CONFIG.endpoint,
       apiToken: INTEGRATION_CONFIG.apiToken,
     });

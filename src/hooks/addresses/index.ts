@@ -1,5 +1,5 @@
 /**
- * Individual hooks for WildDuck Addresses API
+ * Individual hooks for Wildduck Addresses API
  * Each hook is isolated with its own state management
  */
 

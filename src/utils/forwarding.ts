@@ -1,15 +1,15 @@
-import { ForwardingTarget, WildDuckConfig } from "@johnqh/types";
-import { createWildDuckClient } from "./client";
+import type { ForwardingTarget, WildduckConfig } from "../types/wildduck-types";
+import { createWildduckClient } from "./client";
 
 /**
  * Get current forwarding targets for a user
  * GET /users/:user
  */
 export async function getForwardingTargets(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
 ): Promise<ForwardingTarget[]> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.get<any>(`/users/${userId}`);
   return response.data.targets || [];
 }
@@ -19,13 +19,13 @@ export async function getForwardingTargets(
  * PUT /users/:user
  */
 export async function updateForwardingTargets(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   targets: ForwardingTarget[],
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}`, {
     targets,
     sess,
@@ -39,7 +39,7 @@ export async function updateForwardingTargets(
  * GET /users/:user -> PUT /users/:user
  */
 export async function addForwardingTarget(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   target: ForwardingTarget,
   sess?: string,
@@ -61,7 +61,7 @@ export async function addForwardingTarget(
  * GET /users/:user -> PUT /users/:user
  */
 export async function removeForwardingTarget(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   target: ForwardingTarget,
   sess?: string,

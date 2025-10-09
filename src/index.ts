@@ -1,6 +1,6 @@
 /**
- * @johnqh/wildduck_client - WildDuck Email API Client Library
- * React and React Native compatible client for WildDuck email server
+ * @johnqh/wildduck_client - Wildduck Email API Client Library
+ * React and React Native compatible client for Wildduck email server
  */
 
 // Export all types

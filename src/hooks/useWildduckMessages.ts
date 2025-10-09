@@ -1,12 +1,12 @@
-import { Optional } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import type { Optional } from "@johnqh/types";
 import type {
-  WildDuckConfig,
-  WildDuckMessage,
-  WildDuckMessageResponse,
-  WildDuckMessagesResponse,
-} from "@johnqh/types";
+  WildduckConfig,
+  WildduckMessage,
+  WildduckMessageResponse,
+  WildduckMessagesResponse,
+} from "../types/wildduck-types";
 import { useState } from "react";
 
 interface GetMessagesOptions {
@@ -43,7 +43,7 @@ interface UpdateMessageParams {
 
 interface UseWildduckMessagesReturn {
   // Query state
-  messages: WildDuckMessage[];
+  messages: WildduckMessage[];
   totalMessages: number;
   currentPage: number;
   isLoading: boolean;
@@ -54,16 +54,16 @@ interface UseWildduckMessagesReturn {
     userId: string,
     mailboxId: string,
     options?: GetMessagesOptions,
-  ) => Promise<WildDuckMessage[]>;
+  ) => Promise<WildduckMessage[]>;
   getMessage: (
     userId: string,
     messageId: string,
-  ) => Promise<WildDuckMessageResponse>;
+  ) => Promise<WildduckMessageResponse>;
   searchMessages: (
     userId: string,
     query: string,
     options?: GetMessagesOptions,
-  ) => Promise<WildDuckMessage[]>;
+  ) => Promise<WildduckMessage[]>;
   refresh: () => Promise<void>;
 
   // Send mutation
@@ -105,17 +105,17 @@ interface UseWildduckMessagesReturn {
 }
 
 /**
- * Hook for WildDuck message operations using React Query
+ * Hook for Wildduck message operations using React Query
  * Mutations automatically invalidate related message queries
  */
 const useWildduckMessages = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   _devMode: boolean = false,
 ): UseWildduckMessagesReturn => {
   const queryClient = useQueryClient();
 
   // Local state for messages and pagination
-  const [messages, setMessages] = useState<WildDuckMessage[]>([]);
+  const [messages, setMessages] = useState<WildduckMessage[]>([]);
   const [totalMessages, setTotalMessages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastFetchParams, setLastFetchParams] = useState<{
@@ -146,7 +146,7 @@ const useWildduckMessages = (
     userId: string,
     mailboxId: string,
     options: GetMessagesOptions = {},
-  ): Promise<WildDuckMessage[]> => {
+  ): Promise<WildduckMessage[]> => {
     try {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers = buildHeaders();
@@ -160,7 +160,7 @@ const useWildduckMessages = (
       const endpoint = `/users/${userId}/mailboxes/${mailboxId}/messages${query ? `?${query}` : ""}`;
 
       const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
-      const messageData = response.data as WildDuckMessagesResponse;
+      const messageData = response.data as WildduckMessagesResponse;
       const messageList = messageData.results || [];
 
       setMessages(messageList);
@@ -188,7 +188,7 @@ const useWildduckMessages = (
   const getMessage = async (
     userId: string,
     messageId: string,
-  ): Promise<WildDuckMessageResponse> => {
+  ): Promise<WildduckMessageResponse> => {
     try {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers = buildHeaders();
@@ -198,7 +198,7 @@ const useWildduckMessages = (
         { headers },
       );
 
-      const messageData = response.data as WildDuckMessageResponse;
+      const messageData = response.data as WildduckMessageResponse;
 
       // Update cache
       queryClient.setQueryData(
@@ -219,7 +219,7 @@ const useWildduckMessages = (
     userId: string,
     query: string,
     options: GetMessagesOptions = {},
-  ): Promise<WildDuckMessage[]> => {
+  ): Promise<WildduckMessage[]> => {
     try {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers = buildHeaders();
@@ -230,7 +230,7 @@ const useWildduckMessages = (
       );
 
       const searchResponse = response.data as {
-        results?: WildDuckMessage[];
+        results?: WildduckMessage[];
         total?: number;
         page?: number;
       };

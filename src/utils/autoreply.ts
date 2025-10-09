@@ -1,5 +1,8 @@
-import { AutoReplySettings, WildDuckConfig } from "@johnqh/types";
-import { createWildDuckClient } from "./client";
+import type {
+  AutoReplySettings,
+  WildduckConfig,
+} from "../types/wildduck-types";
+import { createWildduckClient } from "./client";
 
 /**
  * Parameters for updating auto-reply
@@ -21,10 +24,10 @@ export interface UpdateAutoReplyParams {
  * GET /users/:user/autoreply
  */
 export async function getAutoReply(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
 ): Promise<AutoReplySettings> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.get<any>(`/users/${userId}/autoreply`);
   return response.data;
 }
@@ -41,11 +44,11 @@ export async function getAutoReply(
  * @param end - ISO 8601 datetime to end auto-reply
  */
 export async function updateAutoReply(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   params: UpdateAutoReplyParams,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}/autoreply`, params);
   return response.data;
 }
@@ -55,7 +58,7 @@ export async function updateAutoReply(
  * PUT /users/:user/autoreply
  */
 export async function enableAutoReply(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   message: {
     subject: string;
@@ -85,7 +88,7 @@ export async function enableAutoReply(
  * PUT /users/:user/autoreply
  */
 export async function disableAutoReply(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   sess?: string,
   ip?: string,
@@ -101,12 +104,12 @@ export async function disableAutoReply(
  * DELETE /users/:user/autoreply
  */
 export async function deleteAutoReply(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.delete<any>(`/users/${userId}/autoreply`, {
     data: { sess, ip },
   } as any);

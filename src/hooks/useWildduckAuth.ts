@@ -2,16 +2,23 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useStorageService } from "./useServices";
+import type { Optional } from "@johnqh/types";
 import type {
-  AuthenticateRequest,
-  WildDuckAuthResponse as AuthenticationResponse,
-  Optional,
-  PreAuthRequest,
-  WildDuckPreAuthResponse as PreAuthResponse,
-  WildDuckConfig,
-} from "@johnqh/types";
-import { createAuthenticateRequest, createPreAuthRequest } from "@johnqh/types";
-import { WildDuckMockData } from "./mocks";
+  WildduckAuthResponse as AuthenticationResponse,
+  WildduckPreAuthResponse as PreAuthResponse,
+  WildduckAuthenticateRequest,
+  WildduckConfig,
+  WildduckPreAuthRequest,
+} from "../types/wildduck-types";
+import {
+  createAuthenticateRequest,
+  createPreAuthRequest,
+} from "../types/wildduck-types";
+
+// Type aliases for legacy compatibility
+type AuthenticateRequest = WildduckAuthenticateRequest;
+type PreAuthRequest = WildduckPreAuthRequest;
+import { WildduckMockData } from "./mocks";
 
 // Singleton to persist authData across all hook instances
 class AuthDataStore {
@@ -78,11 +85,11 @@ interface UseWildduckAuthReturn {
 }
 
 /**
- * Hook for WildDuck authentication operations using React Query
+ * Hook for Wildduck authentication operations using React Query
  * All mutations are automatically deduplicated and cached by React Query
  */
 const useWildduckAuth = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckAuthReturn => {
   const storageService = useStorageService();
@@ -153,7 +160,7 @@ const useWildduckAuth = (
             "[DevMode] authenticate failed, returning mock data:",
             errorMessage,
           );
-          const mockResult = WildDuckMockData.getAuthentication(
+          const mockResult = WildduckMockData.getAuthentication(
             params.username,
           );
 
@@ -210,7 +217,7 @@ const useWildduckAuth = (
             "[DevMode] preAuth failed, returning mock data:",
             errorMessage,
           );
-          return WildDuckMockData.getPreAuth();
+          return WildduckMockData.getPreAuth();
         }
 
         throw new Error(errorMessage);
@@ -267,7 +274,7 @@ const useWildduckAuth = (
             errorMessage,
           );
           await storageService.removeItem("wildduck_token");
-          return WildDuckMockData.getLogout();
+          return WildduckMockData.getLogout();
         }
 
         throw new Error(errorMessage);
@@ -327,7 +334,7 @@ const useWildduckAuth = (
           "[DevMode] getAuthStatus failed, returning mock data:",
           errorMessage,
         );
-        return WildDuckMockData.getAuthStatus();
+        return WildduckMockData.getAuthStatus();
       }
 
       return { authenticated: false };

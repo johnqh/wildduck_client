@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { WildDuckAPI } from '../wildduck-client';
-import { WildDuckConfig } from '@johnqh/types';
+import { WildduckAPI } from '../wildduck-client';
+import { WildduckConfig } from '../../types/wildduck-types';
 import { NetworkClient } from '@johnqh/di';
 
 const TEST_USER_AUTH = { userId: 'user123', accessToken: 'test-token' };
 
-describe('WildDuckAPI', () => {
-  let api: WildDuckAPI;
+describe('WildduckAPI', () => {
+  let api: WildduckAPI;
   let mockNetworkClient: NetworkClient;
-  let mockConfig: WildDuckConfig;
+  let mockConfig: WildduckConfig;
 
   beforeEach(() => {
     mockNetworkClient = {
@@ -26,7 +26,7 @@ describe('WildDuckAPI', () => {
       cloudflareWorkerUrl: undefined,
     };
 
-    api = new WildDuckAPI(mockNetworkClient, mockConfig);
+    api = new WildduckAPI(mockNetworkClient, mockConfig);
     vi.clearAllMocks();
   });
 
@@ -37,27 +37,27 @@ describe('WildDuckAPI', () => {
   describe('initialization', () => {
     it('should create instance successfully', () => {
       expect(api).toBeDefined();
-      expect(api).toBeInstanceOf(WildDuckAPI);
+      expect(api).toBeInstanceOf(WildduckAPI);
     });
 
     it('should initialize with Cloudflare worker config', () => {
-      const cloudflareConfig: WildDuckConfig = {
+      const cloudflareConfig: WildduckConfig = {
         ...mockConfig,
         cloudflareWorkerUrl: 'https://worker.example.com',
       };
 
-      const cloudflareApi = new WildDuckAPI(mockNetworkClient, cloudflareConfig);
+      const cloudflareApi = new WildduckAPI(mockNetworkClient, cloudflareConfig);
       expect(cloudflareApi).toBeDefined();
-      expect(cloudflareApi).toBeInstanceOf(WildDuckAPI);
+      expect(cloudflareApi).toBeInstanceOf(WildduckAPI);
     });
 
     it('should throw on invalid config', () => {
       const invalidConfig = {
         backendUrl: '',
         apiToken: '',
-      } as WildDuckConfig;
+      } as WildduckConfig;
 
-      expect(() => new WildDuckAPI(mockNetworkClient, invalidConfig))
+      expect(() => new WildduckAPI(mockNetworkClient, invalidConfig))
         .not.toThrow(); // Constructor doesn't validate, but methods might
     });
   });

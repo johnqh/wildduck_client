@@ -1,5 +1,5 @@
 /**
- * Individual hooks for WildDuck Mailboxes API
+ * Individual hooks for Wildduck Mailboxes API
  * Each hook is isolated with its own state management
  */
 

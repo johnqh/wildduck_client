@@ -1,13 +1,13 @@
 import axios from "axios";
-import { WildDuckConfig } from "@johnqh/types";
+import type { WildduckConfig } from "../types/wildduck-types";
 
 /**
- * Create an axios instance configured for WildDuck API
+ * Create an axios instance configured for Wildduck API
  * The apiToken should be the user's authentication token from /authenticate endpoint
  * with token=true parameter, NOT the master API token
  */
-export function createWildDuckClient(
-  config: WildDuckConfig,
+export function createWildduckClient(
+  config: WildduckConfig,
 ): ReturnType<typeof axios.create> {
   return axios.create({
     baseURL: config.backendUrl,

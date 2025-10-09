@@ -1,12 +1,12 @@
-import {
+import type { Optional } from "@johnqh/types";
+import type {
   EmailFilter,
   FilterAction,
   FilterQuery,
   FilterResponse,
-  Optional,
-  WildDuckConfig,
-} from "@johnqh/types";
-import { createWildDuckClient } from "./client";
+  WildduckConfig,
+} from "../types/wildduck-types";
+import { createWildduckClient } from "./client";
 
 /**
  * Parameters for creating/updating a filter
@@ -25,10 +25,10 @@ export interface FilterParams {
  * GET /users/:user/filters
  */
 export async function getFilters(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
 ): Promise<EmailFilter[]> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.get<any>(`/users/${userId}/filters`);
   return response.data.results || [];
 }
@@ -38,11 +38,11 @@ export async function getFilters(
  * GET /users/:user/filters/:filter
  */
 export async function getFilter(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   filterId: string,
 ): Promise<Optional<EmailFilter>> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   try {
     const response = await client.get<any>(
       `/users/${userId}/filters/${filterId}`,
@@ -58,11 +58,11 @@ export async function getFilter(
  * POST /users/:user/filters
  */
 export async function createFilter(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   params: FilterParams,
 ): Promise<FilterResponse> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.post<any>(`/users/${userId}/filters`, params);
   return response.data;
 }
@@ -72,12 +72,12 @@ export async function createFilter(
  * PUT /users/:user/filters/:filter
  */
 export async function updateFilter(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   filterId: string,
   params: Partial<FilterParams>,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(
     `/users/${userId}/filters/${filterId}`,
     params,
@@ -90,13 +90,13 @@ export async function updateFilter(
  * DELETE /users/:user/filters/:filter
  */
 export async function deleteFilter(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   filterId: string,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.delete<any>(
     `/users/${userId}/filters/${filterId}`,
     {
@@ -111,7 +111,7 @@ export async function deleteFilter(
  * PUT /users/:user/filters/:filter
  */
 export async function enableFilter(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   filterId: string,
   sess?: string,
@@ -128,7 +128,7 @@ export async function enableFilter(
  * PUT /users/:user/filters/:filter
  */
 export async function disableFilter(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   filterId: string,
   sess?: string,

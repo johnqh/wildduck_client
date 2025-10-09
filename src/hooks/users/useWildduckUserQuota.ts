@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WildDuckAPI } from "../../network/wildduck-client";
+import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
   WildduckUserAuth,
   WildduckUserResponse,
@@ -26,7 +26,7 @@ export interface RecalculateQuotaResult {
  * Provides query for current quota usage and mutations for updating/recalculating quota
  */
 export const useWildduckUserQuota = (
-  api: WildDuckAPI,
+  api: WildduckAPI,
   userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
@@ -65,7 +65,7 @@ export const useWildduckUserQuota = (
     mutationFn: async (
       recalcUserId: string,
     ): Promise<RecalculateQuotaResult> => {
-      // Note: This endpoint needs to be added to WildDuckAPI
+      // Note: This endpoint needs to be added to WildduckAPI
       // For now, return a placeholder
       void recalcUserId; // Suppress unused variable warning until endpoint is implemented
       throw new Error("Recalculate quota endpoint not yet implemented");

@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { WildDuckAPI } from "../../network/wildduck-client";
+import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type WildDuckConfig } from "@johnqh/types";
-import { WildDuckMockData } from "../mocks";
+import { type WildduckConfig } from "../../types/wildduck-types";
+import { WildduckMockData } from "../mocks";
 import type { WildduckUserAuth } from "../../types/wildduck-types";
 
 export interface UseWildduckGetMessageParams {
@@ -17,19 +17,19 @@ export interface UseWildduckGetMessageParams {
  * Requires user authentication
  *
  * @param networkClient - Network client for API calls
- * @param config - WildDuck API configuration
+ * @param config - Wildduck API configuration
  * @param params - Query parameters including userAuth and messageId
  * @returns React Query result with message data
  */
 export const useWildduckGetMessage = (
   networkClient: NetworkClient,
-  config: WildDuckConfig,
+  config: WildduckConfig,
   params: UseWildduckGetMessageParams = {},
 ) => {
   const { userAuth, messageId, devMode = false } = params;
 
   const api = useMemo(
-    () => new WildDuckAPI(networkClient, config),
+    () => new WildduckAPI(networkClient, config),
     [networkClient, config],
   );
 
@@ -49,7 +49,7 @@ export const useWildduckGetMessage = (
           );
           return {
             success: true,
-            data: WildDuckMockData.getMessageQuery(messageId, userAuth.userId),
+            data: WildduckMockData.getMessageQuery(messageId, userAuth.userId),
             error: null,
           };
         }

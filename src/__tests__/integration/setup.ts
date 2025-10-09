@@ -1,7 +1,7 @@
 /**
  * Integration Test Setup
  *
- * This file provides utilities for integration testing with a live WildDuck server.
+ * This file provides utilities for integration testing with a live Wildduck server.
  * It handles EVM wallet generation and Sign-in with Ethereum (SIWE) message signing.
  */
 
@@ -9,7 +9,7 @@ import { privateKeyToAccount } from "viem/accounts";
 
 // Environment variables for integration testing
 export const INTEGRATION_CONFIG = {
-  // WildDuck server endpoint (set via WILDDUCK_ENDPOINT env var)
+  // Wildduck server endpoint (set via WILDDUCK_ENDPOINT env var)
   endpoint: process.env.WILDDUCK_ENDPOINT || "http://localhost:8080",
   // Email domain for testing
   emailDomain: process.env.WILDDUCK_EMAIL_DOMAIN || "example.com",
@@ -50,7 +50,7 @@ export function createSIWEMessage(params: {
   const {
     domain,
     address,
-    statement = "Sign in with Ethereum to WildDuck",
+    statement = "Sign in with Ethereum to Wildduck",
     uri,
     version = "1",
     chainId = 1,
@@ -85,7 +85,7 @@ export async function signSIWEMessage(message: string): Promise<string> {
 }
 
 /**
- * Generate authentication payload for WildDuck /authenticate endpoint
+ * Generate authentication payload for Wildduck /authenticate endpoint
  */
 export async function generateAuthPayload(params: {
   username: string;

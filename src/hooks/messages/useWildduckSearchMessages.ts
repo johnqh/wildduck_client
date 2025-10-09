@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { type WildDuckConfig } from "@johnqh/types";
+import { type WildduckConfig } from "../../types/wildduck-types";
 import axios from "axios";
 import type { WildduckUserAuth } from "../../types/wildduck-types";
 
@@ -15,12 +15,12 @@ export interface UseWildduckSearchMessagesParams {
  * React hook for searching messages
  * Requires user authentication
  *
- * @param config - WildDuck API configuration
+ * @param config - Wildduck API configuration
  * @param params - Query parameters including userAuth, query string, and pagination options
  * @returns React Query result with search results
  */
 export const useWildduckSearchMessages = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   params: UseWildduckSearchMessagesParams = {},
 ) => {
   const { userAuth, query, limit = 50, page = 1, devMode = false } = params;

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WildDuckAPI } from "../../network/wildduck-client";
+import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
   WildduckKeyInfo,
   WildduckUserAuth,
@@ -25,7 +25,7 @@ export interface UpdateEncryptionParams {
  * Handles PGP encryption for received and forwarded messages
  */
 export const useWildduckUserEncryption = (
-  api: WildDuckAPI,
+  api: WildduckAPI,
   userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();

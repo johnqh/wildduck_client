@@ -1,5 +1,5 @@
 /**
- * WildDuck API hooks for React and React Native
+ * Wildduck API hooks for React and React Native
  */
 
 // ============================================================================
@@ -56,21 +56,20 @@ export {
 
 // Export types from TanStack Query hooks
 export type {
-  WildduckHealthResponse,
   WildduckUserSettings,
   WildduckFilter,
   WildduckAuthStatusResponse,
 } from "./useWildduckQueries";
 
-// Export WildDuck API response types from @johnqh/types
+// Export Wildduck API response types from local types
 export type {
-  WildDuckUser as WildduckUser,
-  WildDuckAddress as WildduckAddress,
-  WildDuckMessage as WildduckMessage,
-  WildDuckMessagesResponse as WildduckMessagesResponse,
-  WildDuckMailbox as WildduckMailbox,
-  WildDuckMailboxResponse as WildduckMailboxesResponse,
-} from "@johnqh/types";
+  WildduckUser as WildduckUser,
+  WildduckAddress as WildduckAddress,
+  WildduckMessage as WildduckMessage,
+  WildduckMessagesResponse as WildduckMessagesResponse,
+  WildduckMailbox as WildduckMailbox,
+  WildduckMailboxResponse as WildduckMailboxesResponse,
+} from "../types/wildduck-types";
 
 // Export WildduckUserAuth type for authentication
 export type { WildduckUserAuth } from "../types/wildduck-types";
@@ -80,4 +79,4 @@ export type { WildduckUserAuth } from "../types/wildduck-types";
 // ============================================================================
 
 // Export mock data helper
-export { WildDuckMockData } from "./mocks";
+export { WildduckMockData } from "./mocks";

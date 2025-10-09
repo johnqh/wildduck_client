@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { WildDuckAPI } from "../../network/wildduck-client";
+import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type WildDuckConfig } from "@johnqh/types";
+import { type WildduckConfig } from "../../types/wildduck-types";
 import type {
   WildduckMailboxResponse,
   WildduckUserAuth,
@@ -19,19 +19,19 @@ export interface UseWildduckGetMailboxParams {
  * Requires user authentication
  *
  * @param networkClient - Network client for API calls
- * @param config - WildDuck API configuration
+ * @param config - Wildduck API configuration
  * @param params - Query parameters including userAuth and mailboxId
  * @returns React Query result with mailbox data
  */
 export const useWildduckGetMailbox = (
   networkClient: NetworkClient,
-  config: WildDuckConfig,
+  config: WildduckConfig,
   params: UseWildduckGetMailboxParams = {},
 ) => {
   const { userAuth, mailboxId, devMode = false } = params;
 
   const api = useMemo(
-    () => new WildDuckAPI(networkClient, config),
+    () => new WildduckAPI(networkClient, config),
     [networkClient, config],
   );
 
@@ -51,15 +51,19 @@ export const useWildduckGetMailbox = (
           );
           return {
             success: true,
-            id: mailboxId,
-            name: "Mock Mailbox",
-            path: "Mock/Mailbox",
-            specialUse: false,
-            modifyIndex: 0,
-            subscribed: true,
-            hidden: false,
-            total: 0,
-            unseen: 0,
+            results: [
+              {
+                id: mailboxId,
+                name: "Mock Mailbox",
+                path: "Mock/Mailbox",
+                modifyIndex: 0,
+                subscribed: true,
+                hidden: false,
+                total: 0,
+                unseen: 0,
+                size: 0,
+              },
+            ],
           } as WildduckMailboxResponse;
         }
         throw err;

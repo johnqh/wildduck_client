@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WildDuckAPI } from "../../network/wildduck-client";
+import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
   WildduckUserAuth,
   WildduckUserResponse,
@@ -47,7 +47,7 @@ export interface UpdatePasswordParams {
  * Handles basic user information, account status, and password management
  */
 export const useWildduckUserProfile = (
-  api: WildDuckAPI,
+  api: WildduckAPI,
   userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();

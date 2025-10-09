@@ -1,13 +1,13 @@
 /**
- * Mock data helpers for WildDuck API responses in development mode
+ * Mock data helpers for Wildduck API responses in development mode
  */
 
 import type {
-  WildDuckAuthResponse as AuthenticationResponse,
-  WildDuckPreAuthResponse as PreAuthResponse,
-} from "@johnqh/types";
+  WildduckAuthResponse as AuthenticationResponse,
+  WildduckPreAuthResponse as PreAuthResponse,
+} from "../types/wildduck-types";
 
-export class WildDuckMockData {
+export class WildduckMockData {
   static getAuthStatus() {
     return {
       authenticated: true,

@@ -1,9 +1,9 @@
-import { Optional } from "@johnqh/types";
 import { useState } from "react";
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
-import { WildDuckConfig } from "@johnqh/types";
-import { WildDuckMockData } from "./mocks";
+import type { Optional } from "@johnqh/types";
+import type { WildduckConfig } from "../types/wildduck-types";
+import { WildduckMockData } from "./mocks";
 
 interface WildduckUser {
   success: boolean;
@@ -34,11 +34,11 @@ interface UseWildduckUsersReturn {
 }
 
 /**
- * Hook for WildDuck user management operations using React Query
+ * Hook for Wildduck user management operations using React Query
  * Query results are cached for faster subsequent access
  */
 const useWildduckUsers = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckUsersReturn => {
   const queryClient = useQueryClient();
@@ -90,7 +90,7 @@ const useWildduckUsers = (
           "[DevMode] Get user failed, returning mock data:",
           errorMessage,
         );
-        const mockData = WildDuckMockData.getUser(userId);
+        const mockData = WildduckMockData.getUser(userId);
         const mockUser = mockData.data.user as unknown as WildduckUser;
 
         // Update cache with mock data
@@ -149,7 +149,7 @@ const useWildduckUsers = (
           "[DevMode] Get users failed, returning mock data:",
           errorMessage,
         );
-        const mockData = WildDuckMockData.getUsers();
+        const mockData = WildduckMockData.getUsers();
         const mockResult = {
           users: mockData.data.users as unknown as WildduckUser[],
           total: mockData.data.total,

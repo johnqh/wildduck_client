@@ -1,5 +1,5 @@
 /**
- * TanStack Query hooks for WildDuck API GET endpoints
+ * TanStack Query hooks for Wildduck API GET endpoints
  *
  * These hooks replace custom fetching logic with TanStack Query's optimized caching.
  */
@@ -11,18 +11,18 @@ import {
 } from "@tanstack/react-query";
 import { queryKeys } from "./query-keys";
 import { STALE_TIMES } from "./query-config";
-import { WildDuckConfig } from "@johnqh/types";
 import type {
-  WildDuckAddress,
-  WildDuckMailboxResponse,
-  WildDuckMessage,
-  WildDuckMessagesResponse,
-  WildDuckUser,
-} from "@johnqh/types";
+  WildduckAddress,
+  WildduckConfig,
+  WildduckMailboxResponse,
+  WildduckMessage,
+  WildduckMessagesResponse,
+  WildduckUser,
+} from "../types/wildduck-types";
 import axios from "axios";
-import { WildDuckMockData } from "./mocks";
+import { WildduckMockData } from "./mocks";
 
-// Define response types based on WildDuck API
+// Define response types based on Wildduck API
 interface WildduckHealthResponse {
   status: string;
   version: string;
@@ -31,9 +31,9 @@ interface WildduckHealthResponse {
 }
 
 // Users list response (not defined in @johnqh/types)
-interface WildDuckUsersResponse {
+interface WildduckUsersResponse {
   success: boolean;
-  results: WildDuckUser[];
+  results: WildduckUser[];
   error?: string;
 }
 
@@ -63,10 +63,10 @@ interface WildduckAuthStatusResponse {
 }
 
 /**
- * Hook to get WildDuck server health status
+ * Hook to get Wildduck server health status
  */
 const useWildduckHealth = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
   options?: UseQueryOptions<WildduckHealthResponse>,
 ): UseQueryResult<WildduckHealthResponse> => {
@@ -95,7 +95,7 @@ const useWildduckHealth = (
             "[DevMode] Health check failed, returning mock data:",
             err,
           );
-          return WildDuckMockData.getHealthQuery();
+          return WildduckMockData.getHealthQuery();
         }
         throw err;
       }
@@ -109,14 +109,14 @@ const useWildduckHealth = (
  * Hook to get users list with optional filters
  */
 const useWildduckUsersList = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   devMode: boolean = false,
   filters?: Record<string, unknown>,
-  options?: UseQueryOptions<WildDuckUsersResponse>,
-): UseQueryResult<WildDuckUsersResponse> => {
+  options?: UseQueryOptions<WildduckUsersResponse>,
+): UseQueryResult<WildduckUsersResponse> => {
   return useQuery({
     queryKey: queryKeys.wildduck.usersList(filters),
-    queryFn: async (): Promise<WildDuckUsersResponse> => {
+    queryFn: async (): Promise<WildduckUsersResponse> => {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -142,14 +142,14 @@ const useWildduckUsersList = (
         const response = await axios.get(`${apiUrl}/users?${params}`, {
           headers,
         });
-        return response.data as WildDuckUsersResponse;
+        return response.data as WildduckUsersResponse;
       } catch (err) {
         if (devMode) {
           console.warn(
             "[DevMode] Get users list failed, returning mock data:",
             err,
           );
-          return WildDuckMockData.getUsersListQuery() as unknown as WildDuckUsersResponse;
+          return WildduckMockData.getUsersListQuery() as unknown as WildduckUsersResponse;
         }
         throw err;
       }
@@ -163,14 +163,14 @@ const useWildduckUsersList = (
  * Hook to get a specific user by ID
  */
 const useWildduckUser = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
-  options?: UseQueryOptions<WildDuckUser>,
-): UseQueryResult<WildDuckUser> => {
+  options?: UseQueryOptions<WildduckUser>,
+): UseQueryResult<WildduckUser> => {
   return useQuery({
     queryKey: queryKeys.wildduck.user(userId),
-    queryFn: async (): Promise<WildDuckUser> => {
+    queryFn: async (): Promise<WildduckUser> => {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -198,9 +198,7 @@ const useWildduckUser = (
           id: userData.id,
           username: userData.username,
           name: userData.address || userData.username,
-          address: userData.address,
-          language: undefined,
-          retention: undefined,
+          ...(userData.address && { address: userData.address }),
           tags: [],
           quota: {
             allowed: 0,
@@ -215,7 +213,7 @@ const useWildduckUser = (
       } catch (err) {
         if (devMode) {
           console.warn("[DevMode] Get user failed, returning mock data:", err);
-          return WildDuckMockData.getUserQuery(userId) as WildDuckUser;
+          return WildduckMockData.getUserQuery(userId) as WildduckUser;
         }
         throw err;
       }
@@ -230,14 +228,14 @@ const useWildduckUser = (
  * Hook to get user addresses
  */
 const useWildduckUserAddresses = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
-  options?: UseQueryOptions<WildDuckAddress[]>,
-): UseQueryResult<WildDuckAddress[]> => {
+  options?: UseQueryOptions<WildduckAddress[]>,
+): UseQueryResult<WildduckAddress[]> => {
   return useQuery({
     queryKey: queryKeys.wildduck.userAddresses(userId),
-    queryFn: async (): Promise<WildDuckAddress[]> => {
+    queryFn: async (): Promise<WildduckAddress[]> => {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -264,11 +262,8 @@ const useWildduckUserAddresses = (
           addressData.results?.map((addr) => ({
             id: addr.id,
             address: addr.address,
-            name: undefined,
             created: new Date().toISOString(),
             main: addr.main,
-            metaData: undefined,
-            tags: undefined,
           })) || []
         );
       } catch (err) {
@@ -277,8 +272,8 @@ const useWildduckUserAddresses = (
             "[DevMode] Get user addresses failed, returning mock data:",
             err,
           );
-          const mockData = WildDuckMockData.getUserAddressesQuery();
-          return mockData.addresses as WildDuckAddress[];
+          const mockData = WildduckMockData.getUserAddressesQuery();
+          return mockData.addresses as WildduckAddress[];
         }
         throw err;
       }
@@ -293,16 +288,16 @@ const useWildduckUserAddresses = (
  * Hook to get user messages with optional filters
  */
 const useWildduckUserMessages = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   mailboxId: string,
   devMode: boolean = false,
   filters?: Record<string, unknown>,
-  options?: UseQueryOptions<WildDuckMessagesResponse>,
-): UseQueryResult<WildDuckMessagesResponse> => {
+  options?: UseQueryOptions<WildduckMessagesResponse>,
+): UseQueryResult<WildduckMessagesResponse> => {
   return useQuery({
     queryKey: queryKeys.wildduck.userMessages(userId, mailboxId, filters),
-    queryFn: async (): Promise<WildDuckMessagesResponse> => {
+    queryFn: async (): Promise<WildduckMessagesResponse> => {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -331,15 +326,13 @@ const useWildduckUserMessages = (
           success: messagesData.success as true,
           total: messagesData.total,
           page: messagesData.page,
-          previousCursor: undefined,
-          nextCursor: undefined,
           results: messagesData.results.map((msg) => ({
             id: msg.id,
             mailbox: msg.mailbox,
             thread: msg.thread || "",
-            from: msg.from
-              ? { name: msg.from.name, address: msg.from.address || "" }
-              : undefined,
+            ...(msg.from && {
+              from: { name: msg.from.name, address: msg.from.address || "" },
+            }),
             to:
               msg.to?.map((addr: any) => ({
                 name: addr.name,
@@ -364,7 +357,7 @@ const useWildduckUserMessages = (
             size: msg.size || 0,
             ha: msg.attachments || false,
             attachments: msg.attachments || false,
-          })) as WildDuckMessage[],
+          })) as WildduckMessage[],
         };
       } catch (err) {
         if (devMode) {
@@ -372,7 +365,7 @@ const useWildduckUserMessages = (
             "[DevMode] Get user messages failed, returning mock data:",
             err,
           );
-          return WildDuckMockData.getUserMessagesQuery() as unknown as WildDuckMessagesResponse;
+          return WildduckMockData.getUserMessagesQuery() as unknown as WildduckMessagesResponse;
         }
         throw err;
       }
@@ -387,15 +380,15 @@ const useWildduckUserMessages = (
  * Hook to get a specific message
  */
 const useWildduckMessage = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   messageId: string,
   devMode: boolean = false,
-  options?: UseQueryOptions<WildDuckMessage>,
-): UseQueryResult<WildDuckMessage> => {
+  options?: UseQueryOptions<WildduckMessage>,
+): UseQueryResult<WildduckMessage> => {
   return useQuery({
     queryKey: queryKeys.wildduck.message(userId, messageId),
-    queryFn: async (): Promise<WildDuckMessage> => {
+    queryFn: async (): Promise<WildduckMessage> => {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -419,12 +412,12 @@ const useWildduckMessage = (
           id: messageData.id,
           mailbox: messageData.mailbox,
           thread: messageData.thread || "",
-          from: messageData.from
-            ? {
-                name: messageData.from.name,
-                address: messageData.from.address || "",
-              }
-            : undefined,
+          ...(messageData.from && {
+            from: {
+              name: messageData.from.name,
+              address: messageData.from.address || "",
+            },
+          }),
           to:
             messageData.to?.map((addr: any) => ({
               name: addr.name,
@@ -456,10 +449,10 @@ const useWildduckMessage = (
             "[DevMode] Get message failed, returning mock data:",
             err,
           );
-          return WildDuckMockData.getMessageQuery(
+          return WildduckMockData.getMessageQuery(
             messageId,
             userId,
-          ) as unknown as WildDuckMessage;
+          ) as unknown as WildduckMessage;
         }
         throw err;
       }
@@ -472,10 +465,10 @@ const useWildduckMessage = (
 
 /**
  * Hook to get user filters
- * Note: getUserFilters method not yet implemented in WildDuckAPI
+ * Note: getUserFilters method not yet implemented in WildduckAPI
  */
 const useWildduckUserFilters = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
   options?: UseQueryOptions<WildduckFilter[]>,
@@ -517,7 +510,7 @@ const useWildduckUserFilters = (
             "[DevMode] Get user filters failed, returning mock data:",
             err,
           );
-          const mockData = WildDuckMockData.getUserFiltersQuery();
+          const mockData = WildduckMockData.getUserFiltersQuery();
           return mockData.filters as WildduckFilter[];
         }
         throw err;
@@ -531,10 +524,10 @@ const useWildduckUserFilters = (
 
 /**
  * Hook to get user settings
- * Note: getUserSettings method not yet implemented in WildDuckAPI
+ * Note: getUserSettings method not yet implemented in WildduckAPI
  */
 const useWildduckUserSettings = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
   options?: UseQueryOptions<WildduckUserSettings>,
@@ -567,7 +560,7 @@ const useWildduckUserSettings = (
             "[DevMode] Get user settings failed, returning mock data:",
             err,
           );
-          const mockData = WildDuckMockData.getUserSettingsQuery();
+          const mockData = WildduckMockData.getUserSettingsQuery();
           return mockData.settings as WildduckUserSettings;
         }
         throw err;
@@ -583,7 +576,7 @@ const useWildduckUserSettings = (
  * Hook to get user mailboxes
  */
 const useWildduckUserMailboxes = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
   options?: {
@@ -592,11 +585,11 @@ const useWildduckUserMailboxes = (
     counters?: boolean;
     sizes?: boolean;
   },
-  queryOptions?: UseQueryOptions<WildDuckMailboxResponse>,
-): UseQueryResult<WildDuckMailboxResponse> => {
+  queryOptions?: UseQueryOptions<WildduckMailboxResponse>,
+): UseQueryResult<WildduckMailboxResponse> => {
   return useQuery({
     queryKey: queryKeys.wildduck.userMailboxes(userId, options),
-    queryFn: async (): Promise<WildDuckMailboxResponse> => {
+    queryFn: async (): Promise<WildduckMailboxResponse> => {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -621,18 +614,18 @@ const useWildduckUserMailboxes = (
 
       try {
         const response = await axios.get(endpoint, { headers });
-        return response.data as WildDuckMailboxResponse;
+        return response.data as WildduckMailboxResponse;
       } catch (err) {
         if (devMode) {
           console.warn(
             "[DevMode] Get user mailboxes failed, returning mock data:",
             err,
           );
-          const mockData = WildDuckMockData.getUserMailboxesQuery();
+          const mockData = WildduckMockData.getUserMailboxesQuery();
           return {
             success: true,
             results: mockData.mailboxes,
-          } as unknown as WildDuckMailboxResponse;
+          } as unknown as WildduckMailboxResponse;
         }
         throw err;
       }
@@ -647,7 +640,7 @@ const useWildduckUserMailboxes = (
  * Hook to check authentication status
  */
 const useWildduckAuthStatus = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   token?: string,
   devMode: boolean = false,
   queryOptions?: UseQueryOptions<WildduckAuthStatusResponse>,
@@ -700,7 +693,7 @@ const useWildduckAuthStatus = (
             "[DevMode] Auth status check failed, returning mock data:",
             err,
           );
-          return WildDuckMockData.getAuthStatusQuery() as WildduckAuthStatusResponse;
+          return WildduckMockData.getAuthStatusQuery() as WildduckAuthStatusResponse;
         }
         throw err;
       }
@@ -715,14 +708,14 @@ const useWildduckAuthStatus = (
  * Hook to search messages
  */
 const useWildduckSearchMessages = (
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   mailboxId: string,
   query: string,
   devMode: boolean = false,
   searchOptions?: Record<string, unknown>,
-  queryOptions?: UseQueryOptions<WildDuckMessagesResponse>,
-): UseQueryResult<WildDuckMessagesResponse> => {
+  queryOptions?: UseQueryOptions<WildduckMessagesResponse>,
+): UseQueryResult<WildduckMessagesResponse> => {
   return useQuery({
     queryKey: queryKeys.wildduck.searchMessages(
       userId,
@@ -730,7 +723,7 @@ const useWildduckSearchMessages = (
       query,
       searchOptions,
     ),
-    queryFn: async (): Promise<WildDuckMessagesResponse> => {
+    queryFn: async (): Promise<WildduckMessagesResponse> => {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -759,14 +752,14 @@ const useWildduckSearchMessages = (
           `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages?${params}`,
           { headers },
         );
-        return response.data as WildDuckMessagesResponse;
+        return response.data as WildduckMessagesResponse;
       } catch (err) {
         if (devMode) {
           console.warn(
             "[DevMode] Search messages failed, returning mock data:",
             err,
           );
-          return WildDuckMockData.getSearchMessagesQuery() as unknown as WildDuckMessagesResponse;
+          return WildduckMockData.getSearchMessagesQuery() as unknown as WildduckMessagesResponse;
         }
         throw err;
       }

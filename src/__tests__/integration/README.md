@@ -1,17 +1,17 @@
-# WildDuck API Integration Tests
+# Wildduck API Integration Tests
 
-This directory contains integration tests that run against a live WildDuck server in crypto mode.
+This directory contains integration tests that run against a live Wildduck server in crypto mode.
 
 ## Prerequisites
 
-1. **Running WildDuck Server**: You need a WildDuck server running in crypto mode
+1. **Running Wildduck Server**: You need a Wildduck server running in crypto mode
 2. **Environment Variables**: Set the required environment variables (see below)
 
 ## Environment Variables
 
 ### Required
 
-- `WILDDUCK_ENDPOINT` - The URL of your WildDuck server
+- `WILDDUCK_ENDPOINT` - The URL of your Wildduck server
   - Example: `http://localhost:8080`
   - **Tests will be skipped if this is not set**
 
@@ -97,7 +97,7 @@ The integration tests cover:
 
 ## Authentication Flow
 
-The integration tests use the WildDuck crypto authentication flow:
+The integration tests use the Wildduck crypto authentication flow:
 
 1. Generate an EVM wallet (using viem)
 2. Create a SIWE (Sign-in with Ethereum) message following EIP-4361
@@ -117,13 +117,13 @@ Make sure `WILDDUCK_ENDPOINT` is set. The tests will automatically skip if this 
 
 ### Authentication fails
 
-1. Verify your WildDuck server is running in crypto mode
+1. Verify your Wildduck server is running in crypto mode
 2. Check that the email domain matches your server configuration
 3. Ensure the server accepts the test wallet address
 
 ### Connection errors
 
-1. Check that the WildDuck server is accessible at the endpoint URL
+1. Check that the Wildduck server is accessible at the endpoint URL
 2. Verify firewall settings allow connections
 3. Check server logs for more details
 

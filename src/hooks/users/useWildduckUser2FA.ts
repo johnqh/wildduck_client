@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WildDuckAPI } from "../../network/wildduck-client";
+import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
   WildduckUserAuth,
   WildduckUserResponse,
@@ -22,7 +22,7 @@ export interface DisableTwoFAParams {
  * supports querying 2FA status and disabling all 2FA methods.
  */
 export const useWildduckUser2FA = (
-  api: WildDuckAPI,
+  api: WildduckAPI,
   userAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
@@ -88,7 +88,7 @@ export const useWildduckUser2FA = (
     disableError: disable2FA.error,
 
     // Note: Enable methods (enableTOTP, enableU2F, etc.) require additional
-    // API endpoints that should be added to WildDuckAPI class:
+    // API endpoints that should be added to WildduckAPI class:
     // - POST /users/:user/2fa/totp
     // - POST /users/:user/2fa/u2f
     // - POST /users/:user/2fa/webauthn

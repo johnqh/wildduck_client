@@ -1,15 +1,15 @@
-import { UserInfo, WildDuckConfig } from "@johnqh/types";
-import { createWildDuckClient } from "./client";
+import type { UserInfo, WildduckConfig } from "../types/wildduck-types";
+import { createWildduckClient } from "./client";
 
 /**
  * Get user information
  * GET /users/:user
  */
 export async function getUserInfo(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
 ): Promise<UserInfo> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.get<UserInfo>(`/users/${userId}`);
   return response.data;
 }
@@ -19,13 +19,13 @@ export async function getUserInfo(
  * PUT /users/:user
  */
 export async function updateUserName(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   name: string,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}`, {
     name,
     sess,
@@ -39,7 +39,7 @@ export async function updateUserName(
  * PUT /users/:user
  */
 export async function updateUserSettings(
-  config: WildDuckConfig,
+  config: WildduckConfig,
   userId: string,
   settings: {
     name?: string;
@@ -64,7 +64,7 @@ export async function updateUserSettings(
     ip?: string;
   },
 ): Promise<{ success: boolean }> {
-  const client = createWildDuckClient(config);
+  const client = createWildduckClient(config);
   const response = await client.put<any>(`/users/${userId}`, settings);
   return response.data;
 }

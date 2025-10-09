@@ -1,6 +1,6 @@
 /**
- * WildDuck API Helper Functions
- * Comprehensive utilities for managing WildDuck email server settings
+ * Wildduck API Helper Functions
+ * Comprehensive utilities for managing Wildduck email server settings
  */
 
 // User Settings

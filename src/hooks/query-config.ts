@@ -1,11 +1,11 @@
 /**
- * WildDuck TanStack Query Configuration
+ * Wildduck TanStack Query Configuration
  *
- * Provides stale time constants for WildDuck queries.
+ * Provides stale time constants for Wildduck queries.
  */
 
 /**
- * Default stale times for different types of WildDuck queries
+ * Default stale times for different types of Wildduck queries
  */
 export const STALE_TIMES = {
   // User data - changes infrequently

@@ -1,22 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import axios from "axios";
-import type {
-  WildDuckAuthResponse,
-  WildDuckConfig,
-  WildDuckMailbox,
-  WildDuckMailboxResponse,
-} from "@johnqh/types";
+import type { Optional } from "@johnqh/types";
 import type {
   CreateMailboxRequest,
   GetMailboxesRequest,
-  Optional,
   UpdateMailboxRequest,
-} from "@johnqh/types";
+  WildduckAuthResponse,
+  WildduckConfig,
+  WildduckMailbox,
+  WildduckMailboxResponse,
+} from "../types/wildduck-types";
 
 interface UseWildduckMailboxesReturn {
   // Query state
-  mailboxes: WildDuckMailbox[];
+  mailboxes: WildduckMailbox[];
   isLoading: boolean;
   error: Optional<string>;
 
@@ -24,7 +22,7 @@ interface UseWildduckMailboxesReturn {
   getMailboxes: (
     userId: string,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
-  ) => Promise<WildDuckMailbox[]>;
+  ) => Promise<WildduckMailbox[]>;
   refresh: (userId: string) => Promise<void>;
 
   // Mutations
@@ -55,17 +53,17 @@ interface UseWildduckMailboxesReturn {
 }
 
 /**
- * Hook for WildDuck mailbox operations using React Query
+ * Hook for Wildduck mailbox operations using React Query
  * Automatically fetches mailboxes when user is authenticated
  * Queries are cached and automatically refetched, mutations invalidate related queries
  *
- * @param config - WildDuck configuration
+ * @param config - Wildduck configuration
  * @param authData - Authentication data from useWildduckAuth (single source of truth)
  * @param devMode - Development mode flag
  */
 const useWildduckMailboxes = (
-  config: WildDuckConfig,
-  authData: Optional<WildDuckAuthResponse>,
+  config: WildduckConfig,
+  authData: Optional<WildduckAuthResponse>,
   _devMode: boolean = false,
 ): UseWildduckMailboxesReturn => {
   const queryClient = useQueryClient();
@@ -99,7 +97,7 @@ const useWildduckMailboxes = (
       counters?: Optional<boolean>;
       sizes?: Optional<boolean>;
     } = {},
-  ): Promise<WildDuckMailbox[]> => {
+  ): Promise<WildduckMailbox[]> => {
     try {
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers = buildHeaders();
@@ -114,7 +112,7 @@ const useWildduckMailboxes = (
       const endpoint = `/users/${userId}/mailboxes${query ? `?${query}` : ""}`;
 
       const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
-      const mailboxData = response.data as WildDuckMailboxResponse;
+      const mailboxData = response.data as WildduckMailboxResponse;
       const mailboxList = mailboxData.results || [];
 
       // Update cache
@@ -135,7 +133,7 @@ const useWildduckMailboxes = (
   // Get cached mailboxes from query cache (used for reading state)
   // Use userId parameter to get the correct cached mailboxes
   const cachedMailboxes = userId
-    ? queryClient.getQueryData<WildDuckMailbox[]>([
+    ? queryClient.getQueryData<WildduckMailbox[]>([
         "wildduck-mailboxes",
         userId,
       ]) || []
