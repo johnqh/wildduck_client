@@ -4,10 +4,10 @@
  */
 
 // Read operations
-export * from "./useGetMailboxes";
-export * from "./useGetMailbox";
+export * from "./useWildduckGetMailboxes";
+export * from "./useWildduckGetMailbox";
 
 // Write operations (mutations)
-export * from "./useCreateMailbox";
-export * from "./useUpdateMailbox";
-export * from "./useDeleteMailbox";
+export * from "./useWildduckCreateMailbox";
+export * from "./useWildduckUpdateMailbox";
+export * from "./useWildduckDeleteMailbox";

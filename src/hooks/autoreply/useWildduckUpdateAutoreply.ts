@@ -1,0 +1,90 @@
+import { useCallback, useMemo } from "react";
+import { WildDuckAPI } from "../../network/wildduck-client";
+import { type NetworkClient } from "@johnqh/di";
+import { type Optional, type WildDuckConfig } from "@johnqh/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type {
+  AutoreplyRequest,
+  SuccessResponse,
+  UserAuth,
+} from "../../types/wildduck-types";
+
+interface UseWildduckUpdateAutoreplyReturn {
+  updateAutoreply: (
+    userAuth: UserAuth,
+    params: AutoreplyRequest,
+  ) => Promise<SuccessResponse>;
+  isLoading: boolean;
+  error: Optional<Error>;
+  clearError: () => void;
+}
+
+/**
+ * React hook for updating autoreply/vacation responder settings
+ * Uses TanStack Query mutation for automatic cache invalidation
+ * Requires user authentication
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - WildDuck API configuration
+ * @param devMode - Whether to use mock data on errors
+ * @returns Object with updateAutoreply function and state
+ */
+export const useWildduckUpdateAutoreply = (
+  networkClient: NetworkClient,
+  config: WildDuckConfig,
+  devMode: boolean = false,
+): UseWildduckUpdateAutoreplyReturn => {
+  const queryClient = useQueryClient();
+
+  const wildduckClient = useMemo(
+    () => new WildDuckAPI(networkClient, config),
+    [networkClient, config],
+  );
+
+  const updateMutation = useMutation({
+    mutationKey: [
+      "wildduck-update-autoreply",
+      config.cloudflareWorkerUrl || config.backendUrl,
+    ],
+    mutationFn: async ({
+      userAuth,
+      params,
+    }: {
+      userAuth: UserAuth;
+      params: AutoreplyRequest;
+    }): Promise<SuccessResponse> => {
+      try {
+        return await wildduckClient.updateAutoreply(userAuth, params);
+      } catch (err) {
+        if (devMode) {
+          console.warn(
+            "[DevMode] updateAutoreply failed, returning mock data:",
+            err,
+          );
+          return { success: true };
+        }
+        throw err;
+      }
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate autoreply settings
+      queryClient.invalidateQueries({
+        queryKey: ["wildduck-autoreply", variables.userAuth.userId],
+      });
+    },
+  });
+
+  const updateAutoreply = useCallback(
+    async (userAuth: UserAuth, params: AutoreplyRequest) => {
+      return updateMutation.mutateAsync({ userAuth, params });
+    },
+    [updateMutation],
+  );
+
+  return {
+    updateAutoreply,
+    isLoading: updateMutation.isPending,
+    error: updateMutation.error,
+    clearError: () => updateMutation.reset(),
+  };
+};

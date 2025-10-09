@@ -4,8 +4,8 @@
  */
 
 // Read operations
-export * from "./useGetAutoreply";
+export * from "./useWildduckGetAutoreply";
 
 // Write operations (mutations)
-export * from "./useUpdateAutoreply";
-export * from "./useDeleteAutoreply";
+export * from "./useWildduckUpdateAutoreply";
+export * from "./useWildduckDeleteAutoreply";

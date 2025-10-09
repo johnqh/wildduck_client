@@ -4,16 +4,16 @@
  */
 
 // Read operations
-export * from "./useGetMessages";
-export * from "./useGetMessage";
-export * from "./useSearchMessages";
-export * from "./useGetMessageSource";
-export * from "./useGetMessageAttachment";
+export * from "./useWildduckGetMessages";
+export * from "./useWildduckGetMessage";
+export * from "./useWildduckSearchMessages";
+export * from "./useWildduckGetMessageSource";
+export * from "./useWildduckGetMessageAttachment";
 
 // Write operations (mutations)
-export * from "./useSendMessage";
-export * from "./useUpdateMessage";
-export * from "./useDeleteMessage";
-export * from "./useUploadMessage";
-export * from "./useForwardMessage";
-export * from "./useSubmitDraft";
+export * from "./useWildduckSendMessage";
+export * from "./useWildduckUpdateMessage";
+export * from "./useWildduckDeleteMessage";
+export * from "./useWildduckUploadMessage";
+export * from "./useWildduckForwardMessage";
+export * from "./useWildduckSubmitDraft";

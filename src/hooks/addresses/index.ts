@@ -4,4 +4,4 @@
  */
 
 // Read operations
-export * from "./useGetAddresses";
+export * from "./useWildduckGetAddresses";

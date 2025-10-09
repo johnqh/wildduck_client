@@ -1,12 +1,19 @@
 /**
- * Individual hooks for WildDuck Users API
- * Each hook is isolated with its own state management
+ * User Settings Hooks
+ *
+ * Specialized hooks for managing different aspects of user settings in WildDuck.
+ * Each hook focuses on a specific category of user settings for better organization
+ * and reusability.
  */
 
-// Read operations
-export * from "./useGetUser";
-
-// Write operations (mutations)
-export * from "./useCreateUser";
-export * from "./useUpdateUser";
-export * from "./useDeleteUser";
+export * from "./useWildduckUserQuota";
+export * from "./useWildduckUserLimits";
+export * from "./useWildduckUserEncryption";
+export * from "./useWildduckUserForwarding";
+export * from "./useWildduckUserSpam";
+export * from "./useWildduckUser2FA";
+export * from "./useWildduckUserProfile";
+export * from "./useWildduckGetUser";
+export * from "./useWildduckCreateUser";
+export * from "./useWildduckUpdateUser";
+export * from "./useWildduckDeleteUser";

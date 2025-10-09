@@ -30,7 +30,7 @@ export * from "./useWildduckMessages"; // Deprecated - use individual message ho
 export * from "./useWildduckMailboxes"; // Deprecated - use individual mailbox hooks
 export * from "./useWildduckUsers"; // Deprecated - use individual user hooks
 export * from "./useWildduckFilters";
-export * from "./useWildduckAddresses"; // Deprecated - use useGetAddresses
+export * from "./useWildduckAddresses"; // Deprecated - use useWildduckGetAddresses
 export * from "./useWildduckAuth";
 
 // ============================================================================
