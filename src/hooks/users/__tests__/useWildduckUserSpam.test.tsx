@@ -42,7 +42,7 @@ describe("useUserSpam", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -57,7 +57,7 @@ describe("useUserSpam", () => {
         "trusted@example.com",
         "*@trusted-domain.com",
       ]);
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
     });
 
     it("should handle empty whitelist", async () => {
@@ -69,7 +69,7 @@ describe("useUserSpam", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -91,7 +91,7 @@ describe("useUserSpam", () => {
     it("should handle API errors gracefully", async () => {
       mockApi.getUser = vi.fn().mockRejectedValue(new Error("API Error"));
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -113,7 +113,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -145,7 +145,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -170,7 +170,7 @@ describe("useUserSpam", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -193,7 +193,7 @@ describe("useUserSpam", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -217,7 +217,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -252,7 +252,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -263,7 +263,7 @@ describe("useUserSpam", () => {
         address: "new@example.com",
       });
 
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
       expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         fromWhitelist: ["existing@example.com", "new@example.com"],
       });
@@ -279,7 +279,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -307,7 +307,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -318,7 +318,7 @@ describe("useUserSpam", () => {
         address: "remove@example.com",
       });
 
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
       expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         fromWhitelist: ["keep@example.com"],
       });
@@ -334,7 +334,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -362,7 +362,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -385,7 +385,7 @@ describe("useUserSpam", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserSpam(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserSpam(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 

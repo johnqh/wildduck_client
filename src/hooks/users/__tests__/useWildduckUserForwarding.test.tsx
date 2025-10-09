@@ -43,7 +43,7 @@ describe("useUserForwarding", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -58,7 +58,7 @@ describe("useUserForwarding", () => {
         "backup@example.org",
       ]);
       expect(result.current.mtaRelay).toBe("smtp://mx.example.com:25");
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
     });
 
     it("should handle empty targets array", async () => {
@@ -70,7 +70,7 @@ describe("useUserForwarding", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -95,7 +95,7 @@ describe("useUserForwarding", () => {
       mockApi.getUser = vi.fn().mockRejectedValue(new Error("API Error"));
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -117,7 +117,7 @@ describe("useUserForwarding", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -149,7 +149,7 @@ describe("useUserForwarding", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -160,7 +160,7 @@ describe("useUserForwarding", () => {
         target: "new@example.com",
       });
 
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
       expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         targets: ["existing@example.com", "new@example.com"],
       });
@@ -176,7 +176,7 @@ describe("useUserForwarding", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -204,7 +204,7 @@ describe("useUserForwarding", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -215,7 +215,7 @@ describe("useUserForwarding", () => {
         target: "remove@example.com",
       });
 
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
       expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         targets: ["keep@example.com"],
       });
@@ -231,7 +231,7 @@ describe("useUserForwarding", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -259,7 +259,7 @@ describe("useUserForwarding", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -282,7 +282,7 @@ describe("useUserForwarding", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useWildduckUserForwarding(mockApi, "user123"),
+        () => useWildduckUserForwarding(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 

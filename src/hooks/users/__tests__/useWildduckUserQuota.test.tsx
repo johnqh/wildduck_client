@@ -43,7 +43,7 @@ describe("useUserQuota", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserQuota(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserQuota(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -53,7 +53,7 @@ describe("useUserQuota", () => {
         allowed: 1073741824,
         used: 536870912,
       });
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
     });
 
     it("should not fetch when userId is undefined", () => {
@@ -74,7 +74,7 @@ describe("useUserQuota", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserQuota(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserQuota(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -86,7 +86,7 @@ describe("useUserQuota", () => {
     it("should handle API errors gracefully", async () => {
       mockApi.getUser = vi.fn().mockRejectedValue(new Error("API Error"));
 
-      const { result } = renderHook(() => useWildduckUserQuota(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserQuota(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -109,7 +109,7 @@ describe("useUserQuota", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserQuota(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserQuota(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -138,7 +138,7 @@ describe("useUserQuota", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserQuota(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserQuota(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -172,7 +172,7 @@ describe("useUserQuota", () => {
         .fn()
         .mockRejectedValue(new Error("Update failed"));
 
-      const { result } = renderHook(() => useWildduckUserQuota(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserQuota(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -198,14 +198,14 @@ describe("useUserQuota", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserQuota(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserQuota(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await expect(
-        result.current.recalculateQuotaAsync(TEST_USER_AUTH),
+        result.current.recalculateQuotaAsync("user123"),
       ).rejects.toThrow("Recalculate quota endpoint not yet implemented");
     });
   });

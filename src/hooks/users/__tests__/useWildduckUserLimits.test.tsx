@@ -46,7 +46,7 @@ describe("useUserLimits", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserLimits(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserLimits(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -63,7 +63,7 @@ describe("useUserLimits", () => {
         used: 10,
         ttl: 86400,
       });
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
     });
 
     it("should not fetch when userId is undefined", () => {
@@ -84,7 +84,7 @@ describe("useUserLimits", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useWildduckUserLimits(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserLimits(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -98,7 +98,7 @@ describe("useUserLimits", () => {
     it("should handle API errors gracefully", async () => {
       mockApi.getUser = vi.fn().mockRejectedValue(new Error("API Error"));
 
-      const { result } = renderHook(() => useWildduckUserLimits(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserLimits(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -121,7 +121,7 @@ describe("useUserLimits", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserLimits(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserLimits(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -152,7 +152,7 @@ describe("useUserLimits", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserLimits(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserLimits(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -177,7 +177,7 @@ describe("useUserLimits", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useWildduckUserLimits(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserLimits(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -209,7 +209,7 @@ describe("useUserLimits", () => {
         .fn()
         .mockRejectedValue(new Error("Update failed"));
 
-      const { result } = renderHook(() => useWildduckUserLimits(mockApi, "user123"), {
+      const { result } = renderHook(() => useWildduckUserLimits(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
