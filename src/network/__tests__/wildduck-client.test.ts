@@ -3,6 +3,8 @@ import { WildDuckAPI } from '../wildduck-client';
 import { WildDuckConfig } from '@johnqh/types';
 import { NetworkClient } from '@johnqh/di';
 
+const TEST_USER_AUTH = { userId: 'user123', accessToken: 'test-token' };
+
 describe('WildDuckAPI', () => {
   let api: WildDuckAPI;
   let mockNetworkClient: NetworkClient;
@@ -120,6 +122,7 @@ describe('WildDuckAPI', () => {
 
   describe('user operations', () => {
     const validUserId = '507f1f77bcf86cd799439011'; // Valid MongoDB ObjectId
+    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
 
     it('should get user info successfully', async () => {
       const mockUserData = {
@@ -134,8 +137,8 @@ describe('WildDuckAPI', () => {
         data: mockUserData,
       });
 
-      const result = await api.getUser(validUserId);
-      
+      const result = await api.getUser(validUserAuth);
+
       expect(result.success).toBe(true);
       expect(mockNetworkClient.request).toHaveBeenCalledWith(
         expect.stringContaining(`/users/${validUserId}`),
@@ -156,8 +159,8 @@ describe('WildDuckAPI', () => {
         data: mockMailboxes,
       });
 
-      const result = await api.getMailboxes(validUserId, { specialUse: true });
-      
+      const result = await api.getMailboxes(validUserAuth, { specialUse: true });
+
       expect(result.success).toBe(true);
       expect(result.results).toHaveLength(2);
       expect(mockNetworkClient.request).toHaveBeenCalled();
@@ -166,6 +169,7 @@ describe('WildDuckAPI', () => {
 
   describe('error handling', () => {
     const validUserId = '507f1f77bcf86cd799439011';
+    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
 
     it('should handle network errors gracefully', async () => {
       mockNetworkClient.request = vi.fn().mockRejectedValue(
@@ -181,26 +185,27 @@ describe('WildDuckAPI', () => {
         data: { error: 'User not found', code: 'UserNotFoundError', success: false },
       });
 
-      const result = await api.getUser(validUserId);
+      const result = await api.getUser(validUserAuth);
       expect(result.success).toBe(false);
       expect(result.error).toBe('User not found');
     });
 
     it('should handle invalid user ID format', async () => {
-      await expect(api.getUser('invalid-user-id'))
+      await expect(api.getUser({ userId: 'invalid-user-id', accessToken: 'test-token' }))
         .rejects.toThrow('Invalid user ID format');
     });
   });
 
   describe('edge cases', () => {
     const validUserId = '507f1f77bcf86cd799439011';
+    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
 
     it('should handle empty responses', async () => {
       mockNetworkClient.request = vi.fn().mockResolvedValue({
         data: null,
       });
 
-      const result = await api.getUser(validUserId);
+      const result = await api.getUser(validUserAuth);
       expect(result).toBeNull();
     });
 
@@ -215,6 +220,7 @@ describe('WildDuckAPI', () => {
 
   describe('User Management', () => {
     const validUserId = '507f1f77bcf86cd799439011';
+    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
 
     describe('createUser', () => {
       it('should create a new user successfully', async () => {
@@ -269,7 +275,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.updateUser(validUserId, {
+        const result = await api.updateUser(validUserAuth, {
           name: 'Updated Name',
           quota: 10000000000,
         });
@@ -287,7 +293,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.updateUser(validUserId, {
+        const result = await api.updateUser(validUserAuth, {
           existingPassword: 'oldpass',
           password: 'newpass123',
         });
@@ -301,7 +307,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.deleteUser(validUserId);
+        const result = await api.deleteUser(validUserAuth);
 
         expect(result.success).toBe(true);
         expect(mockNetworkClient.request).toHaveBeenCalledWith(
@@ -313,7 +319,7 @@ describe('WildDuckAPI', () => {
       });
 
       it('should validate user ID format before delete', async () => {
-        await expect(api.deleteUser('invalid-id'))
+        await expect(api.deleteUser({ userId: 'invalid-id', accessToken: 'test-token' }))
           .rejects.toThrow('Invalid user ID format');
       });
     });
@@ -321,6 +327,7 @@ describe('WildDuckAPI', () => {
 
   describe('Mailbox Management', () => {
     const validUserId = '507f1f77bcf86cd799439011';
+    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
     const validMailboxId = '507f1f77bcf86cd799439022';
 
     describe('getMailbox', () => {
@@ -337,7 +344,7 @@ describe('WildDuckAPI', () => {
 
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.getMailbox(validUserId, validMailboxId);
+        const result = await api.getMailbox(validUserAuth, validMailboxId);
 
         expect(result.success).toBe(true);
         expect(result.id).toBe(validMailboxId);
@@ -349,7 +356,7 @@ describe('WildDuckAPI', () => {
       });
 
       it('should validate mailbox ID format', async () => {
-        await expect(api.getMailbox(validUserId, 'invalid'))
+        await expect(api.getMailbox(validUserAuth, 'invalid'))
           .rejects.toThrow('Invalid mailbox ID format');
       });
     });
@@ -359,7 +366,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.updateMailbox(validUserId, validMailboxId, {
+        const result = await api.updateMailbox(validUserAuth, validMailboxId, {
           path: 'Archive/2024',
           hidden: false,
         });
@@ -379,7 +386,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.deleteMailbox(validUserId, validMailboxId);
+        const result = await api.deleteMailbox(validUserAuth, validMailboxId);
 
         expect(result.success).toBe(true);
         expect(mockNetworkClient.request).toHaveBeenCalledWith(
@@ -396,7 +403,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true, id: validMailboxId };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.createMailbox(validUserId, {
+        const result = await api.createMailbox(validUserAuth, {
           path: 'Archive',
           retention: 7776000000, // 90 days
           hidden: false,
@@ -410,6 +417,7 @@ describe('WildDuckAPI', () => {
 
   describe('Message Management', () => {
     const validUserId = '507f1f77bcf86cd799439011';
+    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
     const validMailboxId = '507f1f77bcf86cd799439022';
     const messageId = 12345;
 
@@ -429,7 +437,7 @@ describe('WildDuckAPI', () => {
 
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.getMessageFromMailbox(validUserId, validMailboxId, messageId);
+        const result = await api.getMessageFromMailbox(validUserAuth, validMailboxId, messageId);
 
         expect(result.success).toBe(true);
         expect(result.id).toBe(messageId);
@@ -444,7 +452,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true, id: messageId };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        await api.getMessageFromMailbox(validUserId, validMailboxId, messageId, {
+        await api.getMessageFromMailbox(validUserAuth, validMailboxId, messageId, {
           markAsSeen: true,
         });
 
@@ -464,7 +472,7 @@ describe('WildDuckAPI', () => {
 
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.uploadMessage(validUserId, validMailboxId, {
+        const result = await api.uploadMessage(validUserAuth, validMailboxId, {
           from: { name: 'Me', address: 'me@example.com' },
           to: [{ name: 'You', address: 'you@example.com' }],
           subject: 'Draft Message',
@@ -486,7 +494,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true, message: { id: messageId, mailbox: validMailboxId } };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.uploadMessage(validUserId, validMailboxId, {
+        const result = await api.uploadMessage(validUserAuth, validMailboxId, {
           from: { address: 'sender@example.com' },
           to: [{ address: 'recipient@example.com' }],
           subject: 'With Attachment',
@@ -509,7 +517,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true, updated: 1 };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.updateMessage(validUserId, validMailboxId, messageId, {
+        const result = await api.updateMessage(validUserAuth, validMailboxId, messageId, {
           seen: true,
           flagged: true,
         });
@@ -533,7 +541,7 @@ describe('WildDuckAPI', () => {
         };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.updateMessage(validUserId, validMailboxId, messageId, {
+        const result = await api.updateMessage(validUserAuth, validMailboxId, messageId, {
           moveTo: targetMailboxId,
         });
 
@@ -547,7 +555,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.deleteMessage(validUserId, validMailboxId, messageId);
+        const result = await api.deleteMessage(validUserAuth, validMailboxId, messageId);
 
         expect(result.success).toBe(true);
         expect(mockNetworkClient.request).toHaveBeenCalledWith(
@@ -564,7 +572,7 @@ describe('WildDuckAPI', () => {
         const mockRawMessage = 'From: sender@example.com\r\nSubject: Test\r\n\r\nBody';
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockRawMessage });
 
-        const result = await api.getMessageSource(validUserId, validMailboxId, messageId);
+        const result = await api.getMessageSource(validUserAuth, validMailboxId, messageId);
 
         expect(result).toBe(mockRawMessage);
         expect(mockNetworkClient.request).toHaveBeenCalledWith(
@@ -580,7 +588,7 @@ describe('WildDuckAPI', () => {
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockBlob });
 
         const result = await api.getMessageAttachment(
-          validUserId,
+          validUserAuth,
           validMailboxId,
           messageId,
           'ATT001'
@@ -599,7 +607,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.forwardMessage(validUserId, validMailboxId, messageId, {
+        const result = await api.forwardMessage(validUserAuth, validMailboxId, messageId, {
           target: 2,
         });
 
@@ -618,7 +626,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.submitDraft(validUserId, validMailboxId, messageId);
+        const result = await api.submitDraft(validUserAuth, validMailboxId, messageId);
 
         expect(result.success).toBe(true);
         expect(mockNetworkClient.request).toHaveBeenCalledWith(
@@ -643,7 +651,7 @@ describe('WildDuckAPI', () => {
 
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.submitMessage(validUserId, {
+        const result = await api.submitMessage(validUserAuth, {
           from: { address: 'sender@example.com' },
           to: [{ address: 'recipient@example.com' }],
           subject: 'New Message',
@@ -664,6 +672,7 @@ describe('WildDuckAPI', () => {
 
   describe('Autoreply Management', () => {
     const validUserId = '507f1f77bcf86cd799439011';
+    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
 
     describe('getAutoreply', () => {
       it('should get autoreply settings', async () => {
@@ -680,7 +689,7 @@ describe('WildDuckAPI', () => {
 
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.getAutoreply(validUserId);
+        const result = await api.getAutoreply(validUserAuth);
 
         expect(result.success).toBe(true);
         expect(result.status).toBe(true);
@@ -697,7 +706,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.updateAutoreply(validUserId, {
+        const result = await api.updateAutoreply(validUserAuth, {
           status: true,
           name: 'Vacation',
           subject: 'Out of Office',
@@ -719,7 +728,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.updateAutoreply(validUserId, {
+        const result = await api.updateAutoreply(validUserAuth, {
           status: false,
         });
 
@@ -732,7 +741,7 @@ describe('WildDuckAPI', () => {
         const mockResponse = { success: true };
         mockNetworkClient.request = vi.fn().mockResolvedValue({ data: mockResponse });
 
-        const result = await api.deleteAutoreply(validUserId);
+        const result = await api.deleteAutoreply(validUserAuth);
 
         expect(result.success).toBe(true);
         expect(mockNetworkClient.request).toHaveBeenCalledWith(

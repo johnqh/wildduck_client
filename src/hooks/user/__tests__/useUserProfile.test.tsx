@@ -6,6 +6,8 @@ import { useUserProfile } from "../useUserProfile";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
 import type { UserResponse } from "../../../types/wildduck-types";
 
+const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+
 describe("useUserProfile", () => {
   let queryClient: QueryClient;
   let mockApi: WildDuckAPI;
@@ -51,7 +53,7 @@ describe("useUserProfile", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -76,7 +78,7 @@ describe("useUserProfile", () => {
       expect(result.current.name).toBe("Test User");
       expect(result.current.address).toBe("test@example.com");
       expect(result.current.disabled).toBe(false);
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
     });
 
     it("should handle minimal user profile", async () => {
@@ -96,7 +98,7 @@ describe("useUserProfile", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -120,7 +122,7 @@ describe("useUserProfile", () => {
     it("should handle API errors gracefully", async () => {
       mockApi.getUser = vi.fn().mockRejectedValue(new Error("API Error"));
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -150,21 +152,21 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateProfile({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         name: "Updated Name",
         language: "es",
       });
 
       await waitFor(() => expect(result.current.isUpdatingProfile).toBe(false));
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         name: "Updated Name",
         language: "es",
       });
@@ -188,7 +190,7 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -197,7 +199,7 @@ describe("useUserProfile", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.updateProfileAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         name: "New Name",
       });
 
@@ -229,18 +231,18 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updatePasswordAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         password: "newpassword123",
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         password: "newpassword123",
       });
     });
@@ -263,19 +265,19 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updatePasswordAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         existingPassword: "oldpassword",
         password: "newpassword123",
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         existingPassword: "oldpassword",
         password: "newpassword123",
       });
@@ -301,18 +303,18 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updateTagsAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         tags: ["tag1", "tag2", "tag3"],
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         tags: ["tag1", "tag2", "tag3"],
       });
     });
@@ -337,18 +339,18 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.setAccountStatusAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         disabled: true,
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         disabled: true,
       });
     });
@@ -371,18 +373,18 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.setAccountStatusAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         suspended: true,
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         suspended: true,
       });
     });
@@ -405,19 +407,19 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.setAccountStatusAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         disabled: true,
         suspended: true,
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         disabled: true,
         suspended: true,
       });
@@ -441,17 +443,17 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.setAccountStatusAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {});
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {});
     });
 
     it("should invalidate queries after status update", async () => {
@@ -472,7 +474,7 @@ describe("useUserProfile", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUserProfile(mockApi, "user123"), {
+      const { result } = renderHook(() => useUserProfile(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -481,7 +483,7 @@ describe("useUserProfile", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.setAccountStatusAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         disabled: true,
       });
 

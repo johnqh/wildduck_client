@@ -32,6 +32,7 @@ import type {
   UpdateUserRequest,
   UploadMessageRequest,
   UploadMessageResponse,
+  UserAuth,
 } from "../types/wildduck-types";
 
 // Platform-specific globals
@@ -217,6 +218,7 @@ class WildDuckAPI {
       method?: Optional<"GET" | "POST" | "PUT" | "DELETE">;
       body?: Optional<Record<string, unknown> | string | FormData | Blob>;
       headers?: Optional<Record<string, string>>;
+      userAuth?: Optional<UserAuth>;
     } = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
@@ -234,6 +236,12 @@ class WildDuckAPI {
           ...options.headers,
         },
       };
+
+      // If userAuth is provided, override with Bearer token
+      if (options.userAuth?.accessToken) {
+        requestOptions.headers["Authorization"] =
+          `Bearer ${options.userAuth.accessToken}`;
+      }
 
       // Only add body if it exists and method supports it
       if (
@@ -380,20 +388,22 @@ class WildDuckAPI {
   }
 
   // Get user info
-  async getUser(userId: string): Promise<WildDuckUserResponse> {
+  async getUser(userAuth: UserAuth): Promise<WildDuckUserResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
-    return this.request<WildDuckUserResponse>(`/users/${validatedUserId}`);
+    return this.request<WildDuckUserResponse>(`/users/${validatedUserId}`, {
+      userAuth,
+    });
   }
 
   // Get mailboxes for a user
   async getMailboxes(
-    userId: string,
+    userAuth: UserAuth,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
   ): Promise<WildDuckMailboxResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     const queryParams = createURLSearchParams();
 
@@ -409,17 +419,19 @@ class WildDuckAPI {
     const query = queryParams.toString();
     const endpoint = `/users/${validatedUserId}/mailboxes${query ? `?${query}` : ""}`;
 
-    return this.request<WildDuckMailboxResponse>(endpoint);
+    return this.request<WildDuckMailboxResponse>(endpoint, {
+      userAuth,
+    });
   }
 
   // Get messages from a mailbox
   async getMessages(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     options?: Omit<GetMessagesRequest, "sess" | "ip">,
   ): Promise<WildDuckMessagesResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     // Validate mailbox ID format (should also be ObjectId)
     if (!isValidObjectId(mailboxId)) {
@@ -451,16 +463,18 @@ class WildDuckAPI {
     const query = queryParams.toString();
     const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages${query ? `?${query}` : ""}`;
 
-    return this.request<WildDuckMessagesResponse>(endpoint);
+    return this.request<WildDuckMessagesResponse>(endpoint, {
+      userAuth,
+    });
   }
 
   // Get a specific message by ID
   async getMessage(
-    userId: string,
+    userAuth: UserAuth,
     messageId: string,
   ): Promise<WildDuckMessageResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     // Validate message ID format (should also be ObjectId)
     if (!isValidObjectId(messageId)) {
@@ -471,25 +485,29 @@ class WildDuckAPI {
 
     const endpoint = `/users/${validatedUserId}/messages/${messageId}`;
 
-    return this.request<WildDuckMessageResponse>(endpoint);
+    return this.request<WildDuckMessageResponse>(endpoint, {
+      userAuth,
+    });
   }
 
   // Get user addresses (email addresses)
-  async getAddresses(userId: string): Promise<WildDuckAddressResponse> {
+  async getAddresses(userAuth: UserAuth): Promise<WildDuckAddressResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     const endpoint = `/users/${validatedUserId}/addresses`;
 
-    return this.request<WildDuckAddressResponse>(endpoint);
+    return this.request<WildDuckAddressResponse>(endpoint, {
+      userAuth,
+    });
   }
 
   // Create a new mailbox
   async createMailbox(
-    userId: string,
+    userAuth: UserAuth,
     request: CreateMailboxRequest,
   ): Promise<WildDuckMailboxResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     const requestBody: Record<string, any> = {
       path: request.path,
@@ -508,6 +526,7 @@ class WildDuckAPI {
       {
         method: "POST",
         body: JSON.stringify(requestBody),
+        userAuth,
       },
     );
   }
@@ -526,23 +545,25 @@ class WildDuckAPI {
 
   // Update user information
   async updateUser(
-    userId: string,
+    userAuth: UserAuth,
     request: UpdateUserRequest,
   ): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     return this.request<SuccessResponse>(`/users/${validatedUserId}`, {
       method: "PUT",
       body: request,
+      userAuth,
     });
   }
 
   // Delete a user
-  async deleteUser(userId: string): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+  async deleteUser(userAuth: UserAuth): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userAuth.userId);
 
     return this.request<SuccessResponse>(`/users/${validatedUserId}`, {
       method: "DELETE",
+      userAuth,
     });
   }
 
@@ -552,10 +573,10 @@ class WildDuckAPI {
 
   // Get specific mailbox information
   async getMailbox(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
   ): Promise<MailboxResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -565,16 +586,19 @@ class WildDuckAPI {
 
     return this.request<MailboxResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}`,
+      {
+        userAuth,
+      },
     );
   }
 
   // Update mailbox settings
   async updateMailbox(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     request: UpdateMailboxRequest,
   ): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -587,16 +611,17 @@ class WildDuckAPI {
       {
         method: "PUT",
         body: request,
+        userAuth,
       },
     );
   }
 
   // Delete a mailbox
   async deleteMailbox(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
   ): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -608,6 +633,7 @@ class WildDuckAPI {
       `/users/${validatedUserId}/mailboxes/${mailboxId}`,
       {
         method: "DELETE",
+        userAuth,
       },
     );
   }
@@ -618,7 +644,7 @@ class WildDuckAPI {
 
   // Get full message details from a specific mailbox
   async getMessageFromMailbox(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     messageId: number,
     options?: {
@@ -626,7 +652,7 @@ class WildDuckAPI {
       markAsSeen?: boolean;
     },
   ): Promise<MessageResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -643,16 +669,18 @@ class WildDuckAPI {
     const query = queryParams.toString();
     const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}${query ? `?${query}` : ""}`;
 
-    return this.request<MessageResponse>(endpoint);
+    return this.request<MessageResponse>(endpoint, {
+      userAuth,
+    });
   }
 
   // Upload/create a message in a mailbox (for drafts, imports, etc.)
   async uploadMessage(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     request: UploadMessageRequest,
   ): Promise<UploadMessageResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -665,18 +693,19 @@ class WildDuckAPI {
       {
         method: "POST",
         body: request,
+        userAuth,
       },
     );
   }
 
   // Update message flags or move to different mailbox
   async updateMessage(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     messageId: number,
     request: UpdateMessageRequest,
   ): Promise<UpdateMessageResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -689,17 +718,18 @@ class WildDuckAPI {
       {
         method: "PUT",
         body: request,
+        userAuth,
       },
     );
   }
 
   // Delete a message from mailbox
   async deleteMessage(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     messageId: number,
   ): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -711,17 +741,18 @@ class WildDuckAPI {
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`,
       {
         method: "DELETE",
+        userAuth,
       },
     );
   }
 
   // Get raw message source (RFC822 format)
   async getMessageSource(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     messageId: number,
   ): Promise<string> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -731,9 +762,14 @@ class WildDuckAPI {
 
     const url = `${this.baseUrl}/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/message.eml`;
 
+    const headers = {
+      ...this.headers,
+      Authorization: `Bearer ${userAuth.accessToken}`,
+    };
+
     const response = await this.networkClient.request<string>(url, {
       method: "GET",
-      headers: this.headers,
+      headers,
     });
 
     return response.data as string;
@@ -741,12 +777,12 @@ class WildDuckAPI {
 
   // Download message attachment
   async getMessageAttachment(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     messageId: number,
     attachmentId: string,
   ): Promise<Blob> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -756,9 +792,14 @@ class WildDuckAPI {
 
     const url = `${this.baseUrl}/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/attachments/${attachmentId}`;
 
+    const headers = {
+      ...this.headers,
+      Authorization: `Bearer ${userAuth.accessToken}`,
+    };
+
     const response = await this.networkClient.request<Blob>(url, {
       method: "GET",
-      headers: this.headers,
+      headers,
     });
 
     return response.data as Blob;
@@ -766,12 +807,12 @@ class WildDuckAPI {
 
   // Forward a stored message
   async forwardMessage(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     messageId: number,
     request: ForwardMessageRequest,
   ): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -784,17 +825,18 @@ class WildDuckAPI {
       {
         method: "POST",
         body: request,
+        userAuth,
       },
     );
   }
 
   // Submit a draft message for delivery
   async submitDraft(
-    userId: string,
+    userAuth: UserAuth,
     mailboxId: string,
     messageId: number,
   ): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -806,22 +848,24 @@ class WildDuckAPI {
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/submit`,
       {
         method: "POST",
+        userAuth,
       },
     );
   }
 
   // Submit a new message for delivery
   async submitMessage(
-    userId: string,
+    userAuth: UserAuth,
     request: SubmitMessageRequest,
   ): Promise<SubmitMessageResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     return this.request<SubmitMessageResponse>(
       `/users/${validatedUserId}/submit`,
       {
         method: "POST",
         body: request,
+        userAuth,
       },
     );
   }
@@ -831,38 +875,43 @@ class WildDuckAPI {
   // ============================================================================
 
   // Get autoreply/vacation responder settings
-  async getAutoreply(userId: string): Promise<AutoreplyResponse> {
-    const validatedUserId = validateUserId(userId);
+  async getAutoreply(userAuth: UserAuth): Promise<AutoreplyResponse> {
+    const validatedUserId = validateUserId(userAuth.userId);
 
     return this.request<AutoreplyResponse>(
       `/users/${validatedUserId}/autoreply`,
+      {
+        userAuth,
+      },
     );
   }
 
   // Update autoreply/vacation responder settings
   async updateAutoreply(
-    userId: string,
+    userAuth: UserAuth,
     request: AutoreplyRequest,
   ): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+    const validatedUserId = validateUserId(userAuth.userId);
 
     return this.request<SuccessResponse>(
       `/users/${validatedUserId}/autoreply`,
       {
         method: "PUT",
         body: request,
+        userAuth,
       },
     );
   }
 
   // Disable autoreply/vacation responder
-  async deleteAutoreply(userId: string): Promise<SuccessResponse> {
-    const validatedUserId = validateUserId(userId);
+  async deleteAutoreply(userAuth: UserAuth): Promise<SuccessResponse> {
+    const validatedUserId = validateUserId(userAuth.userId);
 
     return this.request<SuccessResponse>(
       `/users/${validatedUserId}/autoreply`,
       {
         method: "DELETE",
+        userAuth,
       },
     );
   }

@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { UserResponse } from "../../types/wildduck-types";
+import type { UserAuth, UserResponse } from "../../types/wildduck-types";
 
 export interface TwoFASettings {
   enabled2fa: string[]; // List of enabled 2FA methods (e.g., ['totp', 'u2f'])
 }
 
 export interface DisableTwoFAParams {
-  userId: string;
+  userAuth: UserAuth;
 }
 
 /**
@@ -18,31 +18,34 @@ export interface DisableTwoFAParams {
  * that are not yet implemented in this client. This hook currently
  * supports querying 2FA status and disabling all 2FA methods.
  */
-export const useUser2FA = (api: WildDuckAPI, userId?: string) => {
+export const useUser2FA = (api: WildDuckAPI, userAuth?: UserAuth) => {
   const queryClient = useQueryClient();
+  const userId = userAuth?.userId;
 
   // Query to get 2FA status
   const twoFAQuery = useQuery({
     queryKey: ["user", userId, "2fa"],
     queryFn: async (): Promise<TwoFASettings | undefined> => {
-      if (!userId) throw new Error("User ID is required");
-      const user = (await api.getUser(userId)) as unknown as UserResponse;
+      if (!userAuth) throw new Error("User auth is required");
+      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
       return {
         enabled2fa: user.enabled2fa || [],
       };
     },
-    enabled: !!userId,
+    enabled: !!userAuth,
   });
 
   // Mutation to disable all 2FA methods
   const disable2FA = useMutation({
-    mutationFn: async ({ userId }: DisableTwoFAParams) => {
-      return await api.updateUser(userId, { disable2fa: true });
+    mutationFn: async ({ userAuth }: DisableTwoFAParams) => {
+      return await api.updateUser(userAuth, { disable2fa: true });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userId, "2fa"],
+        queryKey: ["user", variables.userAuth.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", variables.userAuth.userId, "2fa"],
       });
     },
   });

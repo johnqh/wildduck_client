@@ -6,6 +6,8 @@ import { useUserSpam } from "../useUserSpam";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
 import type { UserResponse } from "../../../types/wildduck-types";
 
+const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+
 describe("useUserSpam", () => {
   let queryClient: QueryClient;
   let mockApi: WildDuckAPI;
@@ -118,14 +120,14 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateSpam({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         spamLevel: 80,
         fromWhitelist: ["safe@example.com"],
       });
 
       await waitFor(() => expect(result.current.isUpdating).toBe(false));
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         spamLevel: 80,
         fromWhitelist: ["safe@example.com"],
       });
@@ -150,11 +152,11 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updateSpamLevelAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         spamLevel: 90,
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         spamLevel: 90,
       });
     });
@@ -176,7 +178,7 @@ describe("useUserSpam", () => {
 
       await expect(
         result.current.updateSpamLevelAsync({
-          userId: "user123",
+          userAuth: TEST_USER_AUTH,
           spamLevel: -1,
         }),
       ).rejects.toThrow("Spam level must be between 0 and 100");
@@ -199,7 +201,7 @@ describe("useUserSpam", () => {
 
       await expect(
         result.current.updateSpamLevelAsync({
-          userId: "user123",
+          userAuth: TEST_USER_AUTH,
           spamLevel: 101,
         }),
       ).rejects.toThrow("Spam level must be between 0 and 100");
@@ -222,18 +224,18 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updateSpamLevelAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         spamLevel: 0,
       });
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         spamLevel: 0,
       });
 
       await result.current.updateSpamLevelAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         spamLevel: 100,
       });
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         spamLevel: 100,
       });
     });
@@ -257,12 +259,12 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.addToWhitelistAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         address: "new@example.com",
       });
 
       expect(mockApi.getUser).toHaveBeenCalledWith("user123");
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         fromWhitelist: ["existing@example.com", "new@example.com"],
       });
     });
@@ -284,11 +286,11 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.addToWhitelistAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         address: "first@example.com",
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         fromWhitelist: ["first@example.com"],
       });
     });
@@ -312,12 +314,12 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.removeFromWhitelistAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         address: "remove@example.com",
       });
 
       expect(mockApi.getUser).toHaveBeenCalledWith("user123");
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         fromWhitelist: ["keep@example.com"],
       });
     });
@@ -339,11 +341,11 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.removeFromWhitelistAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         address: "nonexistent@example.com",
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         fromWhitelist: ["existing@example.com"],
       });
     });
@@ -366,9 +368,9 @@ describe("useUserSpam", () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      await result.current.clearWhitelistAsync("user123");
+      await result.current.clearWhitelistAsync(TEST_USER_AUTH);
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         fromWhitelist: [],
       });
     });
@@ -391,7 +393,7 @@ describe("useUserSpam", () => {
 
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
-      await result.current.clearWhitelistAsync("user123");
+      await result.current.clearWhitelistAsync(TEST_USER_AUTH);
 
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["user", "user123"],

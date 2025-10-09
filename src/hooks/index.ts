@@ -2,19 +2,40 @@
  * WildDuck API hooks for React and React Native
  */
 
-// Legacy hooks
+// ============================================================================
+// Individual endpoint hooks (recommended - use these for new code)
+// ============================================================================
+
+// Messages API hooks
+export * from "./messages";
+
+// Mailboxes API hooks
+export * from "./mailboxes";
+
+// Users API hooks
+export * from "./users";
+
+// Addresses API hooks
+export * from "./addresses";
+
+// Autoreply API hooks
+export * from "./autoreply";
+
+// ============================================================================
+// Legacy monolithic hooks (deprecated - use individual hooks instead)
+// ============================================================================
 export * from "./useWildduckHealth";
 export * from "./useWildduckSettings";
-export * from "./useWildduckMessages";
-export * from "./useWildduckMailboxes";
-export * from "./useWildduckUsers";
+export * from "./useWildduckMessages"; // Deprecated - use individual message hooks
+export * from "./useWildduckMailboxes"; // Deprecated - use individual mailbox hooks
+export * from "./useWildduckUsers"; // Deprecated - use individual user hooks
 export * from "./useWildduckFilters";
-export * from "./useWildduckAddresses";
+export * from "./useWildduckAddresses"; // Deprecated - use useGetAddresses
 export * from "./useWildduckAuth";
 
-// Legacy data hooks have been removed - use newer TanStack Query hooks or other alternatives
-
-// New TanStack Query hooks (with prefixed names to avoid conflicts)
+// ============================================================================
+// TanStack Query hooks (with prefixed names to avoid conflicts)
+// ============================================================================
 export {
   useWildduckHealth as useWildduckHealthQuery,
   useWildduckUsersList as useWildduckUsersListQuery,
@@ -28,6 +49,10 @@ export {
   useWildduckAuthStatus as useWildduckAuthStatusQuery,
   useWildduckSearchMessages as useWildduckSearchMessagesQuery,
 } from "./useWildduckQueries";
+
+// ============================================================================
+// Types
+// ============================================================================
 
 // Export types from TanStack Query hooks
 export type {
@@ -46,6 +71,13 @@ export type {
   WildDuckMailbox as WildduckMailbox,
   WildDuckMailboxResponse as WildduckMailboxesResponse,
 } from "@johnqh/types";
+
+// Export UserAuth type for authentication
+export type { UserAuth } from "../types/wildduck-types";
+
+// ============================================================================
+// Utilities
+// ============================================================================
 
 // Export mock data helper
 export { WildDuckMockData } from "./mocks";

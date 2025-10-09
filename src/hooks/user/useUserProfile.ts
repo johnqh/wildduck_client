@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { UserResponse } from "../../types/wildduck-types";
+import type { UserAuth, UserResponse } from "../../types/wildduck-types";
 
 export interface UserProfile {
   username: string;
@@ -19,7 +19,7 @@ export interface UserProfile {
 }
 
 export interface UpdateProfileParams {
-  userId: string;
+  userAuth: UserAuth;
   name?: string;
   language?: string;
   retention?: number;
@@ -32,7 +32,7 @@ export interface UpdateProfileParams {
 }
 
 export interface UpdatePasswordParams {
-  userId: string;
+  userAuth: UserAuth;
   existingPassword?: string;
   password: string;
   hashedPassword?: boolean;
@@ -43,15 +43,16 @@ export interface UpdatePasswordParams {
  * Hook for managing user profile and account settings
  * Handles basic user information, account status, and password management
  */
-export const useUserProfile = (api: WildDuckAPI, userId?: string) => {
+export const useUserProfile = (api: WildDuckAPI, userAuth?: UserAuth) => {
   const queryClient = useQueryClient();
+  const userId = userAuth?.userId;
 
   // Query to get user profile
   const profileQuery = useQuery({
     queryKey: ["user", userId, "profile"],
     queryFn: async (): Promise<UserProfile | undefined> => {
-      if (!userId) throw new Error("User ID is required");
-      const user = (await api.getUser(userId)) as unknown as UserResponse;
+      if (!userAuth) throw new Error("User auth is required");
+      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
       return {
         username: user.username,
         name: user.name,
@@ -68,19 +69,21 @@ export const useUserProfile = (api: WildDuckAPI, userId?: string) => {
         disabledScopes: user.disabledScopes || [],
       };
     },
-    enabled: !!userId,
+    enabled: !!userAuth,
   });
 
   // Mutation to update profile
   const updateProfile = useMutation({
     mutationFn: async (params: UpdateProfileParams) => {
-      const { userId, ...updates } = params;
-      return await api.updateUser(userId, updates);
+      const { userAuth, ...updates } = params;
+      return await api.updateUser(userAuth, updates);
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userId, "profile"],
+        queryKey: ["user", variables.userAuth.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", variables.userAuth.userId, "profile"],
       });
     },
   });
@@ -88,29 +91,33 @@ export const useUserProfile = (api: WildDuckAPI, userId?: string) => {
   // Mutation to update password
   const updatePassword = useMutation({
     mutationFn: async (params: UpdatePasswordParams) => {
-      const { userId, ...passwordData } = params;
-      return await api.updateUser(userId, passwordData);
+      const { userAuth, ...passwordData } = params;
+      return await api.updateUser(userAuth, passwordData);
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["user", variables.userAuth.userId],
+      });
     },
   });
 
   // Mutation to update tags
   const updateTags = useMutation({
     mutationFn: async ({
-      userId,
+      userAuth,
       tags,
     }: {
-      userId: string;
+      userAuth: UserAuth;
       tags: string[];
     }) => {
-      return await api.updateUser(userId, { tags });
+      return await api.updateUser(userAuth, { tags });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userId, "profile"],
+        queryKey: ["user", variables.userAuth.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", variables.userAuth.userId, "profile"],
       });
     },
   });
@@ -118,23 +125,25 @@ export const useUserProfile = (api: WildDuckAPI, userId?: string) => {
   // Mutation to disable/enable account
   const setAccountStatus = useMutation({
     mutationFn: async ({
-      userId,
+      userAuth,
       disabled,
       suspended,
     }: {
-      userId: string;
+      userAuth: UserAuth;
       disabled?: boolean;
       suspended?: boolean;
     }) => {
       const updates: { disabled?: boolean; suspended?: boolean } = {};
       if (disabled !== undefined) updates.disabled = disabled;
       if (suspended !== undefined) updates.suspended = suspended;
-      return await api.updateUser(userId, updates);
+      return await api.updateUser(userAuth, updates);
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userId, "profile"],
+        queryKey: ["user", variables.userAuth.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", variables.userAuth.userId, "profile"],
       });
     },
   });

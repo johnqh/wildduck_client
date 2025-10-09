@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { UserResponse } from "../../types/wildduck-types";
+import type { UserAuth, UserResponse } from "../../types/wildduck-types";
 
 export interface UserQuotaInfo {
   allowed: number;
@@ -8,7 +8,7 @@ export interface UserQuotaInfo {
 }
 
 export interface UpdateQuotaParams {
-  userId: string;
+  userAuth: UserAuth;
   quota: number; // Allowed quota in bytes
 }
 
@@ -22,29 +22,32 @@ export interface RecalculateQuotaResult {
  * Hook for managing user storage quota
  * Provides query for current quota usage and mutations for updating/recalculating quota
  */
-export const useUserQuota = (api: WildDuckAPI, userId?: string) => {
+export const useUserQuota = (api: WildDuckAPI, userAuth?: UserAuth) => {
   const queryClient = useQueryClient();
+  const userId = userAuth?.userId;
 
   // Query to get user info (includes quota)
   const quotaQuery = useQuery({
     queryKey: ["user", userId, "quota"],
     queryFn: async () => {
-      if (!userId) throw new Error("User ID is required");
-      const user = (await api.getUser(userId)) as unknown as UserResponse;
+      if (!userAuth) throw new Error("User auth is required");
+      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
       return user.limits?.quota;
     },
-    enabled: !!userId,
+    enabled: !!userAuth,
   });
 
   // Mutation to update quota limit
   const updateQuota = useMutation({
-    mutationFn: async ({ userId, quota }: UpdateQuotaParams) => {
-      return await api.updateUser(userId, { quota });
+    mutationFn: async ({ userAuth, quota }: UpdateQuotaParams) => {
+      return await api.updateUser(userAuth, { quota });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userId, "quota"],
+        queryKey: ["user", variables.userAuth.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", variables.userAuth.userId, "quota"],
       });
     },
   });

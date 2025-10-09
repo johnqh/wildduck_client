@@ -6,6 +6,8 @@ import { useUser2FA } from "../useUser2FA";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
 import type { UserResponse } from "../../../types/wildduck-types";
 
+const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+
 describe("useUser2FA", () => {
   let queryClient: QueryClient;
   let mockApi: WildDuckAPI;
@@ -39,7 +41,7 @@ describe("useUser2FA", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -50,7 +52,7 @@ describe("useUser2FA", () => {
       });
       expect(result.current.enabled2fa).toEqual(["totp", "u2f"]);
       expect(result.current.isEnabled).toBe(true);
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
     });
 
     it("should handle no 2FA enabled", async () => {
@@ -61,7 +63,7 @@ describe("useUser2FA", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -84,7 +86,7 @@ describe("useUser2FA", () => {
     it("should handle API errors gracefully", async () => {
       mockApi.getUser = vi.fn().mockRejectedValue(new Error("API Error"));
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -104,7 +106,7 @@ describe("useUser2FA", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -125,7 +127,7 @@ describe("useUser2FA", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -144,7 +146,7 @@ describe("useUser2FA", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -163,7 +165,7 @@ describe("useUser2FA", () => {
 
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -186,17 +188,17 @@ describe("useUser2FA", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      result.current.disable2FA({ userId: "user123" });
+      result.current.disable2FA({ userAuth: TEST_USER_AUTH });
 
       await waitFor(() => expect(result.current.isDisabling).toBe(false));
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         disable2fa: true,
       });
     });
@@ -210,7 +212,7 @@ describe("useUser2FA", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -218,7 +220,7 @@ describe("useUser2FA", () => {
 
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
-      await result.current.disable2FAAsync({ userId: "user123" });
+      await result.current.disable2FAAsync({ userAuth: TEST_USER_AUTH });
 
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["user", "user123"],
@@ -239,14 +241,14 @@ describe("useUser2FA", () => {
         .fn()
         .mockRejectedValue(new Error("Failed to disable 2FA"));
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await expect(
-        result.current.disable2FAAsync({ userId: "user123" }),
+        result.current.disable2FAAsync({ userAuth: TEST_USER_AUTH }),
       ).rejects.toThrow("Failed to disable 2FA");
 
       expect(result.current.disableError).toBeDefined();
@@ -261,7 +263,7 @@ describe("useUser2FA", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() => useUser2FA(mockApi, "user123"), {
+      const { result } = renderHook(() => useUser2FA(mockApi, TEST_USER_AUTH), {
         wrapper,
       });
 
@@ -269,9 +271,9 @@ describe("useUser2FA", () => {
 
       expect(result.current.isEnabled).toBe(false);
 
-      await result.current.disable2FAAsync({ userId: "user123" });
+      await result.current.disable2FAAsync({ userAuth: TEST_USER_AUTH });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         disable2fa: true,
       });
     });

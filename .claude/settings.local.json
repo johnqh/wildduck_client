@@ -20,7 +20,9 @@
       "Bash(npm run check-all:*)",
       "Bash(npm outdated)",
       "Bash(npm update:*)",
-      "Bash(npm version:*)"
+      "Bash(npm version:*)",
+      "Bash(npm test)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

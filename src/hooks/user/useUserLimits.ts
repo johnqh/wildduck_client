@@ -1,9 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildDuckAPI } from "../../network/wildduck-client";
-import type { Limits, UserResponse } from "../../types/wildduck-types";
+import type {
+  Limits,
+  UserAuth,
+  UserResponse,
+} from "../../types/wildduck-types";
 
 export interface UpdateLimitsParams {
-  userId: string;
+  userAuth: UserAuth;
   recipients?: number; // How many messages per 24 hour can be sent
   forwards?: number; // How many messages per 24 hour can be forwarded
   filters?: number; // How many filters are allowed
@@ -19,30 +23,33 @@ export interface UpdateLimitsParams {
  * Hook for managing user rate limits
  * Handles various limits: sending, forwarding, IMAP/POP3 quotas, connection limits
  */
-export const useUserLimits = (api: WildDuckAPI, userId?: string) => {
+export const useUserLimits = (api: WildDuckAPI, userAuth?: UserAuth) => {
   const queryClient = useQueryClient();
+  const userId = userAuth?.userId;
 
   // Query to get user limits
   const limitsQuery = useQuery({
     queryKey: ["user", userId, "limits"],
     queryFn: async (): Promise<Limits | undefined> => {
-      if (!userId) throw new Error("User ID is required");
-      const user = (await api.getUser(userId)) as unknown as UserResponse;
+      if (!userAuth) throw new Error("User auth is required");
+      const user = (await api.getUser(userAuth)) as unknown as UserResponse;
       return user.limits;
     },
-    enabled: !!userId,
+    enabled: !!userAuth,
   });
 
   // Mutation to update limits
   const updateLimits = useMutation({
     mutationFn: async (params: UpdateLimitsParams) => {
-      const { userId, ...limits } = params;
-      return await api.updateUser(userId, limits);
+      const { userAuth, ...limits } = params;
+      return await api.updateUser(userAuth, limits);
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userId, "limits"],
+        queryKey: ["user", variables.userAuth.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", variables.userAuth.userId, "limits"],
       });
     },
   });

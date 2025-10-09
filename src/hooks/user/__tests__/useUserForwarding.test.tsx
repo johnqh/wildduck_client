@@ -6,6 +6,8 @@ import { useUserForwarding } from "../useUserForwarding";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
 import type { UserResponse } from "../../../types/wildduck-types";
 
+const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+
 describe("useUserForwarding", () => {
   let queryClient: QueryClient;
   let mockApi: WildDuckAPI;
@@ -122,14 +124,14 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateForwarding({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         targets: ["new@example.com"],
         mtaRelay: "smtp://relay.example.com:587",
       });
 
       await waitFor(() => expect(result.current.isUpdating).toBe(false));
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         targets: ["new@example.com"],
         mtaRelay: "smtp://relay.example.com:587",
       });
@@ -154,12 +156,12 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.addTargetAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         target: "new@example.com",
       });
 
       expect(mockApi.getUser).toHaveBeenCalledWith("user123");
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         targets: ["existing@example.com", "new@example.com"],
       });
     });
@@ -181,11 +183,11 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.addTargetAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         target: "first@example.com",
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         targets: ["first@example.com"],
       });
     });
@@ -209,12 +211,12 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.removeTargetAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         target: "remove@example.com",
       });
 
       expect(mockApi.getUser).toHaveBeenCalledWith("user123");
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         targets: ["keep@example.com"],
       });
     });
@@ -236,11 +238,11 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.removeTargetAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         target: "nonexistent@example.com",
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         targets: ["existing@example.com"],
       });
     });
@@ -263,9 +265,9 @@ describe("useUserForwarding", () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      await result.current.clearTargetsAsync("user123");
+      await result.current.clearTargetsAsync(TEST_USER_AUTH);
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         targets: [],
       });
     });
@@ -288,7 +290,7 @@ describe("useUserForwarding", () => {
 
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
-      await result.current.clearTargetsAsync("user123");
+      await result.current.clearTargetsAsync(TEST_USER_AUTH);
 
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["user", "user123"],

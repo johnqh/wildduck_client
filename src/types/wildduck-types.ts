@@ -58,6 +58,11 @@ export interface KeyInfo {
 // Authentication Types
 // ============================================================================
 
+export interface UserAuth {
+  userId: string;
+  accessToken: string;
+}
+
 export interface PreAuthRequest {
   username: string;
   scope?: string;

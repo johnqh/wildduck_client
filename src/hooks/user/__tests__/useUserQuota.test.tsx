@@ -6,6 +6,8 @@ import { useUserQuota } from "../useUserQuota";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
 import type { UserResponse } from "../../../types/wildduck-types";
 
+const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+
 describe("useUserQuota", () => {
   let queryClient: QueryClient;
   let mockApi: WildDuckAPI;
@@ -114,13 +116,13 @@ describe("useUserQuota", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateQuota({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         quota: 2147483648,
       });
 
       await waitFor(() => expect(result.current.isUpdating).toBe(false));
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         quota: 2147483648,
       });
     });
@@ -145,7 +147,7 @@ describe("useUserQuota", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.updateQuotaAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         quota: 2147483648,
       });
 
@@ -178,7 +180,7 @@ describe("useUserQuota", () => {
 
       await expect(
         result.current.updateQuotaAsync({
-          userId: "user123",
+          userAuth: TEST_USER_AUTH,
           quota: 2147483648,
         }),
       ).rejects.toThrow("Update failed");
@@ -203,7 +205,7 @@ describe("useUserQuota", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await expect(
-        result.current.recalculateQuotaAsync("user123"),
+        result.current.recalculateQuotaAsync(TEST_USER_AUTH),
       ).rejects.toThrow("Recalculate quota endpoint not yet implemented");
     });
   });

@@ -6,6 +6,8 @@ import { useUserEncryption } from "../useUserEncryption";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
 import type { UserResponse } from "../../../types/wildduck-types";
 
+const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+
 describe("useUserEncryption", () => {
   let queryClient: QueryClient;
   let mockApi: WildDuckAPI;
@@ -47,7 +49,7 @@ describe("useUserEncryption", () => {
       mockApi.getUser = vi.fn().mockResolvedValue(mockUser);
 
       const { result } = renderHook(
-        () => useUserEncryption(mockApi, "user123"),
+        () => useUserEncryption(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -68,7 +70,7 @@ describe("useUserEncryption", () => {
       expect(result.current.pubKey).toBe(
         "-----BEGIN PGP PUBLIC KEY BLOCK-----\n...",
       );
-      expect(mockApi.getUser).toHaveBeenCalledWith("user123");
+      expect(mockApi.getUser).toHaveBeenCalledWith(TEST_USER_AUTH);
     });
 
     it("should not fetch when userId is undefined", () => {
@@ -86,7 +88,7 @@ describe("useUserEncryption", () => {
       mockApi.getUser = vi.fn().mockRejectedValue(new Error("API Error"));
 
       const { result } = renderHook(
-        () => useUserEncryption(mockApi, "user123"),
+        () => useUserEncryption(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -110,21 +112,21 @@ describe("useUserEncryption", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useUserEncryption(mockApi, "user123"),
+        () => useUserEncryption(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateEncryption({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         encryptMessages: true,
         encryptForwarded: true,
       });
 
       await waitFor(() => expect(result.current.isUpdating).toBe(false));
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         encryptMessages: true,
         encryptForwarded: true,
       });
@@ -142,7 +144,7 @@ describe("useUserEncryption", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useUserEncryption(mockApi, "user123"),
+        () => useUserEncryption(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -151,7 +153,7 @@ describe("useUserEncryption", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.updateEncryptionAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         encryptMessages: true,
       });
 
@@ -179,18 +181,18 @@ describe("useUserEncryption", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useUserEncryption(mockApi, "user123"),
+        () => useUserEncryption(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updatePubKeyAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         pubKey: newPubKey,
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         pubKey: newPubKey,
       });
     });
@@ -209,7 +211,7 @@ describe("useUserEncryption", () => {
         .mockRejectedValue(new Error("Invalid key format"));
 
       const { result } = renderHook(
-        () => useUserEncryption(mockApi, "user123"),
+        () => useUserEncryption(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -217,7 +219,7 @@ describe("useUserEncryption", () => {
 
       await expect(
         result.current.updatePubKeyAsync({
-          userId: "user123",
+          userAuth: TEST_USER_AUTH,
           pubKey: "invalid key",
         }),
       ).rejects.toThrow("Invalid key format");
@@ -237,15 +239,15 @@ describe("useUserEncryption", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useUserEncryption(mockApi, "user123"),
+        () => useUserEncryption(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      await result.current.removePubKeyAsync("user123");
+      await result.current.removePubKeyAsync(TEST_USER_AUTH);
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         pubKey: "",
       });
     });
@@ -262,7 +264,7 @@ describe("useUserEncryption", () => {
       mockApi.updateUser = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(
-        () => useUserEncryption(mockApi, "user123"),
+        () => useUserEncryption(mockApi, TEST_USER_AUTH),
         { wrapper },
       );
 
@@ -270,7 +272,7 @@ describe("useUserEncryption", () => {
 
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
-      await result.current.removePubKeyAsync("user123");
+      await result.current.removePubKeyAsync(TEST_USER_AUTH);
 
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["user", "user123"],

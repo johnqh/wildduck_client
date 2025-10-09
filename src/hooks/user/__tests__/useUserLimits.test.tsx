@@ -6,6 +6,8 @@ import { useUserLimits } from "../useUserLimits";
 import type { WildDuckAPI } from "../../../network/wildduck-client";
 import type { UserResponse } from "../../../types/wildduck-types";
 
+const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+
 describe("useUserLimits", () => {
   let queryClient: QueryClient;
   let mockApi: WildDuckAPI;
@@ -126,14 +128,14 @@ describe("useUserLimits", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateLimits({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         recipients: 200,
         forwards: 100,
       });
 
       await waitFor(() => expect(result.current.isUpdating).toBe(false));
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         recipients: 200,
         forwards: 100,
       });
@@ -157,11 +159,11 @@ describe("useUserLimits", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updateLimitsAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         imapMaxConnections: 10,
       });
 
-      expect(mockApi.updateUser).toHaveBeenCalledWith("user123", {
+      expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         imapMaxConnections: 10,
       });
     });
@@ -184,7 +186,7 @@ describe("useUserLimits", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.updateLimitsAsync({
-        userId: "user123",
+        userAuth: TEST_USER_AUTH,
         recipients: 150,
       });
 
@@ -215,7 +217,7 @@ describe("useUserLimits", () => {
 
       await expect(
         result.current.updateLimitsAsync({
-          userId: "user123",
+          userAuth: TEST_USER_AUTH,
           recipients: 200,
         }),
       ).rejects.toThrow("Update failed");
