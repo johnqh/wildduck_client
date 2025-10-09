@@ -1,20 +1,16 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type Optional, type WildDuckConfig } from "@johnqh/types";
-import { useApiCall } from "@johnqh/di";
+import { type WildDuckConfig } from "@johnqh/types";
 import type { WildduckUserAuth } from "../../types/wildduck-types";
 
-interface UseWildduckGetMessageAttachmentReturn {
-  getMessageAttachment: (
-    userAuth: WildduckUserAuth,
-    mailboxId: string,
-    messageId: number,
-    attachmentId: string,
-  ) => Promise<Optional<Blob>>;
-  isLoading: boolean;
-  error: Optional<string>;
-  clearError: () => void;
+export interface UseWildduckGetMessageAttachmentParams {
+  userAuth?: WildduckUserAuth;
+  mailboxId?: string;
+  messageId?: number;
+  attachmentId?: string;
+  devMode?: boolean;
 }
 
 /**
@@ -23,55 +19,66 @@ interface UseWildduckGetMessageAttachmentReturn {
  *
  * @param networkClient - Network client for API calls
  * @param config - WildDuck API configuration
- * @param devMode - Whether to use mock data on errors
- * @returns Object with getMessageAttachment function and state
+ * @param params - Query parameters including userAuth, mailboxId, messageId, and attachmentId
+ * @returns React Query result with attachment blob
  */
 export const useWildduckGetMessageAttachment = (
   networkClient: NetworkClient,
   config: WildDuckConfig,
-  devMode: boolean = false,
-): UseWildduckGetMessageAttachmentReturn => {
-  const wildduckClient = useMemo(
+  params: UseWildduckGetMessageAttachmentParams = {},
+) => {
+  const {
+    userAuth,
+    mailboxId,
+    messageId,
+    attachmentId,
+    devMode = false,
+  } = params;
+
+  const api = useMemo(
     () => new WildDuckAPI(networkClient, config),
     [networkClient, config],
   );
 
-  const { isLoading, error, clearError, execute } = useApiCall({
-    context: "GetMessageAttachment",
-  });
+  return useQuery({
+    queryKey: [
+      "wildduck-message-attachment",
+      userAuth?.userId,
+      mailboxId,
+      messageId,
+      attachmentId,
+    ],
+    queryFn: async () => {
+      if (!userAuth) throw new Error("userAuth is required");
+      if (!mailboxId) throw new Error("mailboxId is required");
+      if (!messageId) throw new Error("messageId is required");
+      if (!attachmentId) throw new Error("attachmentId is required");
 
-  const getMessageAttachment = useCallback(
-    execute(
-      async (
-        userAuth: WildduckUserAuth,
-        mailboxId: string,
-        messageId: number,
-        attachmentId: string,
-      ) => {
-        try {
-          return await wildduckClient.getMessageAttachment(
-            userAuth,
-            mailboxId,
-            messageId,
-            attachmentId,
+      try {
+        return await api.getMessageAttachment(
+          userAuth,
+          mailboxId,
+          messageId,
+          attachmentId,
+        );
+      } catch (err) {
+        if (devMode) {
+          console.warn(
+            "[DevMode] getMessageAttachment failed, returning mock data:",
+            err,
           );
-        } catch (err) {
-          if (devMode) {
-            console.warn(
-              "[DevMode] getMessageAttachment failed, returning mock data:",
-              err,
-            );
-            // Create a mock blob for development
-            return new Blob(["Mock attachment content"], {
-              type: "text/plain",
-            });
-          }
-          throw err;
+          return new Blob(["Mock attachment content"], {
+            type: "text/plain",
+          });
         }
-      },
-    ),
-    [execute, wildduckClient, devMode],
-  );
-
-  return { getMessageAttachment, isLoading, error, clearError };
+        throw err;
+      }
+    },
+    enabled:
+      !!userAuth && !!mailboxId && messageId !== undefined && !!attachmentId,
+  });
 };
+
+export type UseWildduckGetMessageAttachmentReturn = ReturnType<
+  typeof useWildduckGetMessageAttachment
+>;

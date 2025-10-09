@@ -1,20 +1,16 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type Optional, type WildDuckConfig } from "@johnqh/types";
-import { useApiCall } from "@johnqh/di";
+import { type WildDuckConfig } from "@johnqh/types";
 import type {
   AutoreplyResponse,
   WildduckUserAuth,
 } from "../../types/wildduck-types";
 
-interface UseWildduckGetAutoreplyReturn {
-  getAutoreply: (
-    userAuth: WildduckUserAuth,
-  ) => Promise<Optional<AutoreplyResponse>>;
-  isLoading: boolean;
-  error: Optional<string>;
-  clearError: () => void;
+export interface UseWildduckGetAutoreplyParams {
+  userAuth?: WildduckUserAuth;
+  devMode?: boolean;
 }
 
 /**
@@ -23,27 +19,28 @@ interface UseWildduckGetAutoreplyReturn {
  *
  * @param networkClient - Network client for API calls
  * @param config - WildDuck API configuration
- * @param devMode - Whether to use mock data on errors
- * @returns Object with getAutoreply function and state
+ * @param params - Query parameters including userAuth
+ * @returns React Query result with autoreply settings
  */
 export const useWildduckGetAutoreply = (
   networkClient: NetworkClient,
   config: WildDuckConfig,
-  devMode: boolean = false,
-): UseWildduckGetAutoreplyReturn => {
-  const wildduckClient = useMemo(
+  params: UseWildduckGetAutoreplyParams = {},
+) => {
+  const { userAuth, devMode = false } = params;
+
+  const api = useMemo(
     () => new WildDuckAPI(networkClient, config),
     [networkClient, config],
   );
 
-  const { isLoading, error, clearError, execute } = useApiCall({
-    context: "GetAutoreply",
-  });
+  return useQuery({
+    queryKey: ["wildduck-autoreply", userAuth?.userId],
+    queryFn: async () => {
+      if (!userAuth) throw new Error("userAuth is required");
 
-  const getAutoreply = useCallback(
-    execute(async (userAuth: WildduckUserAuth) => {
       try {
-        return await wildduckClient.getAutoreply(userAuth);
+        return await api.getAutoreply(userAuth);
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -63,9 +60,11 @@ export const useWildduckGetAutoreply = (
         }
         throw err;
       }
-    }),
-    [execute, wildduckClient, devMode],
-  );
-
-  return { getAutoreply, isLoading, error, clearError };
+    },
+    enabled: !!userAuth,
+  });
 };
+
+export type UseWildduckGetAutoreplyReturn = ReturnType<
+  typeof useWildduckGetAutoreply
+>;

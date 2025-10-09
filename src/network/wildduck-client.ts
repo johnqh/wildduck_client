@@ -297,8 +297,7 @@ class WildDuckAPI {
   ): Promise<WildDuckAuthResponse> {
     const requestBody: AuthenticateRequest = {
       username: request.username,
-      signature: request.signature, // Signature that was created by signing the nonce
-      nonce: request.nonce, // The nonce that was signed
+      signature: request.signature, // Signature that was created by signing the message
       message: request.message, // SIWE/SIWS message that was signed
       signer: request.signer, // The wallet address that created the signature
       // WildDuck handles ENS/SNS resolution internally

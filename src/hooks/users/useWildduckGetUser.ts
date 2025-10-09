@@ -1,21 +1,13 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import {
-  type Optional,
-  type WildDuckConfig,
-  type WildDuckUserResponse,
-} from "@johnqh/types";
-import { useApiCall } from "@johnqh/di";
+import { type WildDuckConfig } from "@johnqh/types";
 import type { WildduckUserAuth } from "../../types/wildduck-types";
 
-interface UseGetUserReturn {
-  getUser: (
-    userAuth: WildduckUserAuth,
-  ) => Promise<Optional<WildDuckUserResponse>>;
-  isLoading: boolean;
-  error: Optional<string>;
-  clearError: () => void;
+export interface UseWildduckGetUserParams {
+  userAuth?: WildduckUserAuth;
+  devMode?: boolean;
 }
 
 /**
@@ -24,27 +16,28 @@ interface UseGetUserReturn {
  *
  * @param networkClient - Network client for API calls
  * @param config - WildDuck API configuration
- * @param devMode - Whether to use mock data on errors
- * @returns Object with getUser function and state
+ * @param params - Query parameters including userAuth
+ * @returns React Query result with user data
  */
 export const useWildduckGetUser = (
   networkClient: NetworkClient,
   config: WildDuckConfig,
-  devMode: boolean = false,
-): UseGetUserReturn => {
-  const wildduckClient = useMemo(
+  params: UseWildduckGetUserParams = {},
+) => {
+  const { userAuth, devMode = false } = params;
+
+  const api = useMemo(
     () => new WildDuckAPI(networkClient, config),
     [networkClient, config],
   );
 
-  const { isLoading, error, clearError, execute } = useApiCall({
-    context: "GetUser",
-  });
+  return useQuery({
+    queryKey: ["wildduck-user", userAuth?.userId],
+    queryFn: async () => {
+      if (!userAuth) throw new Error("userAuth is required");
 
-  const getUser = useCallback(
-    execute(async (userAuth: WildduckUserAuth) => {
       try {
-        return await wildduckClient.getUser(userAuth);
+        return await api.getUser(userAuth);
       } catch (err) {
         if (devMode) {
           console.warn("[DevMode] getUser failed, returning mock data:", err);
@@ -63,13 +56,13 @@ export const useWildduckGetUser = (
             disabled: false,
             suspended: false,
             error: null,
-          } as unknown as WildDuckUserResponse;
+          };
         }
         throw err;
       }
-    }),
-    [execute, wildduckClient, devMode],
-  );
-
-  return { getUser, isLoading, error, clearError };
+    },
+    enabled: !!userAuth,
+  });
 };
+
+export type UseWildduckGetUserReturn = ReturnType<typeof useWildduckGetUser>;

@@ -84,7 +84,6 @@ export interface AuthenticateRequest {
   password?: string;
   emailDomain?: string;
   signature?: string;
-  nonce?: string;
   message?: string;
   signer?: string;
   protocol?: string;

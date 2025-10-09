@@ -1,21 +1,13 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { WildDuckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import {
-  type Optional,
-  type WildDuckAddressResponse,
-  type WildDuckConfig,
-} from "@johnqh/types";
-import { useApiCall } from "@johnqh/di";
+import { type WildDuckConfig } from "@johnqh/types";
 import type { WildduckUserAuth } from "../../types/wildduck-types";
 
-interface UseWildduckGetAddressesReturn {
-  getAddresses: (
-    userAuth: WildduckUserAuth,
-  ) => Promise<Optional<WildDuckAddressResponse>>;
-  isLoading: boolean;
-  error: Optional<string>;
-  clearError: () => void;
+export interface UseWildduckGetAddressesParams {
+  userAuth?: WildduckUserAuth;
+  devMode?: boolean;
 }
 
 /**
@@ -24,27 +16,28 @@ interface UseWildduckGetAddressesReturn {
  *
  * @param networkClient - Network client for API calls
  * @param config - WildDuck API configuration
- * @param devMode - Whether to use mock data on errors
- * @returns Object with getAddresses function and state
+ * @param params - Query parameters including userAuth
+ * @returns React Query result with addresses list
  */
 export const useWildduckGetAddresses = (
   networkClient: NetworkClient,
   config: WildDuckConfig,
-  devMode: boolean = false,
-): UseWildduckGetAddressesReturn => {
-  const wildduckClient = useMemo(
+  params: UseWildduckGetAddressesParams = {},
+) => {
+  const { userAuth, devMode = false } = params;
+
+  const api = useMemo(
     () => new WildDuckAPI(networkClient, config),
     [networkClient, config],
   );
 
-  const { isLoading, error, clearError, execute } = useApiCall({
-    context: "GetAddresses",
-  });
+  return useQuery({
+    queryKey: ["wildduck-addresses", userAuth?.userId],
+    queryFn: async () => {
+      if (!userAuth) throw new Error("userAuth is required");
 
-  const getAddresses = useCallback(
-    execute(async (userAuth: WildduckUserAuth) => {
       try {
-        return await wildduckClient.getAddresses(userAuth);
+        return await api.getAddresses(userAuth);
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -55,13 +48,15 @@ export const useWildduckGetAddresses = (
             success: true,
             results: [],
             error: null,
-          } as unknown as WildDuckAddressResponse;
+          };
         }
         throw err;
       }
-    }),
-    [execute, wildduckClient, devMode],
-  );
-
-  return { getAddresses, isLoading, error, clearError };
+    },
+    enabled: !!userAuth,
+  });
 };
+
+export type UseWildduckGetAddressesReturn = ReturnType<
+  typeof useWildduckGetAddresses
+>;

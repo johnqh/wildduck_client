@@ -112,7 +112,6 @@ const useWildduckAuth = (
         const requestBody = createAuthenticateRequest(
           params.username,
           params.signature,
-          params.nonce,
           params.message,
           {
             ...(params.signer && { signer: params.signer }),

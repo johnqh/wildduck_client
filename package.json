@@ -1,6 +1,6 @@
 {
   "name": "@johnqh/wildduck_client",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "React and React Native compatible client library for WildDuck email API with TypeScript support",
   "type": "module",
   "main": "dist/index.js",
@@ -42,8 +42,8 @@
     "react": "^19.1.1"
   },
   "dependencies": {
-    "@johnqh/di": "^1.3.27",
-    "@johnqh/types": "^1.8.15",
+    "@johnqh/di": "^1.4.1",
+    "@johnqh/types": "^1.8.17",
     "@tanstack/react-query": "^5.90.2",
     "axios": "^1.12.2"
   },
