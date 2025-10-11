@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildduckAPI } from "../../network/wildduck-client";
-import type {
-  WildduckUserAuth,
-  WildduckUserResponse,
-} from "../../types/wildduck-types";
+import type { WildduckUserAuth, WildduckUserResponse } from "@johnqh/types";
 
 export interface UserQuotaInfo {
   allowed: number;

@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { WildduckConfig } from "../types/wildduck-types";
+import type { WildduckConfig } from "@johnqh/types";
 
 /**
  * Create an axios instance configured for Wildduck API

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Optional } from "@johnqh/types";
-import type { WildduckConfig } from "../types/wildduck-types";
+import type { WildduckConfig } from "@johnqh/types";
 import { WildduckMockData } from "./mocks";
 
 interface WildduckUser {

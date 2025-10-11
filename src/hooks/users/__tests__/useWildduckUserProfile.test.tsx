@@ -4,7 +4,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUserProfile } from "../useWildduckUserProfile";
 import type { WildduckAPI } from "../../../network/wildduck-client";
-import type { WildduckUserResponse } from "../../../types/wildduck-types";
+import type { WildduckUserResponse } from "@johnqh/types";
 
 const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
 

@@ -5,7 +5,7 @@
 import type {
   WildduckAuthResponse as AuthenticationResponse,
   WildduckPreAuthResponse as PreAuthResponse,
-} from "../types/wildduck-types";
+} from "@johnqh/types";
 
 export class WildduckMockData {
   static getAuthStatus() {

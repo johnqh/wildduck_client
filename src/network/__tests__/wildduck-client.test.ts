@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { WildduckAPI } from '../wildduck-client';
-import { WildduckConfig } from '../../types/wildduck-types';
+import { WildduckConfig } from '@johnqh/types';
 import { NetworkClient } from '@johnqh/di';
 
 const TEST_USER_AUTH = { userId: 'user123', accessToken: 'test-token' };

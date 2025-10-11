@@ -1,4 +1,4 @@
-import type { SpamSettings, WildduckConfig } from "../types/wildduck-types";
+import type { SpamSettings, WildduckConfig } from "@johnqh/types";
 import { createWildduckClient } from "./client";
 
 /**

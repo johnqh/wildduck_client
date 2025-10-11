@@ -2,8 +2,8 @@ import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type WildduckConfig } from "../../types/wildduck-types";
-import type { WildduckUserAuth } from "../../types/wildduck-types";
+import { type WildduckConfig } from "@johnqh/types";
+import type { WildduckUserAuth } from "@johnqh/types";
 
 export interface UseWildduckGetUserParams {
   userAuth?: WildduckUserAuth;

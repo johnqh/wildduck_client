@@ -6,10 +6,10 @@ import {
   type CreateMailboxRequest,
   type WildduckConfig,
   type WildduckMailboxResponse,
-} from "../../types/wildduck-types";
+} from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { WildduckMockData } from "../mocks";
-import type { WildduckUserAuth } from "../../types/wildduck-types";
+import type { WildduckUserAuth } from "@johnqh/types";
 
 interface UseWildduckCreateMailboxReturn {
   createMailbox: (

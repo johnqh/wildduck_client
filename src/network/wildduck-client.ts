@@ -29,7 +29,7 @@ import type {
   WildduckUploadMessageResponse,
   WildduckUserAuth,
   WildduckUserResponse,
-} from "../types/wildduck-types";
+} from "@johnqh/types";
 
 // Platform-specific globals
 declare const sessionStorage: Storage;

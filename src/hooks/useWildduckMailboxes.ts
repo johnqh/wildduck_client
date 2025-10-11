@@ -10,7 +10,7 @@ import type {
   WildduckConfig,
   WildduckMailbox,
   WildduckMailboxResponse,
-} from "../types/wildduck-types";
+} from "@johnqh/types";
 
 interface UseWildduckMailboxesReturn {
   // Query state

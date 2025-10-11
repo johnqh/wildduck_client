@@ -1,4 +1,4 @@
-import type { ForwardingTarget, WildduckConfig } from "../types/wildduck-types";
+import type { ForwardingTarget, WildduckConfig } from "@johnqh/types";
 import { createWildduckClient } from "./client";
 
 /**

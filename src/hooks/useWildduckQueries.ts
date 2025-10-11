@@ -19,7 +19,7 @@ import type {
   WildduckMessage,
   WildduckMessagesResponse,
   WildduckUser,
-} from "../types/wildduck-types";
+} from "@johnqh/types";
 import axios from "axios";
 import { WildduckMockData } from "./mocks";
 

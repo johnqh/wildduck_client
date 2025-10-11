@@ -6,7 +6,7 @@ import type {
   WildduckMessage,
   WildduckMessageResponse,
   WildduckMessagesResponse,
-} from "../types/wildduck-types";
+} from "@johnqh/types";
 import { useCallback, useMemo, useState } from "react";
 
 interface GetMessagesOptions {

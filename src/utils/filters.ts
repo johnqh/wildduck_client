@@ -5,7 +5,7 @@ import type {
   FilterQuery,
   FilterResponse,
   WildduckConfig,
-} from "../types/wildduck-types";
+} from "@johnqh/types";
 import { createWildduckClient } from "./client";
 
 /**

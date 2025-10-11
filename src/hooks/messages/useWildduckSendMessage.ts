@@ -2,13 +2,13 @@ import type { Optional } from "@johnqh/types";
 import { useCallback, useMemo } from "react";
 import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
-import { type WildduckConfig } from "../../types/wildduck-types";
+import { type WildduckConfig } from "@johnqh/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   WildduckSubmitMessageRequest,
   WildduckSubmitMessageResponse,
   WildduckUserAuth,
-} from "../../types/wildduck-types";
+} from "@johnqh/types";
 
 interface UseWildduckSendMessageReturn {
   sendMessage: (

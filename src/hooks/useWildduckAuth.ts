@@ -9,11 +9,8 @@ import type {
   WildduckAuthenticateRequest,
   WildduckConfig,
   WildduckPreAuthRequest,
-} from "../types/wildduck-types";
-import {
-  createAuthenticateRequest,
-  createPreAuthRequest,
-} from "../types/wildduck-types";
+} from "@johnqh/types";
+import { createAuthenticateRequest, createPreAuthRequest } from "@johnqh/types";
 
 // Type aliases for legacy compatibility
 type AuthenticateRequest = WildduckAuthenticateRequest;

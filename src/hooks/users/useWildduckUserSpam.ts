@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildduckAPI } from "../../network/wildduck-client";
-import type {
-  WildduckUserAuth,
-  WildduckUserResponse,
-} from "../../types/wildduck-types";
+import type { WildduckUserAuth, WildduckUserResponse } from "@johnqh/types";
 
 interface SpamSettingsInternal {
   spamLevel: number; // 0-100, where 0 = everything is spam, 100 = nothing is spam

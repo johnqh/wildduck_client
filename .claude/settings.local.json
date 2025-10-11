@@ -32,7 +32,9 @@
       "Bash(do echo \"==== $file ====\")",
       "Bash(tail:*)",
       "Bash(npm run lint:fix:*)",
-      "Bash(npm run format:*)"
+      "Bash(npm run format:*)",
+      "Read(//Users/johnhuang/0xmail/types/**)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
