@@ -92,10 +92,15 @@ export const useWildduckSendMessage = (
     [sendMutation],
   );
 
-  return {
-    sendMessage,
-    isLoading: sendMutation.isPending,
-    error: sendMutation.error,
-    clearError: () => sendMutation.reset(),
-  };
+  const clearError = useCallback(() => sendMutation.reset(), [sendMutation]);
+
+  return useMemo(
+    () => ({
+      sendMessage,
+      isLoading: sendMutation.isPending,
+      error: sendMutation.error,
+      clearError,
+    }),
+    [sendMessage, sendMutation.isPending, sendMutation.error, clearError],
+  );
 };

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
   WildduckLimits,
@@ -59,27 +60,50 @@ export const useWildduckUserLimits = (
     },
   });
 
-  return {
-    // Query
-    limits: limitsQuery.data,
-    isLoading: limitsQuery.isLoading,
-    isError: limitsQuery.isError,
-    error: limitsQuery.error,
+  const handleUpdateLimits = useCallback(
+    (params: UpdateWildduckLimitsParams) => updateLimits.mutate(params),
+    [updateLimits],
+  );
 
-    // Individual limit accessors for convenience
-    quota: limitsQuery.data?.quota,
-    recipients: limitsQuery.data?.recipients,
-    forwards: limitsQuery.data?.forwards,
-    received: limitsQuery.data?.received,
-    imapUpload: limitsQuery.data?.imapUpload,
-    imapDownload: limitsQuery.data?.imapDownload,
-    pop3Download: limitsQuery.data?.pop3Download,
-    imapMaxConnections: limitsQuery.data?.imapMaxConnections,
+  const handleUpdateLimitsAsync = useCallback(
+    async (params: UpdateWildduckLimitsParams) =>
+      updateLimits.mutateAsync(params),
+    [updateLimits],
+  );
 
-    // Mutation
-    updateLimits: updateLimits.mutate,
-    updateLimitsAsync: updateLimits.mutateAsync,
-    isUpdating: updateLimits.isPending,
-    updateError: updateLimits.error,
-  };
+  return useMemo(
+    () => ({
+      // Query
+      limits: limitsQuery.data,
+      isLoading: limitsQuery.isLoading,
+      isError: limitsQuery.isError,
+      error: limitsQuery.error,
+
+      // Individual limit accessors for convenience
+      quota: limitsQuery.data?.quota,
+      recipients: limitsQuery.data?.recipients,
+      forwards: limitsQuery.data?.forwards,
+      received: limitsQuery.data?.received,
+      imapUpload: limitsQuery.data?.imapUpload,
+      imapDownload: limitsQuery.data?.imapDownload,
+      pop3Download: limitsQuery.data?.pop3Download,
+      imapMaxConnections: limitsQuery.data?.imapMaxConnections,
+
+      // Mutation
+      updateLimits: handleUpdateLimits,
+      updateLimitsAsync: handleUpdateLimitsAsync,
+      isUpdating: updateLimits.isPending,
+      updateError: updateLimits.error,
+    }),
+    [
+      limitsQuery.data,
+      limitsQuery.isLoading,
+      limitsQuery.isError,
+      limitsQuery.error,
+      handleUpdateLimits,
+      handleUpdateLimitsAsync,
+      updateLimits.isPending,
+      updateLimits.error,
+    ],
+  );
 };

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
@@ -31,30 +31,39 @@ export const useWildduckGetAddresses = (
     [networkClient, config],
   );
 
-  return useQuery({
-    queryKey: ["wildduck-addresses", userAuth?.userId],
-    queryFn: async () => {
-      if (!userAuth) throw new Error("userAuth is required");
+  const queryFn = useCallback(async () => {
+    if (!userAuth) throw new Error("userAuth is required");
 
-      try {
-        return await api.getAddresses(userAuth);
-      } catch (err) {
-        if (devMode) {
-          console.warn(
-            "[DevMode] getAddresses failed, returning mock data:",
-            err,
-          );
-          return {
-            success: true,
-            results: [],
-            error: null,
-          };
-        }
-        throw err;
+    try {
+      return await api.getAddresses(userAuth);
+    } catch (err) {
+      if (devMode) {
+        console.warn(
+          "[DevMode] getAddresses failed, returning mock data:",
+          err,
+        );
+        return {
+          success: true,
+          results: [],
+          error: null,
+        };
       }
-    },
+      throw err;
+    }
+  }, [userAuth, api, devMode]);
+
+  const query = useQuery({
+    queryKey: ["wildduck-addresses", userAuth?.userId],
+    queryFn,
     enabled: !!userAuth,
   });
+
+  return useMemo(
+    () => ({
+      ...query,
+    }),
+    [query],
+  );
 };
 
 export type UseWildduckGetAddressesReturn = ReturnType<

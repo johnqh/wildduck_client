@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
@@ -35,30 +35,39 @@ export const useWildduckGetMailboxes = (
     [networkClient, config],
   );
 
-  return useQuery({
-    queryKey: ["wildduck-mailboxes", userAuth?.userId, options],
-    queryFn: async () => {
-      if (!userAuth) throw new Error("userAuth is required");
+  const queryFn = useCallback(async () => {
+    if (!userAuth) throw new Error("userAuth is required");
 
-      try {
-        return await api.getMailboxes(userAuth, options);
-      } catch (err) {
-        if (devMode) {
-          console.warn(
-            "[DevMode] getMailboxes failed, returning mock data:",
-            err,
-          );
-          return {
-            success: true,
-            results: [],
-            error: null,
-          };
-        }
-        throw err;
+    try {
+      return await api.getMailboxes(userAuth, options);
+    } catch (err) {
+      if (devMode) {
+        console.warn(
+          "[DevMode] getMailboxes failed, returning mock data:",
+          err,
+        );
+        return {
+          success: true,
+          results: [],
+          error: null,
+        };
       }
-    },
+      throw err;
+    }
+  }, [userAuth, api, options, devMode]);
+
+  const query = useQuery({
+    queryKey: ["wildduck-mailboxes", userAuth?.userId, options],
+    queryFn,
     enabled: !!userAuth,
   });
+
+  return useMemo(
+    () => ({
+      ...query,
+    }),
+    [query],
+  );
 };
 
 export type UseWildduckGetMailboxesReturn = ReturnType<

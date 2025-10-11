@@ -91,10 +91,18 @@ export const useWildduckSubmitDraft = (
     [submitMutation],
   );
 
-  return {
-    submitDraft,
-    isLoading: submitMutation.isPending,
-    error: submitMutation.error,
-    clearError: () => submitMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => submitMutation.reset(),
+    [submitMutation],
+  );
+
+  return useMemo(
+    () => ({
+      submitDraft,
+      isLoading: submitMutation.isPending,
+      error: submitMutation.error,
+      clearError,
+    }),
+    [submitDraft, submitMutation.isPending, submitMutation.error, clearError],
+  );
 };

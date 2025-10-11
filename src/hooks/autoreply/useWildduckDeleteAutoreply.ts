@@ -76,10 +76,23 @@ export const useWildduckDeleteAutoreply = (
     [deleteMutation],
   );
 
-  return {
-    deleteAutoreply,
-    isLoading: deleteMutation.isPending,
-    error: deleteMutation.error,
-    clearError: () => deleteMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => deleteMutation.reset(),
+    [deleteMutation],
+  );
+
+  return useMemo(
+    () => ({
+      deleteAutoreply,
+      isLoading: deleteMutation.isPending,
+      error: deleteMutation.error,
+      clearError,
+    }),
+    [
+      deleteAutoreply,
+      deleteMutation.isPending,
+      deleteMutation.error,
+      clearError,
+    ],
+  );
 };

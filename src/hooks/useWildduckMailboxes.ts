@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import axios from "axios";
 import type { Optional } from "@johnqh/types";
 import type {
@@ -89,46 +89,49 @@ const useWildduckMailboxes = (
   };
 
   // Get mailboxes query (not auto-fetched, only when explicitly called)
-  const getMailboxes = async (
-    userId: string,
-    options: {
-      specialUse?: Optional<boolean>;
-      showHidden?: Optional<boolean>;
-      counters?: Optional<boolean>;
-      sizes?: Optional<boolean>;
-    } = {},
-  ): Promise<WildduckMailbox[]> => {
-    try {
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers = buildHeaders();
+  const getMailboxes = useCallback(
+    async (
+      userId: string,
+      options: {
+        specialUse?: Optional<boolean>;
+        showHidden?: Optional<boolean>;
+        counters?: Optional<boolean>;
+        sizes?: Optional<boolean>;
+      } = {},
+    ): Promise<WildduckMailbox[]> => {
+      try {
+        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+        const headers = buildHeaders();
 
-      const queryParams = new URLSearchParams();
-      if (options.specialUse) queryParams.append("specialUse", "true");
-      if (options.showHidden) queryParams.append("showHidden", "true");
-      if (options.counters) queryParams.append("counters", "true");
-      if (options.sizes) queryParams.append("sizes", "true");
+        const queryParams = new URLSearchParams();
+        if (options.specialUse) queryParams.append("specialUse", "true");
+        if (options.showHidden) queryParams.append("showHidden", "true");
+        if (options.counters) queryParams.append("counters", "true");
+        if (options.sizes) queryParams.append("sizes", "true");
 
-      const query = queryParams.toString();
-      const endpoint = `/users/${userId}/mailboxes${query ? `?${query}` : ""}`;
+        const query = queryParams.toString();
+        const endpoint = `/users/${userId}/mailboxes${query ? `?${query}` : ""}`;
 
-      const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
-      const mailboxData = response.data as WildduckMailboxResponse;
-      const mailboxList = mailboxData.results || [];
+        const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
+        const mailboxData = response.data as WildduckMailboxResponse;
+        const mailboxList = mailboxData.results || [];
 
-      // Update cache
-      queryClient.setQueryData(["wildduck-mailboxes", userId], mailboxList);
+        // Update cache
+        queryClient.setQueryData(["wildduck-mailboxes", userId], mailboxList);
 
-      return mailboxList;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to get mailboxes";
-      console.error(
-        "[useWildduckMailboxes] Failed to get mailboxes:",
-        errorMessage,
-      );
-      throw new Error(errorMessage);
-    }
-  };
+        return mailboxList;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to get mailboxes";
+        console.error(
+          "[useWildduckMailboxes] Failed to get mailboxes:",
+          errorMessage,
+        );
+        throw new Error(errorMessage);
+      }
+    },
+    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+  );
 
   // Get cached mailboxes from query cache (used for reading state)
   // Use userId parameter to get the correct cached mailboxes
@@ -285,9 +288,12 @@ const useWildduckMailboxes = (
   });
 
   // Refresh function (refetch with counters)
-  const refresh = async (userId: string): Promise<void> => {
-    await getMailboxes(userId, { counters: true });
-  };
+  const refresh = useCallback(
+    async (userId: string): Promise<void> => {
+      await getMailboxes(userId, { counters: true });
+    },
+    [getMailboxes],
+  );
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
@@ -300,46 +306,80 @@ const useWildduckMailboxes = (
     deleteMutation.error?.message ||
     null;
 
-  return {
-    // Query state
-    mailboxes: cachedMailboxes,
-    isLoading,
-    error,
+  const createMailbox = useCallback(
+    async (userId: string, params: Omit<CreateMailboxRequest, "sess" | "ip">) =>
+      createMutation.mutateAsync({ userId, params }),
+    [createMutation],
+  );
 
-    // Query functions
-    getMailboxes,
-    refresh,
-
-    // Create mutation
-    createMailbox: async (
-      userId: string,
-      params: Omit<CreateMailboxRequest, "sess" | "ip">,
-    ) => createMutation.mutateAsync({ userId, params }),
-    isCreating: createMutation.isPending,
-    createError: createMutation.error,
-
-    // Update mutation
-    updateMailbox: async (
+  const updateMailbox = useCallback(
+    async (
       userId: string,
       mailboxId: string,
       params: Omit<UpdateMailboxRequest, "sess" | "ip">,
     ) => updateMutation.mutateAsync({ userId, mailboxId, params }),
-    isUpdating: updateMutation.isPending,
-    updateError: updateMutation.error,
+    [updateMutation],
+  );
 
-    // Delete mutation
-    deleteMailbox: async (userId: string, mailboxId: string) =>
+  const deleteMailbox = useCallback(
+    async (userId: string, mailboxId: string) =>
       deleteMutation.mutateAsync({ userId, mailboxId }),
-    isDeleting: deleteMutation.isPending,
-    deleteError: deleteMutation.error,
+    [deleteMutation],
+  );
 
-    // Legacy compatibility
-    clearError: () => {
-      createMutation.reset();
-      updateMutation.reset();
-      deleteMutation.reset();
-    },
-  };
+  const clearError = useCallback(() => {
+    createMutation.reset();
+    updateMutation.reset();
+    deleteMutation.reset();
+  }, [createMutation, updateMutation, deleteMutation]);
+
+  return useMemo(
+    () => ({
+      // Query state
+      mailboxes: cachedMailboxes,
+      isLoading,
+      error,
+
+      // Query functions
+      getMailboxes,
+      refresh,
+
+      // Create mutation
+      createMailbox,
+      isCreating: createMutation.isPending,
+      createError: createMutation.error,
+
+      // Update mutation
+      updateMailbox,
+      isUpdating: updateMutation.isPending,
+      updateError: updateMutation.error,
+
+      // Delete mutation
+      deleteMailbox,
+      isDeleting: deleteMutation.isPending,
+      deleteError: deleteMutation.error,
+
+      // Legacy compatibility
+      clearError,
+    }),
+    [
+      cachedMailboxes,
+      isLoading,
+      error,
+      getMailboxes,
+      refresh,
+      createMailbox,
+      createMutation.isPending,
+      createMutation.error,
+      updateMailbox,
+      updateMutation.isPending,
+      updateMutation.error,
+      deleteMailbox,
+      deleteMutation.isPending,
+      deleteMutation.error,
+      clearError,
+    ],
+  );
 };
 
 export { useWildduckMailboxes, type UseWildduckMailboxesReturn };

@@ -7,7 +7,7 @@ import type {
   WildduckMessageResponse,
   WildduckMessagesResponse,
 } from "../types/wildduck-types";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 interface GetMessagesOptions {
   limit?: number;
@@ -142,113 +142,123 @@ const useWildduckMessages = (
   };
 
   // Get messages function (imperative)
-  const getMessages = async (
-    userId: string,
-    mailboxId: string,
-    options: GetMessagesOptions = {},
-  ): Promise<WildduckMessage[]> => {
-    try {
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers = buildHeaders();
+  const getMessages = useCallback(
+    async (
+      userId: string,
+      mailboxId: string,
+      options: GetMessagesOptions = {},
+    ): Promise<WildduckMessage[]> => {
+      try {
+        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+        const headers = buildHeaders();
 
-      const queryParams = new URLSearchParams();
-      if (options.limit) queryParams.append("limit", options.limit.toString());
-      if (options.page) queryParams.append("page", options.page.toString());
-      if (options.order) queryParams.append("order", options.order);
+        const queryParams = new URLSearchParams();
+        if (options.limit)
+          queryParams.append("limit", options.limit.toString());
+        if (options.page) queryParams.append("page", options.page.toString());
+        if (options.order) queryParams.append("order", options.order);
 
-      const query = queryParams.toString();
-      const endpoint = `/users/${userId}/mailboxes/${mailboxId}/messages${query ? `?${query}` : ""}`;
+        const query = queryParams.toString();
+        const endpoint = `/users/${userId}/mailboxes/${mailboxId}/messages${query ? `?${query}` : ""}`;
 
-      const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
-      const messageData = response.data as WildduckMessagesResponse;
-      const messageList = messageData.results || [];
+        const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
+        const messageData = response.data as WildduckMessagesResponse;
+        const messageList = messageData.results || [];
 
-      setMessages(messageList);
-      setTotalMessages(messageData.total || 0);
-      setCurrentPage(messageData.page || 1);
-      setLastFetchParams({ userId, mailboxId, options });
+        setMessages(messageList);
+        setTotalMessages(messageData.total || 0);
+        setCurrentPage(messageData.page || 1);
+        setLastFetchParams({ userId, mailboxId, options });
 
-      // Update cache
-      queryClient.setQueryData(
-        ["wildduck-messages", userId, mailboxId],
-        messageList,
-      );
+        // Update cache
+        queryClient.setQueryData(
+          ["wildduck-messages", userId, mailboxId],
+          messageList,
+        );
 
-      return messageList;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to get messages";
-      setMessages([]);
-      setTotalMessages(0);
-      throw new Error(errorMessage);
-    }
-  };
+        return messageList;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to get messages";
+        setMessages([]);
+        setTotalMessages(0);
+        throw new Error(errorMessage);
+      }
+    },
+    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+  );
 
   // Get single message function (imperative)
-  const getMessage = async (
-    userId: string,
-    messageId: string,
-  ): Promise<WildduckMessageResponse> => {
-    try {
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers = buildHeaders();
+  const getMessage = useCallback(
+    async (
+      userId: string,
+      messageId: string,
+    ): Promise<WildduckMessageResponse> => {
+      try {
+        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+        const headers = buildHeaders();
 
-      const response = await axios.get(
-        `${apiUrl}/users/${userId}/messages/${messageId}`,
-        { headers },
-      );
+        const response = await axios.get(
+          `${apiUrl}/users/${userId}/messages/${messageId}`,
+          { headers },
+        );
 
-      const messageData = response.data as WildduckMessageResponse;
+        const messageData = response.data as WildduckMessageResponse;
 
-      // Update cache
-      queryClient.setQueryData(
-        ["wildduck-message", userId, messageId],
-        messageData,
-      );
+        // Update cache
+        queryClient.setQueryData(
+          ["wildduck-message", userId, messageId],
+          messageData,
+        );
 
-      return messageData;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to get message";
-      throw new Error(errorMessage);
-    }
-  };
+        return messageData;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to get message";
+        throw new Error(errorMessage);
+      }
+    },
+    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+  );
 
   // Search messages function (imperative)
-  const searchMessages = async (
-    userId: string,
-    query: string,
-    options: GetMessagesOptions = {},
-  ): Promise<WildduckMessage[]> => {
-    try {
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers = buildHeaders();
+  const searchMessages = useCallback(
+    async (
+      userId: string,
+      query: string,
+      options: GetMessagesOptions = {},
+    ): Promise<WildduckMessage[]> => {
+      try {
+        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+        const headers = buildHeaders();
 
-      const response = await axios.get(
-        `${apiUrl}/users/${userId}/search?q=${encodeURIComponent(query)}&limit=${options.limit || 50}&page=${options.page || 1}`,
-        { headers },
-      );
+        const response = await axios.get(
+          `${apiUrl}/users/${userId}/search?q=${encodeURIComponent(query)}&limit=${options.limit || 50}&page=${options.page || 1}`,
+          { headers },
+        );
 
-      const searchResponse = response.data as {
-        results?: WildduckMessage[];
-        total?: number;
-        page?: number;
-      };
-      const messageList = searchResponse.results || [];
+        const searchResponse = response.data as {
+          results?: WildduckMessage[];
+          total?: number;
+          page?: number;
+        };
+        const messageList = searchResponse.results || [];
 
-      setMessages(messageList);
-      setTotalMessages(searchResponse.total || 0);
-      setCurrentPage(searchResponse.page || 1);
+        setMessages(messageList);
+        setTotalMessages(searchResponse.total || 0);
+        setCurrentPage(searchResponse.page || 1);
 
-      return messageList;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to search messages";
-      setMessages([]);
-      setTotalMessages(0);
-      throw new Error(errorMessage);
-    }
-  };
+        return messageList;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to search messages";
+        setMessages([]);
+        setTotalMessages(0);
+        throw new Error(errorMessage);
+      }
+    },
+    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders],
+  );
 
   // Send message mutation
   const sendMutation = useMutation({
@@ -418,7 +428,7 @@ const useWildduckMessages = (
   });
 
   // Refresh function (refetch last messages query)
-  const refresh = async (): Promise<void> => {
+  const refresh = useCallback(async (): Promise<void> => {
     if (lastFetchParams) {
       await getMessages(
         lastFetchParams.userId,
@@ -426,7 +436,7 @@ const useWildduckMessages = (
         lastFetchParams.options,
       );
     }
-  };
+  }, [lastFetchParams, getMessages]);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
@@ -441,58 +451,100 @@ const useWildduckMessages = (
     moveMutation.error?.message ||
     null;
 
-  return {
-    // Query state
-    messages,
-    totalMessages,
-    currentPage,
-    isLoading,
-    error,
-
-    // Query functions
-    getMessages,
-    getMessage,
-    searchMessages,
-    refresh,
-
-    // Send mutation
-    sendMessage: async (userId: string, params: SendMessageParams) =>
+  const sendMessage = useCallback(
+    async (userId: string, params: SendMessageParams) =>
       sendMutation.mutateAsync({ userId, params }),
-    isSending: sendMutation.isPending,
-    sendError: sendMutation.error,
+    [sendMutation],
+  );
 
-    // Update mutation
-    updateMessage: async (
-      userId: string,
-      messageId: string,
-      params: UpdateMessageParams,
-    ) => updateMutation.mutateAsync({ userId, messageId, params }),
-    isUpdating: updateMutation.isPending,
-    updateError: updateMutation.error,
+  const updateMessage = useCallback(
+    async (userId: string, messageId: string, params: UpdateMessageParams) =>
+      updateMutation.mutateAsync({ userId, messageId, params }),
+    [updateMutation],
+  );
 
-    // Delete mutation
-    deleteMessage: async (userId: string, messageId: string) =>
+  const deleteMessage = useCallback(
+    async (userId: string, messageId: string) =>
       deleteMutation.mutateAsync({ userId, messageId }),
-    isDeleting: deleteMutation.isPending,
-    deleteError: deleteMutation.error,
+    [deleteMutation],
+  );
 
-    // Move mutation
-    moveMessage: async (
-      userId: string,
-      messageId: string,
-      targetMailbox: string,
-    ) => moveMutation.mutateAsync({ userId, messageId, targetMailbox }),
-    isMoving: moveMutation.isPending,
-    moveError: moveMutation.error,
+  const moveMessage = useCallback(
+    async (userId: string, messageId: string, targetMailbox: string) =>
+      moveMutation.mutateAsync({ userId, messageId, targetMailbox }),
+    [moveMutation],
+  );
 
-    // Legacy compatibility
-    clearError: () => {
-      sendMutation.reset();
-      updateMutation.reset();
-      deleteMutation.reset();
-      moveMutation.reset();
-    },
-  };
+  const clearError = useCallback(() => {
+    sendMutation.reset();
+    updateMutation.reset();
+    deleteMutation.reset();
+    moveMutation.reset();
+  }, [sendMutation, updateMutation, deleteMutation, moveMutation]);
+
+  return useMemo(
+    () => ({
+      // Query state
+      messages,
+      totalMessages,
+      currentPage,
+      isLoading,
+      error,
+
+      // Query functions
+      getMessages,
+      getMessage,
+      searchMessages,
+      refresh,
+
+      // Send mutation
+      sendMessage,
+      isSending: sendMutation.isPending,
+      sendError: sendMutation.error,
+
+      // Update mutation
+      updateMessage,
+      isUpdating: updateMutation.isPending,
+      updateError: updateMutation.error,
+
+      // Delete mutation
+      deleteMessage,
+      isDeleting: deleteMutation.isPending,
+      deleteError: deleteMutation.error,
+
+      // Move mutation
+      moveMessage,
+      isMoving: moveMutation.isPending,
+      moveError: moveMutation.error,
+
+      // Legacy compatibility
+      clearError,
+    }),
+    [
+      messages,
+      totalMessages,
+      currentPage,
+      isLoading,
+      error,
+      getMessages,
+      getMessage,
+      searchMessages,
+      refresh,
+      sendMessage,
+      sendMutation.isPending,
+      sendMutation.error,
+      updateMessage,
+      updateMutation.isPending,
+      updateMutation.error,
+      deleteMessage,
+      deleteMutation.isPending,
+      deleteMutation.error,
+      moveMessage,
+      moveMutation.isPending,
+      moveMutation.error,
+      clearError,
+    ],
+  );
 };
 
 export {

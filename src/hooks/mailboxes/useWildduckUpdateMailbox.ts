@@ -96,10 +96,18 @@ export const useWildduckUpdateMailbox = (
     [updateMutation],
   );
 
-  return {
-    updateMailbox,
-    isLoading: updateMutation.isPending,
-    error: updateMutation.error,
-    clearError: () => updateMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => updateMutation.reset(),
+    [updateMutation],
+  );
+
+  return useMemo(
+    () => ({
+      updateMailbox,
+      isLoading: updateMutation.isPending,
+      error: updateMutation.error,
+      clearError,
+    }),
+    [updateMailbox, updateMutation.isPending, updateMutation.error, clearError],
+  );
 };

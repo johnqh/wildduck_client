@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import type { Optional } from "@johnqh/types";
 import type { WildduckConfig } from "../types/wildduck-types";
@@ -127,7 +127,7 @@ const useWildduckHealth = (
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode]);
 
   const startMonitoring = useCallback(
     (intervalMs: number = 30000) => {
@@ -167,17 +167,30 @@ const useWildduckHealth = (
     };
   }, [monitoringInterval]);
 
-  return {
-    isLoading,
-    error,
-    healthStatus,
-    isHealthy,
-    checkHealth,
-    startMonitoring,
-    stopMonitoring,
-    isMonitoring,
-    clearError,
-  };
+  return useMemo(
+    () => ({
+      isLoading,
+      error,
+      healthStatus,
+      isHealthy,
+      checkHealth,
+      startMonitoring,
+      stopMonitoring,
+      isMonitoring,
+      clearError,
+    }),
+    [
+      isLoading,
+      error,
+      healthStatus,
+      isHealthy,
+      checkHealth,
+      startMonitoring,
+      stopMonitoring,
+      isMonitoring,
+      clearError,
+    ],
+  );
 };
 
 export {

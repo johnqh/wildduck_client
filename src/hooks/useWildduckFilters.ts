@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
 import type { Optional } from "@johnqh/types";
 import type { WildduckConfig } from "../types/wildduck-types";
@@ -160,7 +160,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [],
+    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
   );
 
   const getFilter = useCallback(
@@ -207,7 +207,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [],
+    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
   );
 
   const createFilter = useCallback(
@@ -257,7 +257,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [],
+    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
   );
 
   const updateFilter = useCallback(
@@ -308,7 +308,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [],
+    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
   );
 
   const deleteFilter = useCallback(
@@ -354,7 +354,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [],
+    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
   );
 
   const refresh = useCallback(
@@ -364,18 +364,32 @@ const useWildduckFilters = (
     [getFilters],
   );
 
-  return {
-    isLoading,
-    error,
-    filters,
-    getFilters,
-    getFilter,
-    createFilter,
-    updateFilter,
-    deleteFilter,
-    clearError,
-    refresh,
-  };
+  return useMemo(
+    () => ({
+      isLoading,
+      error,
+      filters,
+      getFilters,
+      getFilter,
+      createFilter,
+      updateFilter,
+      deleteFilter,
+      clearError,
+      refresh,
+    }),
+    [
+      isLoading,
+      error,
+      filters,
+      getFilters,
+      getFilter,
+      createFilter,
+      updateFilter,
+      deleteFilter,
+      clearError,
+      refresh,
+    ],
+  );
 };
 
 export {

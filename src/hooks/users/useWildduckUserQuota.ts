@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
@@ -33,15 +34,17 @@ export const useWildduckUserQuota = (
   const userId = userAuth?.userId;
 
   // Query to get user info (includes quota)
+  const quotaQueryFn = useCallback(async () => {
+    if (!userAuth) throw new Error("User auth is required");
+    const user = (await api.getUser(
+      userAuth,
+    )) as unknown as WildduckUserResponse;
+    return user.limits?.quota;
+  }, [userAuth, api]);
+
   const quotaQuery = useQuery({
     queryKey: ["user", userId, "quota"],
-    queryFn: async () => {
-      if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(
-        userAuth,
-      )) as unknown as WildduckUserResponse;
-      return user.limits?.quota;
-    },
+    queryFn: quotaQueryFn,
     enabled: !!userAuth,
   });
 
@@ -78,20 +81,34 @@ export const useWildduckUserQuota = (
     },
   });
 
-  return {
-    // Query
-    quota: quotaQuery.data,
-    isLoading: quotaQuery.isLoading,
-    isError: quotaQuery.isError,
-    error: quotaQuery.error,
+  return useMemo(
+    () => ({
+      // Query
+      quota: quotaQuery.data,
+      isLoading: quotaQuery.isLoading,
+      isError: quotaQuery.isError,
+      error: quotaQuery.error,
 
-    // Mutations
-    updateQuota: updateQuota.mutate,
-    updateQuotaAsync: updateQuota.mutateAsync,
-    isUpdating: updateQuota.isPending,
+      // Mutations
+      updateQuota: updateQuota.mutate,
+      updateQuotaAsync: updateQuota.mutateAsync,
+      isUpdating: updateQuota.isPending,
 
-    recalculateQuota: recalculateQuota.mutate,
-    recalculateQuotaAsync: recalculateQuota.mutateAsync,
-    isRecalculating: recalculateQuota.isPending,
-  };
+      recalculateQuota: recalculateQuota.mutate,
+      recalculateQuotaAsync: recalculateQuota.mutateAsync,
+      isRecalculating: recalculateQuota.isPending,
+    }),
+    [
+      quotaQuery.data,
+      quotaQuery.isLoading,
+      quotaQuery.isError,
+      quotaQuery.error,
+      updateQuota.mutate,
+      updateQuota.mutateAsync,
+      updateQuota.isPending,
+      recalculateQuota.mutate,
+      recalculateQuota.mutateAsync,
+      recalculateQuota.isPending,
+    ],
+  );
 };

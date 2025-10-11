@@ -84,10 +84,18 @@ export const useWildduckCreateMailbox = (
     [createMutation],
   );
 
-  return {
-    createMailbox,
-    isLoading: createMutation.isPending,
-    error: createMutation.error,
-    clearError: () => createMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => createMutation.reset(),
+    [createMutation],
+  );
+
+  return useMemo(
+    () => ({
+      createMailbox,
+      isLoading: createMutation.isPending,
+      error: createMutation.error,
+      clearError,
+    }),
+    [createMailbox, createMutation.isPending, createMutation.error, clearError],
+  );
 };

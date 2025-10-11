@@ -89,10 +89,18 @@ export const useWildduckDeleteMailbox = (
     [deleteMutation],
   );
 
-  return {
-    deleteMailbox,
-    isLoading: deleteMutation.isPending,
-    error: deleteMutation.error,
-    clearError: () => deleteMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => deleteMutation.reset(),
+    [deleteMutation],
+  );
+
+  return useMemo(
+    () => ({
+      deleteMailbox,
+      isLoading: deleteMutation.isPending,
+      error: deleteMutation.error,
+      clearError,
+    }),
+    [deleteMailbox, deleteMutation.isPending, deleteMutation.error, clearError],
+  );
 };

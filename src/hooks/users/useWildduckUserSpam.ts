@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
@@ -28,18 +29,22 @@ export const useWildduckUserSpam = (
   const userId = userAuth?.userId;
 
   // Query to get user spam settings
+  const spamQueryFn = useCallback(async (): Promise<
+    SpamSettingsInternal | undefined
+  > => {
+    if (!userAuth) throw new Error("User auth is required");
+    const user = (await api.getUser(
+      userAuth,
+    )) as unknown as WildduckUserResponse;
+    return {
+      spamLevel: user.spamLevel,
+      fromWhitelist: user.fromWhitelist || [],
+    };
+  }, [userAuth, api]);
+
   const spamQuery = useQuery({
     queryKey: ["user", userId, "spam"],
-    queryFn: async (): Promise<SpamSettingsInternal | undefined> => {
-      if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(
-        userAuth,
-      )) as unknown as WildduckUserResponse;
-      return {
-        spamLevel: user.spamLevel,
-        fromWhitelist: user.fromWhitelist || [],
-      };
-    },
+    queryFn: spamQueryFn,
     enabled: !!userAuth,
   });
 
@@ -150,34 +155,57 @@ export const useWildduckUserSpam = (
     },
   });
 
-  return {
-    // Query
-    spam: spamQuery.data,
-    spamLevel: spamQuery.data?.spamLevel,
-    fromWhitelist: spamQuery.data?.fromWhitelist || [],
-    isLoading: spamQuery.isLoading,
-    isError: spamQuery.isError,
-    error: spamQuery.error,
+  return useMemo(
+    () => ({
+      // Query
+      spam: spamQuery.data,
+      spamLevel: spamQuery.data?.spamLevel,
+      fromWhitelist: spamQuery.data?.fromWhitelist || [],
+      isLoading: spamQuery.isLoading,
+      isError: spamQuery.isError,
+      error: spamQuery.error,
 
-    // Mutations
-    updateSpam: updateSpam.mutate,
-    updateSpamAsync: updateSpam.mutateAsync,
-    isUpdating: updateSpam.isPending,
+      // Mutations
+      updateSpam: updateSpam.mutate,
+      updateSpamAsync: updateSpam.mutateAsync,
+      isUpdating: updateSpam.isPending,
 
-    updateSpamLevel: updateSpamLevel.mutate,
-    updateSpamLevelAsync: updateSpamLevel.mutateAsync,
-    isUpdatingLevel: updateSpamLevel.isPending,
+      updateSpamLevel: updateSpamLevel.mutate,
+      updateSpamLevelAsync: updateSpamLevel.mutateAsync,
+      isUpdatingLevel: updateSpamLevel.isPending,
 
-    addToWhitelist: addToWhitelist.mutate,
-    addToWhitelistAsync: addToWhitelist.mutateAsync,
-    isAddingToWhitelist: addToWhitelist.isPending,
+      addToWhitelist: addToWhitelist.mutate,
+      addToWhitelistAsync: addToWhitelist.mutateAsync,
+      isAddingToWhitelist: addToWhitelist.isPending,
 
-    removeFromWhitelist: removeFromWhitelist.mutate,
-    removeFromWhitelistAsync: removeFromWhitelist.mutateAsync,
-    isRemovingFromWhitelist: removeFromWhitelist.isPending,
+      removeFromWhitelist: removeFromWhitelist.mutate,
+      removeFromWhitelistAsync: removeFromWhitelist.mutateAsync,
+      isRemovingFromWhitelist: removeFromWhitelist.isPending,
 
-    clearWhitelist: clearWhitelist.mutate,
-    clearWhitelistAsync: clearWhitelist.mutateAsync,
-    isClearingWhitelist: clearWhitelist.isPending,
-  };
+      clearWhitelist: clearWhitelist.mutate,
+      clearWhitelistAsync: clearWhitelist.mutateAsync,
+      isClearingWhitelist: clearWhitelist.isPending,
+    }),
+    [
+      spamQuery.data,
+      spamQuery.isLoading,
+      spamQuery.isError,
+      spamQuery.error,
+      updateSpam.mutate,
+      updateSpam.mutateAsync,
+      updateSpam.isPending,
+      updateSpamLevel.mutate,
+      updateSpamLevel.mutateAsync,
+      updateSpamLevel.isPending,
+      addToWhitelist.mutate,
+      addToWhitelist.mutateAsync,
+      addToWhitelist.isPending,
+      removeFromWhitelist.mutate,
+      removeFromWhitelist.mutateAsync,
+      removeFromWhitelist.isPending,
+      clearWhitelist.mutate,
+      clearWhitelist.mutateAsync,
+      clearWhitelist.isPending,
+    ],
+  );
 };

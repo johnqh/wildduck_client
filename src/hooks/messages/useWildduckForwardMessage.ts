@@ -103,10 +103,23 @@ export const useWildduckForwardMessage = (
     [forwardMutation],
   );
 
-  return {
-    forwardMessage,
-    isLoading: forwardMutation.isPending,
-    error: forwardMutation.error,
-    clearError: () => forwardMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => forwardMutation.reset(),
+    [forwardMutation],
+  );
+
+  return useMemo(
+    () => ({
+      forwardMessage,
+      isLoading: forwardMutation.isPending,
+      error: forwardMutation.error,
+      clearError,
+    }),
+    [
+      forwardMessage,
+      forwardMutation.isPending,
+      forwardMutation.error,
+      clearError,
+    ],
+  );
 };

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
   WildduckUserAuth,
@@ -126,30 +127,95 @@ export const useWildduckUserForwarding = (
     },
   });
 
-  return {
-    // Query
-    forwarding: forwardingQuery.data,
-    targets: forwardingQuery.data?.targets || [],
-    mtaRelay: forwardingQuery.data?.mtaRelay,
-    isLoading: forwardingQuery.isLoading,
-    isError: forwardingQuery.isError,
-    error: forwardingQuery.error,
+  const handleUpdateForwarding = useCallback(
+    (params: UpdateForwardingParams) => updateForwarding.mutate(params),
+    [updateForwarding],
+  );
 
-    // Mutations
-    updateForwarding: updateForwarding.mutate,
-    updateForwardingAsync: updateForwarding.mutateAsync,
-    isUpdating: updateForwarding.isPending,
+  const handleUpdateForwardingAsync = useCallback(
+    async (params: UpdateForwardingParams) =>
+      updateForwarding.mutateAsync(params),
+    [updateForwarding],
+  );
 
-    addTarget: addTarget.mutate,
-    addTargetAsync: addTarget.mutateAsync,
-    isAddingTarget: addTarget.isPending,
+  const handleAddTarget = useCallback(
+    (params: { userAuth: WildduckUserAuth; target: string }) =>
+      addTarget.mutate(params),
+    [addTarget],
+  );
 
-    removeTarget: removeTarget.mutate,
-    removeTargetAsync: removeTarget.mutateAsync,
-    isRemovingTarget: removeTarget.isPending,
+  const handleAddTargetAsync = useCallback(
+    async (params: { userAuth: WildduckUserAuth; target: string }) =>
+      addTarget.mutateAsync(params),
+    [addTarget],
+  );
 
-    clearTargets: clearTargets.mutate,
-    clearTargetsAsync: clearTargets.mutateAsync,
-    isClearingTargets: clearTargets.isPending,
-  };
+  const handleRemoveTarget = useCallback(
+    (params: { userAuth: WildduckUserAuth; target: string }) =>
+      removeTarget.mutate(params),
+    [removeTarget],
+  );
+
+  const handleRemoveTargetAsync = useCallback(
+    async (params: { userAuth: WildduckUserAuth; target: string }) =>
+      removeTarget.mutateAsync(params),
+    [removeTarget],
+  );
+
+  const handleClearTargets = useCallback(
+    (userAuth: WildduckUserAuth) => clearTargets.mutate(userAuth),
+    [clearTargets],
+  );
+
+  const handleClearTargetsAsync = useCallback(
+    async (userAuth: WildduckUserAuth) => clearTargets.mutateAsync(userAuth),
+    [clearTargets],
+  );
+
+  return useMemo(
+    () => ({
+      // Query
+      forwarding: forwardingQuery.data,
+      targets: forwardingQuery.data?.targets || [],
+      mtaRelay: forwardingQuery.data?.mtaRelay,
+      isLoading: forwardingQuery.isLoading,
+      isError: forwardingQuery.isError,
+      error: forwardingQuery.error,
+
+      // Mutations
+      updateForwarding: handleUpdateForwarding,
+      updateForwardingAsync: handleUpdateForwardingAsync,
+      isUpdating: updateForwarding.isPending,
+
+      addTarget: handleAddTarget,
+      addTargetAsync: handleAddTargetAsync,
+      isAddingTarget: addTarget.isPending,
+
+      removeTarget: handleRemoveTarget,
+      removeTargetAsync: handleRemoveTargetAsync,
+      isRemovingTarget: removeTarget.isPending,
+
+      clearTargets: handleClearTargets,
+      clearTargetsAsync: handleClearTargetsAsync,
+      isClearingTargets: clearTargets.isPending,
+    }),
+    [
+      forwardingQuery.data,
+      forwardingQuery.isLoading,
+      forwardingQuery.isError,
+      forwardingQuery.error,
+      handleUpdateForwarding,
+      handleUpdateForwardingAsync,
+      updateForwarding.isPending,
+      handleAddTarget,
+      handleAddTargetAsync,
+      addTarget.isPending,
+      handleRemoveTarget,
+      handleRemoveTargetAsync,
+      removeTarget.isPending,
+      handleClearTargets,
+      handleClearTargetsAsync,
+      clearTargets.isPending,
+    ],
+  );
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Optional } from "@johnqh/types";
@@ -116,61 +116,74 @@ const useWildduckAddresses = (
   };
 
   // Get user addresses function (imperative)
-  const getUserAddresses = async (
-    userId: string,
-  ): Promise<WildduckAddress[]> => {
-    try {
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers = buildHeaders();
+  const getUserAddresses = useCallback(
+    async (userId: string): Promise<WildduckAddress[]> => {
+      try {
+        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+        const headers = buildHeaders();
 
-      const response = await axios.get(`${apiUrl}/users/${userId}/addresses`, {
-        headers,
-      });
-
-      const addressData = response.data as {
-        success: boolean;
-        results: Array<{ id: string; address: string; main: boolean }>;
-      };
-      const addressList =
-        addressData.results?.map((addr) => ({
-          id: addr.id,
-          address: addr.address,
-          name: addr.address,
-          main: addr.main,
-          created: new Date().toISOString(),
-          tags: [],
-        })) || [];
-
-      setAddresses(addressList);
-
-      // Update cache
-      queryClient.setQueryData(["wildduck-addresses", userId], addressList);
-
-      return addressList;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to get addresses";
-
-      // Return mock data in devMode when API fails
-      if (devMode) {
-        console.warn(
-          "[DevMode] Get user addresses failed, returning mock data:",
-          errorMessage,
+        const response = await axios.get(
+          `${apiUrl}/users/${userId}/addresses`,
+          {
+            headers,
+          },
         );
-        const mockData = WildduckMockData.getUserAddresses();
-        const mockAddresses = mockData.data.addresses as WildduckAddress[];
-        setAddresses(mockAddresses);
 
-        // Update cache with mock data
-        queryClient.setQueryData(["wildduck-addresses", userId], mockAddresses);
+        const addressData = response.data as {
+          success: boolean;
+          results: Array<{ id: string; address: string; main: boolean }>;
+        };
+        const addressList =
+          addressData.results?.map((addr) => ({
+            id: addr.id,
+            address: addr.address,
+            name: addr.address,
+            main: addr.main,
+            created: new Date().toISOString(),
+            tags: [],
+          })) || [];
 
-        return mockAddresses;
+        setAddresses(addressList);
+
+        // Update cache
+        queryClient.setQueryData(["wildduck-addresses", userId], addressList);
+
+        return addressList;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to get addresses";
+
+        // Return mock data in devMode when API fails
+        if (devMode) {
+          console.warn(
+            "[DevMode] Get user addresses failed, returning mock data:",
+            errorMessage,
+          );
+          const mockData = WildduckMockData.getUserAddresses();
+          const mockAddresses = mockData.data.addresses as WildduckAddress[];
+          setAddresses(mockAddresses);
+
+          // Update cache with mock data
+          queryClient.setQueryData(
+            ["wildduck-addresses", userId],
+            mockAddresses,
+          );
+
+          return mockAddresses;
+        }
+
+        setAddresses([]);
+        throw new Error(errorMessage);
       }
-
-      setAddresses([]);
-      throw new Error(errorMessage);
-    }
-  };
+    },
+    [
+      config.cloudflareWorkerUrl,
+      config.backendUrl,
+      buildHeaders,
+      devMode,
+      queryClient,
+    ],
+  );
 
   // Get forwarded addresses function (imperative)
   const getForwardedAddresses = async (): Promise<ForwardedAddress[]> => {
@@ -473,9 +486,12 @@ const useWildduckAddresses = (
   });
 
   // Refresh function (refetch user addresses)
-  const refresh = async (userId: string): Promise<void> => {
-    await getUserAddresses(userId);
-  };
+  const refresh = useCallback(
+    async (userId: string): Promise<void> => {
+      await getUserAddresses(userId);
+    },
+    [getUserAddresses],
+  );
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
@@ -493,54 +509,106 @@ const useWildduckAddresses = (
     deleteForwardedMutation.error?.message ||
     null;
 
-  return {
-    // Query state
-    addresses,
-    isLoading,
-    error,
-
-    // Query functions
-    getUserAddresses,
-    getForwardedAddresses,
-    resolveAddress,
-    refresh,
-
-    // Create address mutation
-    createAddress: async (userId: string, params: CreateAddressParams) =>
+  const createAddress = useCallback(
+    async (userId: string, params: CreateAddressParams) =>
       createMutation.mutateAsync({ userId, params }),
-    isCreating: createMutation.isPending,
-    createError: createMutation.error,
+    [createMutation],
+  );
 
-    // Update address mutation
-    updateAddress: async (
-      userId: string,
-      addressId: string,
-      params: UpdateAddressParams,
-    ) => updateMutation.mutateAsync({ userId, addressId, params }),
-    isUpdating: updateMutation.isPending,
-    updateError: updateMutation.error,
+  const updateAddress = useCallback(
+    async (userId: string, addressId: string, params: UpdateAddressParams) =>
+      updateMutation.mutateAsync({ userId, addressId, params }),
+    [updateMutation],
+  );
 
-    // Delete address mutation
-    deleteAddress: async (userId: string, addressId: string) =>
+  const deleteAddress = useCallback(
+    async (userId: string, addressId: string) =>
       deleteMutation.mutateAsync({ userId, addressId }),
-    isDeleting: deleteMutation.isPending,
-    deleteError: deleteMutation.error,
+    [deleteMutation],
+  );
 
-    // Forwarded address mutations
-    createForwardedAddress: async (address: string, target: string) =>
+  const createForwardedAddress = useCallback(
+    async (address: string, target: string) =>
       createForwardedMutation.mutateAsync({ address, target }),
-    deleteForwardedAddress: async (addressId: string) =>
-      deleteForwardedMutation.mutateAsync(addressId),
+    [createForwardedMutation],
+  );
 
-    // Legacy compatibility
-    clearError: () => {
-      createMutation.reset();
-      updateMutation.reset();
-      deleteMutation.reset();
-      createForwardedMutation.reset();
-      deleteForwardedMutation.reset();
-    },
-  };
+  const deleteForwardedAddress = useCallback(
+    async (addressId: string) => deleteForwardedMutation.mutateAsync(addressId),
+    [deleteForwardedMutation],
+  );
+
+  const clearError = useCallback(() => {
+    createMutation.reset();
+    updateMutation.reset();
+    deleteMutation.reset();
+    createForwardedMutation.reset();
+    deleteForwardedMutation.reset();
+  }, [
+    createMutation,
+    updateMutation,
+    deleteMutation,
+    createForwardedMutation,
+    deleteForwardedMutation,
+  ]);
+
+  return useMemo(
+    () => ({
+      // Query state
+      addresses,
+      isLoading,
+      error,
+
+      // Query functions
+      getUserAddresses,
+      getForwardedAddresses,
+      resolveAddress,
+      refresh,
+
+      // Create address mutation
+      createAddress,
+      isCreating: createMutation.isPending,
+      createError: createMutation.error,
+
+      // Update address mutation
+      updateAddress,
+      isUpdating: updateMutation.isPending,
+      updateError: updateMutation.error,
+
+      // Delete address mutation
+      deleteAddress,
+      isDeleting: deleteMutation.isPending,
+      deleteError: deleteMutation.error,
+
+      // Forwarded address mutations
+      createForwardedAddress,
+      deleteForwardedAddress,
+
+      // Legacy compatibility
+      clearError,
+    }),
+    [
+      addresses,
+      isLoading,
+      error,
+      getUserAddresses,
+      getForwardedAddresses,
+      resolveAddress,
+      refresh,
+      createAddress,
+      createMutation.isPending,
+      createMutation.error,
+      updateAddress,
+      updateMutation.isPending,
+      updateMutation.error,
+      deleteAddress,
+      deleteMutation.isPending,
+      deleteMutation.error,
+      createForwardedAddress,
+      deleteForwardedAddress,
+      clearError,
+    ],
+  );
 };
 
 export {

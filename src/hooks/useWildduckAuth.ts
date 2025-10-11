@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useStorageService } from "./useServices";
 import type { Optional } from "@johnqh/types";
@@ -289,7 +289,7 @@ const useWildduckAuth = (
   });
 
   // Auth status check function (imperative, not a React Query hook)
-  const getAuthStatus = async (): Promise<{
+  const getAuthStatus = useCallback(async (): Promise<{
     authenticated: boolean;
     user?: any;
   }> => {
@@ -339,7 +339,7 @@ const useWildduckAuth = (
 
       return { authenticated: false };
     }
-  };
+  }, [storageService, config.cloudflareWorkerUrl, config.backendUrl, devMode]);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
@@ -352,35 +352,72 @@ const useWildduckAuth = (
     logoutMutation.error?.message ||
     null;
 
-  return {
-    // Authenticate
-    authenticate: authenticateMutation.mutateAsync,
-    isAuthenticating: authenticateMutation.isPending,
-    authError: authenticateMutation.error,
-    authData, // Expose auth result from singleton (userId, token, etc.)
+  const authenticate = useCallback(
+    async (params: Omit<AuthenticateRequest, "sess" | "ip">) =>
+      authenticateMutation.mutateAsync(params),
+    [authenticateMutation],
+  );
 
-    // PreAuth
-    preAuth: preAuthMutation.mutateAsync,
-    isPreAuthing: preAuthMutation.isPending,
-    preAuthError: preAuthMutation.error,
+  const preAuth = useCallback(
+    async (params: Omit<PreAuthRequest, "sess" | "ip">) =>
+      preAuthMutation.mutateAsync(params),
+    [preAuthMutation],
+  );
 
-    // Logout
-    logout: logoutMutation.mutateAsync,
-    isLoggingOut: logoutMutation.isPending,
-    logoutError: logoutMutation.error,
+  const logout = useCallback(
+    async (token?: string) => logoutMutation.mutateAsync(token),
+    [logoutMutation],
+  );
 
-    // Auth status check
-    getAuthStatus,
+  const clearError = useCallback(() => {
+    authenticateMutation.reset();
+    preAuthMutation.reset();
+    logoutMutation.reset();
+  }, [authenticateMutation, preAuthMutation, logoutMutation]);
 
-    // Legacy compatibility
-    isLoading,
-    error,
-    clearError: () => {
-      authenticateMutation.reset();
-      preAuthMutation.reset();
-      logoutMutation.reset();
-    },
-  };
+  return useMemo(
+    () => ({
+      // Authenticate
+      authenticate,
+      isAuthenticating: authenticateMutation.isPending,
+      authError: authenticateMutation.error,
+      authData, // Expose auth result from singleton (userId, token, etc.)
+
+      // PreAuth
+      preAuth,
+      isPreAuthing: preAuthMutation.isPending,
+      preAuthError: preAuthMutation.error,
+
+      // Logout
+      logout,
+      isLoggingOut: logoutMutation.isPending,
+      logoutError: logoutMutation.error,
+
+      // Auth status check
+      getAuthStatus,
+
+      // Legacy compatibility
+      isLoading,
+      error,
+      clearError,
+    }),
+    [
+      authenticate,
+      authenticateMutation.isPending,
+      authenticateMutation.error,
+      authData,
+      preAuth,
+      preAuthMutation.isPending,
+      preAuthMutation.error,
+      logout,
+      logoutMutation.isPending,
+      logoutMutation.error,
+      getAuthStatus,
+      isLoading,
+      error,
+      clearError,
+    ],
+  );
 };
 
 export { useWildduckAuth, type UseWildduckAuthReturn };

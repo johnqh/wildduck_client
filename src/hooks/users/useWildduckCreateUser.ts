@@ -79,10 +79,18 @@ export const useWildduckCreateUser = (
     [createMutation],
   );
 
-  return {
-    createUser,
-    isLoading: createMutation.isPending,
-    error: createMutation.error,
-    clearError: () => createMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => createMutation.reset(),
+    [createMutation],
+  );
+
+  return useMemo(
+    () => ({
+      createUser,
+      isLoading: createMutation.isPending,
+      error: createMutation.error,
+      clearError,
+    }),
+    [createUser, createMutation.isPending, createMutation.error, clearError],
+  );
 };

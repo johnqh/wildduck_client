@@ -82,10 +82,23 @@ export const useWildduckUpdateAutoreply = (
     [updateMutation],
   );
 
-  return {
-    updateAutoreply,
-    isLoading: updateMutation.isPending,
-    error: updateMutation.error,
-    clearError: () => updateMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => updateMutation.reset(),
+    [updateMutation],
+  );
+
+  return useMemo(
+    () => ({
+      updateAutoreply,
+      isLoading: updateMutation.isPending,
+      error: updateMutation.error,
+      clearError,
+    }),
+    [
+      updateAutoreply,
+      updateMutation.isPending,
+      updateMutation.error,
+      clearError,
+    ],
+  );
 };

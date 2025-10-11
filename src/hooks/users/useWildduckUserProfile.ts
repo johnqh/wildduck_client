@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
   WildduckUserAuth,
@@ -156,39 +157,109 @@ export const useWildduckUserProfile = (
     },
   });
 
-  return {
-    // Query
-    profile: profileQuery.data,
-    isLoading: profileQuery.isLoading,
-    isError: profileQuery.isError,
-    error: profileQuery.error,
+  const handleUpdateProfile = useCallback(
+    (params: UpdateProfileParams) => updateProfile.mutate(params),
+    [updateProfile],
+  );
 
-    // Individual field accessors
-    username: profileQuery.data?.username,
-    name: profileQuery.data?.name,
-    address: profileQuery.data?.address,
-    language: profileQuery.data?.language,
-    tags: profileQuery.data?.tags || [],
-    disabled: profileQuery.data?.disabled,
-    suspended: profileQuery.data?.suspended,
-    activated: profileQuery.data?.activated,
-    hasPasswordSet: profileQuery.data?.hasPasswordSet,
+  const handleUpdateProfileAsync = useCallback(
+    async (params: UpdateProfileParams) => updateProfile.mutateAsync(params),
+    [updateProfile],
+  );
 
-    // Mutations
-    updateProfile: updateProfile.mutate,
-    updateProfileAsync: updateProfile.mutateAsync,
-    isUpdatingProfile: updateProfile.isPending,
+  const handleUpdatePassword = useCallback(
+    (params: UpdatePasswordParams) => updatePassword.mutate(params),
+    [updatePassword],
+  );
 
-    updatePassword: updatePassword.mutate,
-    updatePasswordAsync: updatePassword.mutateAsync,
-    isUpdatingPassword: updatePassword.isPending,
+  const handleUpdatePasswordAsync = useCallback(
+    async (params: UpdatePasswordParams) => updatePassword.mutateAsync(params),
+    [updatePassword],
+  );
 
-    updateTags: updateTags.mutate,
-    updateTagsAsync: updateTags.mutateAsync,
-    isUpdatingTags: updateTags.isPending,
+  const handleUpdateTags = useCallback(
+    (params: { userAuth: WildduckUserAuth; tags: string[] }) =>
+      updateTags.mutate(params),
+    [updateTags],
+  );
 
-    setAccountStatus: setAccountStatus.mutate,
-    setAccountStatusAsync: setAccountStatus.mutateAsync,
-    isUpdatingStatus: setAccountStatus.isPending,
-  };
+  const handleUpdateTagsAsync = useCallback(
+    async (params: { userAuth: WildduckUserAuth; tags: string[] }) =>
+      updateTags.mutateAsync(params),
+    [updateTags],
+  );
+
+  const handleSetAccountStatus = useCallback(
+    (params: {
+      userAuth: WildduckUserAuth;
+      disabled?: boolean;
+      suspended?: boolean;
+    }) => setAccountStatus.mutate(params),
+    [setAccountStatus],
+  );
+
+  const handleSetAccountStatusAsync = useCallback(
+    async (params: {
+      userAuth: WildduckUserAuth;
+      disabled?: boolean;
+      suspended?: boolean;
+    }) => setAccountStatus.mutateAsync(params),
+    [setAccountStatus],
+  );
+
+  return useMemo(
+    () => ({
+      // Query
+      profile: profileQuery.data,
+      isLoading: profileQuery.isLoading,
+      isError: profileQuery.isError,
+      error: profileQuery.error,
+
+      // Individual field accessors
+      username: profileQuery.data?.username,
+      name: profileQuery.data?.name,
+      address: profileQuery.data?.address,
+      language: profileQuery.data?.language,
+      tags: profileQuery.data?.tags || [],
+      disabled: profileQuery.data?.disabled,
+      suspended: profileQuery.data?.suspended,
+      activated: profileQuery.data?.activated,
+      hasPasswordSet: profileQuery.data?.hasPasswordSet,
+
+      // Mutations
+      updateProfile: handleUpdateProfile,
+      updateProfileAsync: handleUpdateProfileAsync,
+      isUpdatingProfile: updateProfile.isPending,
+
+      updatePassword: handleUpdatePassword,
+      updatePasswordAsync: handleUpdatePasswordAsync,
+      isUpdatingPassword: updatePassword.isPending,
+
+      updateTags: handleUpdateTags,
+      updateTagsAsync: handleUpdateTagsAsync,
+      isUpdatingTags: updateTags.isPending,
+
+      setAccountStatus: handleSetAccountStatus,
+      setAccountStatusAsync: handleSetAccountStatusAsync,
+      isUpdatingStatus: setAccountStatus.isPending,
+    }),
+    [
+      profileQuery.data,
+      profileQuery.isLoading,
+      profileQuery.isError,
+      profileQuery.error,
+      handleUpdateProfile,
+      handleUpdateProfileAsync,
+      updateProfile.isPending,
+      handleUpdatePassword,
+      handleUpdatePasswordAsync,
+      updatePassword.isPending,
+      handleUpdateTags,
+      handleUpdateTagsAsync,
+      updateTags.isPending,
+      handleSetAccountStatus,
+      handleSetAccountStatusAsync,
+      setAccountStatus.isPending,
+    ],
+  );
 };

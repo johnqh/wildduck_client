@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
@@ -29,17 +30,21 @@ export const useWildduckUser2FA = (
   const userId = userAuth?.userId;
 
   // Query to get 2FA status
+  const twoFAQueryFn = useCallback(async (): Promise<
+    TwoFASettings | undefined
+  > => {
+    if (!userAuth) throw new Error("User auth is required");
+    const user = (await api.getUser(
+      userAuth,
+    )) as unknown as WildduckUserResponse;
+    return {
+      enabled2fa: user.enabled2fa || [],
+    };
+  }, [userAuth, api]);
+
   const twoFAQuery = useQuery({
     queryKey: ["user", userId, "2fa"],
-    queryFn: async (): Promise<TwoFASettings | undefined> => {
-      if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(
-        userAuth,
-      )) as unknown as WildduckUserResponse;
-      return {
-        enabled2fa: user.enabled2fa || [],
-      };
-    },
+    queryFn: twoFAQueryFn,
     enabled: !!userAuth,
   });
 
@@ -62,35 +67,59 @@ export const useWildduckUser2FA = (
   const isEnabled = (twoFAQuery.data?.enabled2fa?.length ?? 0) > 0;
 
   // Helper to check if specific 2FA method is enabled
-  const hasMethod = (method: string): boolean => {
-    return twoFAQuery.data?.enabled2fa?.includes(method) ?? false;
-  };
+  const hasMethod = useCallback(
+    (method: string): boolean => {
+      return twoFAQuery.data?.enabled2fa?.includes(method) ?? false;
+    },
+    [twoFAQuery.data?.enabled2fa],
+  );
 
-  return {
-    // Query
-    twoFA: twoFAQuery.data,
-    enabled2fa: twoFAQuery.data?.enabled2fa || [],
-    isEnabled,
-    isLoading: twoFAQuery.isLoading,
-    isError: twoFAQuery.isError,
-    error: twoFAQuery.error,
+  const hasTOTP = hasMethod("totp");
+  const hasU2F = hasMethod("u2f");
+  const hasWebAuthn = hasMethod("webauthn");
 
-    // Helpers
-    hasMethod,
-    hasTOTP: hasMethod("totp"),
-    hasU2F: hasMethod("u2f"),
-    hasWebAuthn: hasMethod("webauthn"),
+  return useMemo(
+    () => ({
+      // Query
+      twoFA: twoFAQuery.data,
+      enabled2fa: twoFAQuery.data?.enabled2fa || [],
+      isEnabled,
+      isLoading: twoFAQuery.isLoading,
+      isError: twoFAQuery.isError,
+      error: twoFAQuery.error,
 
-    // Mutations
-    disable2FA: disable2FA.mutate,
-    disable2FAAsync: disable2FA.mutateAsync,
-    isDisabling: disable2FA.isPending,
-    disableError: disable2FA.error,
+      // Helpers
+      hasMethod,
+      hasTOTP,
+      hasU2F,
+      hasWebAuthn,
 
-    // Note: Enable methods (enableTOTP, enableU2F, etc.) require additional
-    // API endpoints that should be added to WildduckAPI class:
-    // - POST /users/:user/2fa/totp
-    // - POST /users/:user/2fa/u2f
-    // - POST /users/:user/2fa/webauthn
-  };
+      // Mutations
+      disable2FA: disable2FA.mutate,
+      disable2FAAsync: disable2FA.mutateAsync,
+      isDisabling: disable2FA.isPending,
+      disableError: disable2FA.error,
+
+      // Note: Enable methods (enableTOTP, enableU2F, etc.) require additional
+      // API endpoints that should be added to WildduckAPI class:
+      // - POST /users/:user/2fa/totp
+      // - POST /users/:user/2fa/u2f
+      // - POST /users/:user/2fa/webauthn
+    }),
+    [
+      twoFAQuery.data,
+      isEnabled,
+      twoFAQuery.isLoading,
+      twoFAQuery.isError,
+      twoFAQuery.error,
+      hasMethod,
+      hasTOTP,
+      hasU2F,
+      hasWebAuthn,
+      disable2FA.mutate,
+      disable2FA.mutateAsync,
+      disable2FA.isPending,
+      disable2FA.error,
+    ],
+  );
 };

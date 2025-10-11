@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
@@ -34,35 +34,44 @@ export const useWildduckGetAutoreply = (
     [networkClient, config],
   );
 
-  return useQuery({
-    queryKey: ["wildduck-autoreply", userAuth?.userId],
-    queryFn: async () => {
-      if (!userAuth) throw new Error("userAuth is required");
+  const queryFn = useCallback(async () => {
+    if (!userAuth) throw new Error("userAuth is required");
 
-      try {
-        return await api.getAutoreply(userAuth);
-      } catch (err) {
-        if (devMode) {
-          console.warn(
-            "[DevMode] getAutoreply failed, returning mock data:",
-            err,
-          );
-          return {
-            success: true,
-            status: false,
-            name: "",
-            subject: "",
-            text: "",
-            html: "",
-            start: false,
-            end: false,
-          } as WildduckAutoreplyResponse;
-        }
-        throw err;
+    try {
+      return await api.getAutoreply(userAuth);
+    } catch (err) {
+      if (devMode) {
+        console.warn(
+          "[DevMode] getAutoreply failed, returning mock data:",
+          err,
+        );
+        return {
+          success: true,
+          status: false,
+          name: "",
+          subject: "",
+          text: "",
+          html: "",
+          start: false,
+          end: false,
+        } as WildduckAutoreplyResponse;
       }
-    },
+      throw err;
+    }
+  }, [userAuth, api, devMode]);
+
+  const query = useQuery({
+    queryKey: ["wildduck-autoreply", userAuth?.userId],
+    queryFn,
     enabled: !!userAuth,
   });
+
+  return useMemo(
+    () => ({
+      ...query,
+    }),
+    [query],
+  );
 };
 
 export type UseWildduckGetAutoreplyReturn = ReturnType<

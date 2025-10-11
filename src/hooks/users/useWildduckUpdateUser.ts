@@ -85,10 +85,18 @@ export const useWildduckUpdateUser = (
     [updateMutation],
   );
 
-  return {
-    updateUser,
-    isLoading: updateMutation.isPending,
-    error: updateMutation.error,
-    clearError: () => updateMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => updateMutation.reset(),
+    [updateMutation],
+  );
+
+  return useMemo(
+    () => ({
+      updateUser,
+      isLoading: updateMutation.isPending,
+      error: updateMutation.error,
+      clearError,
+    }),
+    [updateUser, updateMutation.isPending, updateMutation.error, clearError],
+  );
 };

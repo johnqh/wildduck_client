@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildduckAPI } from "../../network/wildduck-client";
 import type {
@@ -32,20 +33,24 @@ export const useWildduckUserEncryption = (
   const userId = userAuth?.userId;
 
   // Query to get user encryption settings
+  const encryptionQueryFn = useCallback(async (): Promise<
+    EncryptionSettings | undefined
+  > => {
+    if (!userAuth) throw new Error("User auth is required");
+    const user = (await api.getUser(
+      userAuth,
+    )) as unknown as WildduckUserResponse;
+    return {
+      encryptMessages: user.encryptMessages,
+      encryptForwarded: user.encryptForwarded,
+      pubKey: user.pubKey,
+      keyInfo: user.keyInfo,
+    };
+  }, [userAuth, api]);
+
   const encryptionQuery = useQuery({
     queryKey: ["user", userId, "encryption"],
-    queryFn: async (): Promise<EncryptionSettings | undefined> => {
-      if (!userAuth) throw new Error("User auth is required");
-      const user = (await api.getUser(
-        userAuth,
-      )) as unknown as WildduckUserResponse;
-      return {
-        encryptMessages: user.encryptMessages,
-        encryptForwarded: user.encryptForwarded,
-        pubKey: user.pubKey,
-        keyInfo: user.keyInfo,
-      };
-    },
+    queryFn: encryptionQueryFn,
     enabled: !!userAuth,
   });
 
@@ -99,30 +104,47 @@ export const useWildduckUserEncryption = (
     },
   });
 
-  return {
-    // Query
-    encryption: encryptionQuery.data,
-    isLoading: encryptionQuery.isLoading,
-    isError: encryptionQuery.isError,
-    error: encryptionQuery.error,
+  return useMemo(
+    () => ({
+      // Query
+      encryption: encryptionQuery.data,
+      isLoading: encryptionQuery.isLoading,
+      isError: encryptionQuery.isError,
+      error: encryptionQuery.error,
 
-    // Individual field accessors
-    encryptMessages: encryptionQuery.data?.encryptMessages,
-    encryptForwarded: encryptionQuery.data?.encryptForwarded,
-    pubKey: encryptionQuery.data?.pubKey,
-    keyInfo: encryptionQuery.data?.keyInfo,
+      // Individual field accessors
+      encryptMessages: encryptionQuery.data?.encryptMessages,
+      encryptForwarded: encryptionQuery.data?.encryptForwarded,
+      pubKey: encryptionQuery.data?.pubKey,
+      keyInfo: encryptionQuery.data?.keyInfo,
 
-    // Mutations
-    updateEncryption: updateEncryption.mutate,
-    updateEncryptionAsync: updateEncryption.mutateAsync,
-    isUpdating: updateEncryption.isPending,
+      // Mutations
+      updateEncryption: updateEncryption.mutate,
+      updateEncryptionAsync: updateEncryption.mutateAsync,
+      isUpdating: updateEncryption.isPending,
 
-    updatePubKey: updatePubKey.mutate,
-    updatePubKeyAsync: updatePubKey.mutateAsync,
-    isUpdatingKey: updatePubKey.isPending,
+      updatePubKey: updatePubKey.mutate,
+      updatePubKeyAsync: updatePubKey.mutateAsync,
+      isUpdatingKey: updatePubKey.isPending,
 
-    removePubKey: removePubKey.mutate,
-    removePubKeyAsync: removePubKey.mutateAsync,
-    isRemovingKey: removePubKey.isPending,
-  };
+      removePubKey: removePubKey.mutate,
+      removePubKeyAsync: removePubKey.mutateAsync,
+      isRemovingKey: removePubKey.isPending,
+    }),
+    [
+      encryptionQuery.data,
+      encryptionQuery.isLoading,
+      encryptionQuery.isError,
+      encryptionQuery.error,
+      updateEncryption.mutate,
+      updateEncryption.mutateAsync,
+      updateEncryption.isPending,
+      updatePubKey.mutate,
+      updatePubKey.mutateAsync,
+      updatePubKey.isPending,
+      removePubKey.mutate,
+      removePubKey.mutateAsync,
+      removePubKey.isPending,
+    ],
+  );
 };

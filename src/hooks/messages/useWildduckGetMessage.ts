@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WildduckAPI } from "../../network/wildduck-client";
 import { type NetworkClient } from "@johnqh/di";
@@ -33,31 +33,37 @@ export const useWildduckGetMessage = (
     [networkClient, config],
   );
 
-  return useQuery({
-    queryKey: ["wildduck-message", userAuth?.userId, messageId],
-    queryFn: async () => {
-      if (!userAuth) throw new Error("userAuth is required");
-      if (!messageId) throw new Error("messageId is required");
+  const queryFn = useCallback(async () => {
+    if (!userAuth) throw new Error("userAuth is required");
+    if (!messageId) throw new Error("messageId is required");
 
-      try {
-        return await api.getMessage(userAuth, messageId);
-      } catch (err) {
-        if (devMode) {
-          console.warn(
-            "[DevMode] getMessage failed, returning mock data:",
-            err,
-          );
-          return {
-            success: true,
-            data: WildduckMockData.getMessageQuery(messageId, userAuth.userId),
-            error: null,
-          };
-        }
-        throw err;
+    try {
+      return await api.getMessage(userAuth, messageId);
+    } catch (err) {
+      if (devMode) {
+        console.warn("[DevMode] getMessage failed, returning mock data:", err);
+        return {
+          success: true,
+          data: WildduckMockData.getMessageQuery(messageId, userAuth.userId),
+          error: null,
+        };
       }
-    },
+      throw err;
+    }
+  }, [userAuth, messageId, api, devMode]);
+
+  const query = useQuery({
+    queryKey: ["wildduck-message", userAuth?.userId, messageId],
+    queryFn,
     enabled: !!userAuth && !!messageId,
   });
+
+  return useMemo(
+    () => ({
+      ...query,
+    }),
+    [query],
+  );
 };
 
 export type UseWildduckGetMessageReturn = ReturnType<

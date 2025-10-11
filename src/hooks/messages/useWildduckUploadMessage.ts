@@ -100,10 +100,18 @@ export const useWildduckUploadMessage = (
     [uploadMutation],
   );
 
-  return {
-    uploadMessage,
-    isLoading: uploadMutation.isPending,
-    error: uploadMutation.error,
-    clearError: () => uploadMutation.reset(),
-  };
+  const clearError = useCallback(
+    () => uploadMutation.reset(),
+    [uploadMutation],
+  );
+
+  return useMemo(
+    () => ({
+      uploadMessage,
+      isLoading: uploadMutation.isPending,
+      error: uploadMutation.error,
+      clearError,
+    }),
+    [uploadMessage, uploadMutation.isPending, uploadMutation.error, clearError],
+  );
 };

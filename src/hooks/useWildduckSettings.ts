@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
 import type { Optional } from "@johnqh/types";
 import type { WildduckConfig } from "../types/wildduck-types";
@@ -86,7 +86,7 @@ const useWildduckSettings = (
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode]);
 
   const updateSetting = useCallback(
     async (key: string, value: any): Promise<{ success: boolean }> => {
@@ -136,7 +136,7 @@ const useWildduckSettings = (
         setIsLoading(false);
       }
     },
-    [],
+    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
   );
 
   const deleteSetting = useCallback(
@@ -191,23 +191,35 @@ const useWildduckSettings = (
         setIsLoading(false);
       }
     },
-    [],
+    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
   );
 
   const refresh = useCallback(async (): Promise<void> => {
     await getSettings();
   }, [getSettings]);
 
-  return {
-    isLoading,
-    error,
-    settings,
-    getSettings,
-    updateSetting,
-    deleteSetting,
-    clearError,
-    refresh,
-  };
+  return useMemo(
+    () => ({
+      isLoading,
+      error,
+      settings,
+      getSettings,
+      updateSetting,
+      deleteSetting,
+      clearError,
+      refresh,
+    }),
+    [
+      isLoading,
+      error,
+      settings,
+      getSettings,
+      updateSetting,
+      deleteSetting,
+      clearError,
+      refresh,
+    ],
+  );
 };
 
 export {
