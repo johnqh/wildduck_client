@@ -65,7 +65,7 @@ graph LR
    - CI/CD runs tests on Node 20.x and 22.x
    - If tests pass, builds the project
    - Creates GitHub release with tag `v0.0.2`
-   - Publishes to NPM: `@0xmail/wildduck_client@0.0.2`
+   - Publishes to NPM: `@sudobility/wildduck_client@0.0.2`
    - Sends notifications
 
 ## What Gets Tested
@@ -151,7 +151,7 @@ documentation links, testing instructions, and auto-generated changelog.
 
 ## NPM Package
 
-Published to: https://www.npmjs.com/package/@0xmail/wildduck_client
+Published to: https://www.npmjs.com/package/@sudobility/wildduck_client
 
 ### Package Contents
 - `dist/` - Compiled JavaScript and TypeScript definitions
@@ -161,7 +161,7 @@ Published to: https://www.npmjs.com/package/@0xmail/wildduck_client
 
 ### Installation
 ```bash
-npm install @0xmail/wildduck_client@latest
+npm install @sudobility/wildduck_client@latest
 ```
 
 ## Version Strategy
@@ -233,7 +233,7 @@ Check:
 - [ ] `NPM_TOKEN` secret is configured
 - [ ] Token has "Automation" type and write permissions
 - [ ] Version in `package.json` is incremented
-- [ ] Package name is correct: `@0xmail/wildduck_client`
+- [ ] Package name is correct: `@sudobility/wildduck_client`
 - [ ] Version doesn't already exist on NPM
 
 ### GitHub Release Fails
@@ -259,7 +259,7 @@ head dist/index.d.ts
 https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml
 
 ### Check NPM Package
-https://www.npmjs.com/package/@0xmail/wildduck_client
+https://www.npmjs.com/package/@sudobility/wildduck_client
 
 ### View Releases
 https://github.com/0xmail/wildduck_client/releases

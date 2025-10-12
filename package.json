@@ -1,5 +1,5 @@
 {
-  "name": "@0xmail/wildduck_client",
+  "name": "@sudobility/wildduck_client",
   "version": "0.0.14",
   "description": "React and React Native compatible client library for WildDuck email API with TypeScript support",
   "type": "module",

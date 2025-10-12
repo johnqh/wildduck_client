@@ -5,7 +5,7 @@
 This is a TypeScript client library for the WildDuck email API, designed for React and React Native applications.
 
 **Key Facts:**
-- Package name: `@0xmail/wildduck_client`
+- Package name: `@sudobility/wildduck_client`
 - Current version: 0.0.12
 - Tech stack: TypeScript, React, React Query (@tanstack/react-query), Axios
 - Target: Browser and React Native environments

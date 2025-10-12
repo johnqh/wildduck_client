@@ -69,20 +69,20 @@ Check the deployment succeeded:
 
 - **GitHub Actions**: https://github.com/0xmail/wildduck_client/actions
 - **GitHub Releases**: https://github.com/0xmail/wildduck_client/releases
-- **NPM Package**: https://www.npmjs.com/package/@0xmail/wildduck_client
+- **NPM Package**: https://www.npmjs.com/package/@sudobility/wildduck_client
 
 ## Post-Deployment
 
 1. **Verify NPM Installation**:
    ```bash
-   npm view @0xmail/wildduck_client
+   npm view @sudobility/wildduck_client
    ```
 
 2. **Test Installation**:
    ```bash
    mkdir test-install && cd test-install
    npm init -y
-   npm install @0xmail/wildduck_client
+   npm install @sudobility/wildduck_client
    ```
 
 3. **Announce Release**:
@@ -97,7 +97,7 @@ If you need to rollback a release:
 ### Option 1: Deprecate on NPM
 
 ```bash
-npm deprecate @0xmail/wildduck_client@0.0.2 "This version has critical bugs, use 0.0.1 instead"
+npm deprecate @sudobility/wildduck_client@0.0.2 "This version has critical bugs, use 0.0.1 instead"
 ```
 
 ### Option 2: Publish Fixed Version
@@ -110,7 +110,7 @@ git push origin main --tags
 ### Option 3: Unpublish (within 72 hours)
 
 ```bash
-npm unpublish @0xmail/wildduck_client@0.0.2
+npm unpublish @sudobility/wildduck_client@0.0.2
 ```
 
 **Note**: Unpublishing is only possible within 72 hours of publishing and is generally discouraged.
@@ -146,12 +146,12 @@ This will:
    - Regenerate if expired
 
 2. **Check Permissions**:
-   - Ensure you have publish rights to `@0xmail` scope
+   - Ensure you have publish rights to `@sudobility` scope
    - Verify token type is "Automation"
 
 3. **Check Version**:
    - Version must be higher than published versions
-   - Check: `npm view @0xmail/wildduck_client versions`
+   - Check: `npm view @sudobility/wildduck_client versions`
 
 ### Manual Publish (Emergency Only)
 
@@ -189,7 +189,7 @@ npm publish --access restricted
 Track all published versions:
 
 ```bash
-npm view @0xmail/wildduck_client versions
+npm view @sudobility/wildduck_client versions
 ```
 
 ## Monitoring
@@ -205,13 +205,13 @@ Add to README.md:
 ### NPM Version Badge
 
 ```markdown
-[![npm version](https://badge.fury.io/js/@0xmail%2Fwildduck_client.svg)](https://www.npmjs.com/package/@0xmail/wildduck_client)
+[![npm version](https://badge.fury.io/js/@sudobility%2Fwildduck_client.svg)](https://www.npmjs.com/package/@sudobility/wildduck_client)
 ```
 
 ### NPM Downloads Badge
 
 ```markdown
-[![npm downloads](https://img.shields.io/npm/dm/@0xmail/wildduck_client.svg)](https://www.npmjs.com/package/@0xmail/wildduck_client)
+[![npm downloads](https://img.shields.io/npm/dm/@sudobility/wildduck_client.svg)](https://www.npmjs.com/package/@sudobility/wildduck_client)
 ```
 
 ## Security
@@ -232,6 +232,6 @@ For deployment issues:
 
 ---
 
-**Package Name**: `@0xmail/wildduck_client`
+**Package Name**: `@sudobility/wildduck_client`
 **Registry**: https://registry.npmjs.org
 **Repository**: https://github.com/0xmail/wildduck_client

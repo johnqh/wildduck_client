@@ -12,7 +12,7 @@ on:
       - closed
 
 env:
-  NPM_MODULE_NAME: "@0xmail/wildduck_client"
+  NPM_MODULE_NAME: "@sudobility/wildduck_client"
 
 jobs:
   test:
@@ -155,7 +155,7 @@ jobs:
 
             ### Installation
             ```bash
-            npm install @0xmail/wildduck_client@${{ needs.check_for_release.outputs.version }}
+            npm install @sudobility/wildduck_client@${{ needs.check_for_release.outputs.version }}
             ```
 
             ### Peer Dependencies
@@ -165,7 +165,7 @@ jobs:
 
             ### Quick Start
             ```typescript
-            import { useWildduckAuth } from '@0xmail/wildduck_client';
+            import { useWildduckAuth } from '@sudobility/wildduck_client';
 
             function LoginComponent() {
               const { authenticate, isAuthenticated } = useWildduckAuth(
@@ -223,7 +223,7 @@ jobs:
         if: success()
         run: |
           echo "🚀 Release ${{ needs.check_for_release.outputs.version }} deployed successfully!"
-          echo "• NPM: https://www.npmjs.com/package/@0xmail/wildduck_client/v/${{ needs.check_for_release.outputs.version }}"
+          echo "• NPM: https://www.npmjs.com/package/@sudobility/wildduck_client/v/${{ needs.check_for_release.outputs.version }}"
           echo "• GitHub: https://github.com/${{ github.repository }}/releases/tag/${{ needs.check_for_release.outputs.version_tag }}"
           echo "• Documentation: https://github.com/${{ github.repository }}#readme"
 

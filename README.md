@@ -2,7 +2,7 @@
 
 TypeScript client library for the WildDuck email API with React and React Native support.
 
-[![npm version](https://badge.fury.io/js/@0xmail%2Fwildduck_client.svg)](https://www.npmjs.com/package/@0xmail/wildduck_client)
+[![npm version](https://badge.fury.io/js/@sudobility%2Fwildduck_client.svg)](https://www.npmjs.com/package/@sudobility/wildduck_client)
 [![CI/CD](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml)
 
 ## Features
@@ -18,7 +18,7 @@ TypeScript client library for the WildDuck email API with React and React Native
 ## Installation
 
 ```bash
-npm install @0xmail/wildduck_client
+npm install @sudobility/wildduck_client
 ```
 
 ### Peer Dependencies
@@ -34,7 +34,7 @@ npm install react @tanstack/react-query @sudobility/di @sudobility/types axios
 ### 1. Authentication
 
 ```typescript
-import { useWildduckAuth } from '@0xmail/wildduck_client';
+import { useWildduckAuth } from '@sudobility/wildduck_client';
 
 function LoginComponent() {
   const networkClient = useNetworkClient();
@@ -82,7 +82,7 @@ function LoginComponent() {
 ### 2. Fetching Messages
 
 ```typescript
-import { useWildduckGetMessages } from '@0xmail/wildduck_client';
+import { useWildduckGetMessages } from '@sudobility/wildduck_client';
 
 function MessageList({ userAuth, mailboxId }) {
   const networkClient = useNetworkClient();
@@ -120,7 +120,7 @@ function MessageList({ userAuth, mailboxId }) {
 ### 3. Sending Messages
 
 ```typescript
-import { useWildduckSendMessage } from '@0xmail/wildduck_client';
+import { useWildduckSendMessage } from '@sudobility/wildduck_client';
 
 function ComposeEmail({ userAuth }) {
   const networkClient = useNetworkClient();
