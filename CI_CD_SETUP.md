@@ -256,13 +256,13 @@ head dist/index.d.ts
 ## Monitoring
 
 ### View Workflow Runs
-https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/ci-cd.yml
+https://github.com/0xmail/mail_box_wildduck_client/actions/workflows/ci-cd.yml
 
 ### Check NPM Package
 https://www.npmjs.com/package/@johnqh/wildduck_client
 
 ### View Releases
-https://github.com/YOUR_ORG/YOUR_REPO/releases
+https://github.com/0xmail/mail_box_wildduck_client/releases
 
 ## Best Practices
 
