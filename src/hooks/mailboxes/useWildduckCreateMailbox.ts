@@ -1,15 +1,15 @@
-import type { Optional } from "@johnqh/types";
+import type { Optional } from "@sudobility/types";
 import { useCallback, useMemo } from "react";
 import { WildduckAPI } from "../../network/wildduck-client";
-import { type NetworkClient } from "@johnqh/di";
+import { type NetworkClient } from "@sudobility/di";
 import {
   type CreateMailboxRequest,
   type WildduckConfig,
   type WildduckMailboxResponse,
-} from "@johnqh/types";
+} from "@sudobility/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { WildduckMockData } from "../mocks";
-import type { WildduckUserAuth } from "@johnqh/types";
+import type { WildduckUserAuth } from "@sudobility/types";
 
 interface UseWildduckCreateMailboxReturn {
   createMailbox: (

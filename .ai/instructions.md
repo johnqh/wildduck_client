@@ -18,7 +18,7 @@ This library provides a TypeScript client for the WildDuck email API, enabling R
 
 ### Strengths
 
-1. **Type Safety**: Comprehensive TypeScript types from @johnqh/types package
+1. **Type Safety**: Comprehensive TypeScript types from @sudobility/types package
 2. **React Integration**: Well-designed hooks using @tanstack/react-query
 3. **Authentication**: Supports both traditional (password) and modern (crypto signature) auth
 4. **Testing**: Good test coverage with both unit and integration tests
@@ -139,7 +139,7 @@ Located in `src/network/wildduck-client.ts`:
 
 Types are defined in two places:
 
-1. **@johnqh/types package**: Shared types across 0xmail projects
+1. **@sudobility/types package**: Shared types across 0xmail projects
    - `WildduckUserAuth`
    - `WildDuckMessage`
    - `WildDuckMailbox`
@@ -160,7 +160,7 @@ Types are defined in two places:
 
 **Step 2: Add/Verify Types**
 ```typescript
-// In @johnqh/types or src/types/
+// In @sudobility/types or src/types/
 export interface CreateUserRequest {
   username: string;
   password: string;
@@ -473,11 +473,11 @@ Update the API coverage table in README.md.
 - Check that server is in crypto mode
 - Verify signature generation is correct (SIWE format)
 
-### Issue: Type errors with @johnqh/types
+### Issue: Type errors with @sudobility/types
 **Solution**:
-- Ensure @johnqh/types is up to date
+- Ensure @sudobility/types is up to date
 - Check if type exists before creating duplicate
-- Consider contributing new types to @johnqh/types
+- Consider contributing new types to @sudobility/types
 
 ### Issue: React Query caching unexpected behavior
 **Solution**:
@@ -556,7 +556,7 @@ Update the API coverage table in README.md.
    - Medium → Backlog
    - Low → Future consideration
 
-3. **Do types exist in @johnqh/types?**
+3. **Do types exist in @sudobility/types?**
    - If yes, import and use
    - If no, create locally and consider contributing upstream
 
@@ -579,13 +579,13 @@ Update the API coverage table in README.md.
 
 For questions about:
 - **WildDuck API**: Check [WildDuck docs](https://docs.wildduck.email/api/)
-- **Types Package**: See @johnqh/types README
+- **Types Package**: See @sudobility/types README
 - **0xmail Project**: Check 0xmail organization
 - **This Library**: Open GitHub issue
 
 ## Version History
 
-- **0.0.12** (Current): Type migration to @johnqh/types package
+- **0.0.12** (Current): Type migration to @sudobility/types package
 - **0.0.11**: Hook memoization fixes
 - **0.0.10**: Integration tests added
 - Earlier versions: Initial implementation

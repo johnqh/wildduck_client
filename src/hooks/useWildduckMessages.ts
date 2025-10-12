@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import type { Optional } from "@johnqh/types";
+import type { Optional } from "@sudobility/types";
 import type {
   WildduckConfig,
   WildduckMessage,
   WildduckMessageResponse,
   WildduckMessagesResponse,
-} from "@johnqh/types";
+} from "@sudobility/types";
 import { useCallback, useMemo, useState } from "react";
 
 interface GetMessagesOptions {

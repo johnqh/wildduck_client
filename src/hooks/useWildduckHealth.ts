@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import type { Optional } from "@johnqh/types";
-import type { WildduckConfig } from "@johnqh/types";
+import type { Optional } from "@sudobility/types";
+import type { WildduckConfig } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
 
 interface WildduckHealthStatus {

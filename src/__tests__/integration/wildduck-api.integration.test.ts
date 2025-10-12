@@ -10,7 +10,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { WildduckAPI } from '../../network/wildduck-client';
-import { NetworkClient, NetworkResponse, NetworkRequestOptions } from '@johnqh/di';
+import { NetworkClient, NetworkResponse, NetworkRequestOptions } from '@sudobility/di';
 import axios, { AxiosResponse } from 'axios';
 import {
   INTEGRATION_CONFIG,

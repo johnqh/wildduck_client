@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import type { WildduckAPI } from "../../network/wildduck-client";
-import type { WildduckUserAuth, WildduckUserResponse } from "@johnqh/types";
+import type { WildduckUserAuth, WildduckUserResponse } from "@sudobility/types";
 
 export interface UserProfile {
   username: string;

@@ -1,11 +1,11 @@
-import type { Optional } from "@johnqh/types";
+import type { Optional } from "@sudobility/types";
 import type {
   EmailFilter,
   FilterAction,
   FilterQuery,
   FilterResponse,
   WildduckConfig,
-} from "@johnqh/types";
+} from "@sudobility/types";
 import { createWildduckClient } from "./client";
 
 /**

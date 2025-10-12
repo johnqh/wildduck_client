@@ -5,7 +5,7 @@ import type {
   WildduckKeyInfo,
   WildduckUserAuth,
   WildduckUserResponse,
-} from "@johnqh/types";
+} from "@sudobility/types";
 
 export interface EncryptionSettings {
   encryptMessages: boolean; // If true then received messages are encrypted

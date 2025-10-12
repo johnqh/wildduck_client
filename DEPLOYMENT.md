@@ -67,22 +67,22 @@ Once pushed, GitHub Actions automatically:
 
 Check the deployment succeeded:
 
-- **GitHub Actions**: https://github.com/0xmail/mail_box_wildduck_client/actions
-- **GitHub Releases**: https://github.com/0xmail/mail_box_wildduck_client/releases
-- **NPM Package**: https://www.npmjs.com/package/@johnqh/wildduck_client
+- **GitHub Actions**: https://github.com/0xmail/wildduck_client/actions
+- **GitHub Releases**: https://github.com/0xmail/wildduck_client/releases
+- **NPM Package**: https://www.npmjs.com/package/@0xmail/wildduck_client
 
 ## Post-Deployment
 
 1. **Verify NPM Installation**:
    ```bash
-   npm view @johnqh/wildduck_client
+   npm view @0xmail/wildduck_client
    ```
 
 2. **Test Installation**:
    ```bash
    mkdir test-install && cd test-install
    npm init -y
-   npm install @johnqh/wildduck_client
+   npm install @0xmail/wildduck_client
    ```
 
 3. **Announce Release**:
@@ -97,7 +97,7 @@ If you need to rollback a release:
 ### Option 1: Deprecate on NPM
 
 ```bash
-npm deprecate @johnqh/wildduck_client@0.0.2 "This version has critical bugs, use 0.0.1 instead"
+npm deprecate @0xmail/wildduck_client@0.0.2 "This version has critical bugs, use 0.0.1 instead"
 ```
 
 ### Option 2: Publish Fixed Version
@@ -110,7 +110,7 @@ git push origin main --tags
 ### Option 3: Unpublish (within 72 hours)
 
 ```bash
-npm unpublish @johnqh/wildduck_client@0.0.2
+npm unpublish @0xmail/wildduck_client@0.0.2
 ```
 
 **Note**: Unpublishing is only possible within 72 hours of publishing and is generally discouraged.
@@ -133,7 +133,7 @@ This will:
 
 ### Build Fails in CI/CD
 
-1. Check the workflow logs: https://github.com/0xmail/mail_box_wildduck_client/actions
+1. Check the workflow logs: https://github.com/0xmail/wildduck_client/actions
 2. Identify the failing step
 3. Fix the issue locally
 4. Test locally: `npm run check-all`
@@ -146,12 +146,12 @@ This will:
    - Regenerate if expired
 
 2. **Check Permissions**:
-   - Ensure you have publish rights to `@johnqh` scope
+   - Ensure you have publish rights to `@0xmail` scope
    - Verify token type is "Automation"
 
 3. **Check Version**:
    - Version must be higher than published versions
-   - Check: `npm view @johnqh/wildduck_client versions`
+   - Check: `npm view @0xmail/wildduck_client versions`
 
 ### Manual Publish (Emergency Only)
 
@@ -178,10 +178,10 @@ ls -la dist/
 npm login
 
 # Publish
-npm publish --access public
+npm publish --access restricted
 
 # Create GitHub release manually
-# Go to: https://github.com/0xmail/mail_box_wildduck_client/releases/new
+# Go to: https://github.com/0xmail/wildduck_client/releases/new
 ```
 
 ## Version History
@@ -189,7 +189,7 @@ npm publish --access public
 Track all published versions:
 
 ```bash
-npm view @johnqh/wildduck_client versions
+npm view @0xmail/wildduck_client versions
 ```
 
 ## Monitoring
@@ -199,19 +199,19 @@ npm view @johnqh/wildduck_client versions
 Add to README.md:
 
 ```markdown
-[![CI/CD](https://github.com/0xmail/mail_box_wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/0xmail/mail_box_wildduck_client/actions/workflows/ci-cd.yml)
+[![CI/CD](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml)
 ```
 
 ### NPM Version Badge
 
 ```markdown
-[![npm version](https://badge.fury.io/js/@johnqh%2Fwildduck_client.svg)](https://www.npmjs.com/package/@johnqh/wildduck_client)
+[![npm version](https://badge.fury.io/js/@0xmail%2Fwildduck_client.svg)](https://www.npmjs.com/package/@0xmail/wildduck_client)
 ```
 
 ### NPM Downloads Badge
 
 ```markdown
-[![npm downloads](https://img.shields.io/npm/dm/@johnqh/wildduck_client.svg)](https://www.npmjs.com/package/@johnqh/wildduck_client)
+[![npm downloads](https://img.shields.io/npm/dm/@0xmail/wildduck_client.svg)](https://www.npmjs.com/package/@0xmail/wildduck_client)
 ```
 
 ## Security
@@ -232,6 +232,6 @@ For deployment issues:
 
 ---
 
-**Package Name**: `@johnqh/wildduck_client`
+**Package Name**: `@0xmail/wildduck_client`
 **Registry**: https://registry.npmjs.org
-**Repository**: https://github.com/0xmail/mail_box_wildduck_client
+**Repository**: https://github.com/0xmail/wildduck_client

@@ -2,15 +2,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useStorageService } from "./useServices";
-import type { Optional } from "@johnqh/types";
+import type { Optional } from "@sudobility/types";
 import type {
   WildduckAuthResponse as AuthenticationResponse,
   WildduckPreAuthResponse as PreAuthResponse,
   WildduckAuthenticateRequest,
   WildduckConfig,
   WildduckPreAuthRequest,
-} from "@johnqh/types";
-import { createAuthenticateRequest, createPreAuthRequest } from "@johnqh/types";
+} from "@sudobility/types";
+import {
+  createAuthenticateRequest,
+  createPreAuthRequest,
+} from "@sudobility/types";
 
 // Type aliases for legacy compatibility
 type AuthenticateRequest = WildduckAuthenticateRequest;

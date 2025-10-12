@@ -69,10 +69,10 @@ export type {
   WildduckMessagesResponse as WildduckMessagesResponse,
   WildduckMailbox as WildduckMailbox,
   WildduckMailboxResponse as WildduckMailboxesResponse,
-} from "@johnqh/types";
+} from "@sudobility/types";
 
 // Export WildduckUserAuth type for authentication
-export type { WildduckUserAuth } from "@johnqh/types";
+export type { WildduckUserAuth } from "@sudobility/types";
 
 // ============================================================================
 // Utilities

@@ -5,7 +5,7 @@ import type {
   WildduckLimits,
   WildduckUserAuth,
   WildduckUserResponse,
-} from "@johnqh/types";
+} from "@sudobility/types";
 
 export interface UpdateWildduckLimitsParams {
   userAuth: WildduckUserAuth;

@@ -8,8 +8,8 @@ import type {
   PlatformNotifications,
   PlatformStorage,
   PlatformTheme,
-} from "@johnqh/di";
-import { ServiceKeys } from "@johnqh/di";
+} from "@sudobility/di";
+import { ServiceKeys } from "@sudobility/di";
 import { useServiceContainer, useServiceResolver } from "./ServiceProvider";
 
 /**
@@ -94,11 +94,11 @@ export {
 };
 
 // Re-export platform types and service keys for convenience
-export { ServiceKeys } from "@johnqh/di";
+export { ServiceKeys } from "@sudobility/di";
 export type {
   PlatformAnalytics,
   PlatformNetwork,
   PlatformNotifications,
   PlatformStorage,
   PlatformTheme,
-} from "@johnqh/di";
+} from "@sudobility/di";

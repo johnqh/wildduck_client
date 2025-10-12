@@ -5,7 +5,7 @@
 This is a TypeScript client library for the WildDuck email API, designed for React and React Native applications.
 
 **Key Facts:**
-- Package name: `@johnqh/wildduck_client`
+- Package name: `@0xmail/wildduck_client`
 - Current version: 0.0.12
 - Tech stack: TypeScript, React, React Query (@tanstack/react-query), Axios
 - Target: Browser and React Native environments
@@ -214,8 +214,8 @@ export interface WildduckUserAuth {
 ### Peer Dependencies (Required by Consumers)
 - `react`: ^19.2.0
 - `@tanstack/react-query`: ^5.90.2
-- `@johnqh/di`: ^1.4.5
-- `@johnqh/types`: ^1.8.21
+- `@sudobility/di`: ^1.4.5
+- `@sudobility/types`: ^1.8.21
 - `axios`: ^1.12.2
 
 ### Dev Dependencies
@@ -298,14 +298,14 @@ When working on this project:
 5. **Run `npm run check-all`** before suggesting code is complete
 6. **Type everything** - no implicit any, use proper TypeScript
 7. **Consider React Native** - avoid browser-specific APIs
-8. **Check existing types** in @johnqh/types package before creating new ones
+8. **Check existing types** in @sudobility/types package before creating new ones
 9. **Reference WILDDUCK_API_ENDPOINTS.md** for exact API specs
 10. **Use the established patterns** for error handling and data fetching
 
 ### When Implementing New Endpoints
 
 1. Review the endpoint in WILDDUCK_API_ENDPOINTS.md
-2. Check if types exist in @johnqh/types or create them
+2. Check if types exist in @sudobility/types or create them
 3. Add network client method
 4. Create React hook following the template
 5. Write unit tests with mocks

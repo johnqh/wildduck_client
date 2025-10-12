@@ -19,7 +19,7 @@ import type {
   WildduckMessage,
   WildduckMessagesResponse,
   WildduckUser,
-} from "@johnqh/types";
+} from "@sudobility/types";
 import axios from "axios";
 import { WildduckMockData } from "./mocks";
 
@@ -31,7 +31,7 @@ interface WildduckHealthResponse {
   // Add other health response fields as needed
 }
 
-// Users list response (not defined in @johnqh/types)
+// Users list response (not defined in @sudobility/types)
 interface WildduckUsersResponse {
   success: boolean;
   results: WildduckUser[];

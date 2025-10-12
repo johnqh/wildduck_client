@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { type WildduckConfig } from "@johnqh/types";
+import { type WildduckConfig } from "@sudobility/types";
 import axios from "axios";
-import type { WildduckUserAuth } from "@johnqh/types";
+import type { WildduckUserAuth } from "@sudobility/types";
 
 export interface UseWildduckSearchMessagesParams {
   userAuth?: WildduckUserAuth;

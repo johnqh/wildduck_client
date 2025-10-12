@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WildduckAPI } from "../../network/wildduck-client";
-import type { WildduckUserAuth, WildduckUserResponse } from "@johnqh/types";
+import type { WildduckUserAuth, WildduckUserResponse } from "@sudobility/types";
 
 export interface TwoFASettings {
   enabled2fa: string[]; // List of enabled 2FA methods (e.g., ['totp', 'u2f'])

@@ -2,8 +2,8 @@
 
 TypeScript client library for the WildDuck email API with React and React Native support.
 
-[![npm version](https://badge.fury.io/js/@johnqh%2Fwildduck_client.svg)](https://www.npmjs.com/package/@johnqh/wildduck_client)
-[![CI/CD](https://github.com/0xmail/mail_box_wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/0xmail/mail_box_wildduck_client/actions/workflows/ci-cd.yml)
+[![npm version](https://badge.fury.io/js/@0xmail%2Fwildduck_client.svg)](https://www.npmjs.com/package/@0xmail/wildduck_client)
+[![CI/CD](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml)
 
 ## Features
 
@@ -18,7 +18,7 @@ TypeScript client library for the WildDuck email API with React and React Native
 ## Installation
 
 ```bash
-npm install @johnqh/wildduck_client
+npm install @0xmail/wildduck_client
 ```
 
 ### Peer Dependencies
@@ -26,7 +26,7 @@ npm install @johnqh/wildduck_client
 This library requires the following peer dependencies:
 
 ```bash
-npm install react @tanstack/react-query @johnqh/di @johnqh/types axios
+npm install react @tanstack/react-query @sudobility/di @sudobility/types axios
 ```
 
 ## Quick Start
@@ -34,7 +34,7 @@ npm install react @tanstack/react-query @johnqh/di @johnqh/types axios
 ### 1. Authentication
 
 ```typescript
-import { useWildduckAuth } from '@johnqh/wildduck_client';
+import { useWildduckAuth } from '@0xmail/wildduck_client';
 
 function LoginComponent() {
   const networkClient = useNetworkClient();
@@ -82,7 +82,7 @@ function LoginComponent() {
 ### 2. Fetching Messages
 
 ```typescript
-import { useWildduckGetMessages } from '@johnqh/wildduck_client';
+import { useWildduckGetMessages } from '@0xmail/wildduck_client';
 
 function MessageList({ userAuth, mailboxId }) {
   const networkClient = useNetworkClient();
@@ -120,7 +120,7 @@ function MessageList({ userAuth, mailboxId }) {
 ### 3. Sending Messages
 
 ```typescript
-import { useWildduckSendMessage } from '@johnqh/wildduck_client';
+import { useWildduckSendMessage } from '@0xmail/wildduck_client';
 
 function ComposeEmail({ userAuth }) {
   const networkClient = useNetworkClient();
@@ -341,14 +341,14 @@ MIT
 ## Related Projects
 
 - [WildDuck](https://github.com/nodemailer/wildduck) - The WildDuck email server
-- [@johnqh/types](https://www.npmjs.com/package/@johnqh/types) - Shared type definitions
+- [@sudobility/types](https://www.npmjs.com/package/@sudobility/types) - Shared type definitions
 - [0xmail](https://github.com/0xmail) - Blockchain-based email platform
 
 ## Support
 
-- [GitHub Issues](https://github.com/0xmail/mail_box_wildduck_client/issues)
+- [GitHub Issues](https://github.com/0xmail/wildduck_client/issues)
 - [API Documentation](https://docs.wildduck.email/api/)
 
 ## Changelog
 
-See [GitHub Releases](https://github.com/0xmail/mail_box_wildduck_client/releases) for version history and release notes.
+See [GitHub Releases](https://github.com/0xmail/wildduck_client/releases) for version history and release notes.

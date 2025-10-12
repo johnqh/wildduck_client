@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 import axios from "axios";
-import type { Optional } from "@johnqh/types";
+import type { Optional } from "@sudobility/types";
 import type {
   CreateMailboxRequest,
   GetMailboxesRequest,
@@ -10,7 +10,7 @@ import type {
   WildduckConfig,
   WildduckMailbox,
   WildduckMailboxResponse,
-} from "@johnqh/types";
+} from "@sudobility/types";
 
 interface UseWildduckMailboxesReturn {
   // Query state

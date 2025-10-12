@@ -1,4 +1,4 @@
-import type { UserInfo, WildduckConfig } from "@johnqh/types";
+import type { UserInfo, WildduckConfig } from "@sudobility/types";
 import { createWildduckClient } from "./client";
 
 /**

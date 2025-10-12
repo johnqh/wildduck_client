@@ -1,4 +1,4 @@
-import type { SpamSettings, WildduckConfig } from "@johnqh/types";
+import type { SpamSettings, WildduckConfig } from "@sudobility/types";
 import { createWildduckClient } from "./client";
 
 /**

@@ -12,7 +12,7 @@ on:
       - closed
 
 env:
-  NPM_MODULE_NAME: "@johnqh/wildduck_client"
+  NPM_MODULE_NAME: "@0xmail/wildduck_client"
 
 jobs:
   test:
@@ -30,9 +30,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+          registry-url: "https://registry.npmjs.org"
 
       - name: "Install dependencies"
         run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: "Run type checking"
         run: npm run typecheck
@@ -113,6 +116,8 @@ jobs:
 
       - name: "Install dependencies"
         run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: "Run tests with coverage"
         run: npm run test:coverage
@@ -150,17 +155,17 @@ jobs:
 
             ### Installation
             ```bash
-            npm install @johnqh/wildduck_client@${{ needs.check_for_release.outputs.version }}
+            npm install @0xmail/wildduck_client@${{ needs.check_for_release.outputs.version }}
             ```
 
             ### Peer Dependencies
             ```bash
-            npm install react @tanstack/react-query axios
+            npm install react @tanstack/react-query @sudobility/di @sudobility/types axios
             ```
 
             ### Quick Start
             ```typescript
-            import { useWildduckAuth } from '@johnqh/wildduck_client';
+            import { useWildduckAuth } from '@0xmail/wildduck_client';
 
             function LoginComponent() {
               const { authenticate, isAuthenticated } = useWildduckAuth(
@@ -210,7 +215,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Publish to NPM"
-        run: npm publish --access public
+        run: npm publish --access restricted
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -218,7 +223,7 @@ jobs:
         if: success()
         run: |
           echo "🚀 Release ${{ needs.check_for_release.outputs.version }} deployed successfully!"
-          echo "• NPM: https://www.npmjs.com/package/@johnqh/wildduck_client/v/${{ needs.check_for_release.outputs.version }}"
+          echo "• NPM: https://www.npmjs.com/package/@0xmail/wildduck_client/v/${{ needs.check_for_release.outputs.version }}"
           echo "• GitHub: https://github.com/${{ github.repository }}/releases/tag/${{ needs.check_for_release.outputs.version_tag }}"
           echo "• Documentation: https://github.com/${{ github.repository }}#readme"
 

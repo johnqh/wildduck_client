@@ -2,7 +2,7 @@ import type {
   AdvancedSettings,
   SMTPRelay,
   WildduckConfig,
-} from "@johnqh/types";
+} from "@sudobility/types";
 import { createWildduckClient } from "./client";
 
 /**

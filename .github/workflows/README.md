@@ -75,7 +75,7 @@ Each release automatically creates:
 
 ### NPM Publishing
 
-Published to: https://www.npmjs.com/package/@johnqh/wildduck_client
+Published to: https://www.npmjs.com/package/@0xmail/wildduck_client
 
 Package is published with:
 - Public access (`--access public`)

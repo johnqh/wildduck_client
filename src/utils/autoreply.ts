@@ -1,4 +1,4 @@
-import type { AutoReplySettings, WildduckConfig } from "@johnqh/types";
+import type { AutoReplySettings, WildduckConfig } from "@sudobility/types";
 import { createWildduckClient } from "./client";
 
 /**
