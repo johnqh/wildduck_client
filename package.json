@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/wildduck_client",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "React and React Native compatible client library for WildDuck email API with TypeScript support",
   "type": "module",
   "main": "dist/index.js",
@@ -39,23 +39,23 @@
   "author": "0xmail.box team",
   "license": "MIT",
   "peerDependencies": {
-    "react": "^19.2.0",
-    "@tanstack/react-query": "^5.90.2",
-    "@sudobility/di": "^1.4.5",
-    "@sudobility/types": "^1.8.21",
-    "axios": "^1.12.2"
-  },
-  "devDependencies": {
-    "@sudobility/di": "^1.4.5",
-    "@sudobility/types": "^1.8.21",
+    "@sudobility/di": "^1.4.6",
+    "@sudobility/types": "^1.8.23",
     "@tanstack/react-query": "^5.90.2",
     "axios": "^1.12.2",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@sudobility/di": "^1.4.6",
+    "@sudobility/types": "^1.8.23",
+    "@tanstack/react-query": "^5.90.2",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^24.7.0",
     "@types/react": "^19.2.2",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
     "@vitest/coverage-v8": "^3.2.4",
+    "axios": "^1.12.2",
     "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
