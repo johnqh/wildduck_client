@@ -42,8 +42,8 @@ export const queryKeys = {
       mailboxId: string,
       filters?: Record<string, unknown>,
     ) => [...wildduckBase(), "messages", userId, mailboxId, filters] as const,
-    message: (userId: string, messageId: string) =>
-      [...wildduckBase(), "messages", userId, messageId] as const,
+    message: (userId: string, mailboxId: string, messageId: string) =>
+      [...wildduckBase(), "messages", userId, mailboxId, messageId] as const,
     searchMessages: (
       userId: string,
       mailboxId: string,

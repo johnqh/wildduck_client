@@ -468,10 +468,18 @@ class WildduckAPI {
   // Get a specific message by ID
   async getMessage(
     userAuth: WildduckUserAuth,
+    mailboxId: string,
     messageId: string,
   ): Promise<WildduckMessageResponse> {
     // Validate user ID format
     const validatedUserId = validateUserId(userAuth.userId);
+
+    // Validate mailbox ID format
+    if (!isValidObjectId(mailboxId)) {
+      throw new Error(
+        `Invalid mailbox ID format: "${mailboxId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
+      );
+    }
 
     // Validate message ID format (should also be ObjectId)
     if (!isValidObjectId(messageId)) {
@@ -480,7 +488,7 @@ class WildduckAPI {
       );
     }
 
-    const endpoint = `/users/${validatedUserId}/messages/${messageId}`;
+    const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`;
 
     return this.request<WildduckMessageResponse>(endpoint, {
       userAuth,

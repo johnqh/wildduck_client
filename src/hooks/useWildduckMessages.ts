@@ -57,6 +57,7 @@ interface UseWildduckMessagesReturn {
   ) => Promise<WildduckMessage[]>;
   getMessage: (
     userId: string,
+    mailboxId: string,
     messageId: string,
   ) => Promise<WildduckMessageResponse>;
   searchMessages: (
@@ -77,6 +78,7 @@ interface UseWildduckMessagesReturn {
   // Update mutation
   updateMessage: (
     userId: string,
+    mailboxId: string,
     messageId: string,
     params: UpdateMessageParams,
   ) => Promise<{ success: boolean }>;
@@ -86,6 +88,7 @@ interface UseWildduckMessagesReturn {
   // Delete mutation
   deleteMessage: (
     userId: string,
+    mailboxId: string,
     messageId: string,
   ) => Promise<{ success: boolean }>;
   isDeleting: boolean;
@@ -94,6 +97,7 @@ interface UseWildduckMessagesReturn {
   // Move mutation
   moveMessage: (
     userId: string,
+    mailboxId: string,
     messageId: string,
     targetMailbox: string,
   ) => Promise<{ success: boolean }>;
@@ -192,6 +196,7 @@ const useWildduckMessages = (
   const getMessage = useCallback(
     async (
       userId: string,
+      mailboxId: string,
       messageId: string,
     ): Promise<WildduckMessageResponse> => {
       try {
@@ -199,7 +204,7 @@ const useWildduckMessages = (
         const headers = buildHeaders();
 
         const response = await axios.get(
-          `${apiUrl}/users/${userId}/messages/${messageId}`,
+          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
           { headers },
         );
 
@@ -207,7 +212,7 @@ const useWildduckMessages = (
 
         // Update cache
         queryClient.setQueryData(
-          ["wildduck-message", userId, messageId],
+          ["wildduck-message", userId, mailboxId, messageId],
           messageData,
         );
 
@@ -306,10 +311,12 @@ const useWildduckMessages = (
     ],
     mutationFn: async ({
       userId,
+      mailboxId,
       messageId,
       params,
     }: {
       userId: string;
+      mailboxId: string;
       messageId: string;
       params: UpdateMessageParams;
     }): Promise<{ success: boolean }> => {
@@ -318,7 +325,7 @@ const useWildduckMessages = (
         const headers = buildHeaders();
 
         const response = await axios.put(
-          `${apiUrl}/users/${userId}/messages/${messageId}`,
+          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
           params,
           { headers },
         );
@@ -333,10 +340,15 @@ const useWildduckMessages = (
     onSuccess: (_, variables) => {
       // Invalidate both message detail and messages list
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-message", variables.userId, variables.messageId],
+        queryKey: [
+          "wildduck-message",
+          variables.userId,
+          variables.mailboxId,
+          variables.messageId,
+        ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userId],
+        queryKey: ["wildduck-messages", variables.userId, variables.mailboxId],
       });
     },
   });
@@ -349,9 +361,11 @@ const useWildduckMessages = (
     ],
     mutationFn: async ({
       userId,
+      mailboxId,
       messageId,
     }: {
       userId: string;
+      mailboxId: string;
       messageId: string;
     }): Promise<{ success: boolean }> => {
       try {
@@ -359,7 +373,7 @@ const useWildduckMessages = (
         const headers = buildHeaders();
 
         const response = await axios.delete(
-          `${apiUrl}/users/${userId}/messages/${messageId}`,
+          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
           { headers },
         );
 
@@ -373,10 +387,15 @@ const useWildduckMessages = (
     onSuccess: (_, variables) => {
       // Invalidate both message detail and messages list
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-message", variables.userId, variables.messageId],
+        queryKey: [
+          "wildduck-message",
+          variables.userId,
+          variables.mailboxId,
+          variables.messageId,
+        ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userId],
+        queryKey: ["wildduck-messages", variables.userId, variables.mailboxId],
       });
     },
   });
@@ -389,10 +408,12 @@ const useWildduckMessages = (
     ],
     mutationFn: async ({
       userId,
+      mailboxId,
       messageId,
       targetMailbox,
     }: {
       userId: string;
+      mailboxId: string;
       messageId: string;
       targetMailbox: string;
     }): Promise<{ success: boolean }> => {
@@ -401,7 +422,7 @@ const useWildduckMessages = (
         const headers = buildHeaders();
 
         const response = await axios.put(
-          `${apiUrl}/users/${userId}/messages/${messageId}/move`,
+          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
           { mailbox: targetMailbox },
           { headers },
         );
@@ -416,7 +437,12 @@ const useWildduckMessages = (
     onSuccess: (_, variables) => {
       // Invalidate both message detail and messages list for all mailboxes
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-message", variables.userId, variables.messageId],
+        queryKey: [
+          "wildduck-message",
+          variables.userId,
+          variables.mailboxId,
+          variables.messageId,
+        ],
       });
       queryClient.invalidateQueries({
         queryKey: ["wildduck-messages", variables.userId],
@@ -458,20 +484,29 @@ const useWildduckMessages = (
   );
 
   const updateMessage = useCallback(
-    async (userId: string, messageId: string, params: UpdateMessageParams) =>
-      updateMutation.mutateAsync({ userId, messageId, params }),
+    async (
+      userId: string,
+      mailboxId: string,
+      messageId: string,
+      params: UpdateMessageParams,
+    ) => updateMutation.mutateAsync({ userId, mailboxId, messageId, params }),
     [updateMutation],
   );
 
   const deleteMessage = useCallback(
-    async (userId: string, messageId: string) =>
-      deleteMutation.mutateAsync({ userId, messageId }),
+    async (userId: string, mailboxId: string, messageId: string) =>
+      deleteMutation.mutateAsync({ userId, mailboxId, messageId }),
     [deleteMutation],
   );
 
   const moveMessage = useCallback(
-    async (userId: string, messageId: string, targetMailbox: string) =>
-      moveMutation.mutateAsync({ userId, messageId, targetMailbox }),
+    async (
+      userId: string,
+      mailboxId: string,
+      messageId: string,
+      targetMailbox: string,
+    ) =>
+      moveMutation.mutateAsync({ userId, mailboxId, messageId, targetMailbox }),
     [moveMutation],
   );
 

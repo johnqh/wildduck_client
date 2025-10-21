@@ -8,6 +8,7 @@ import type { WildduckUserAuth } from "@sudobility/types";
 
 export interface UseWildduckGetMessageParams {
   userAuth?: WildduckUserAuth;
+  mailboxId?: string;
   messageId?: string;
   devMode?: boolean;
 }
@@ -18,7 +19,7 @@ export interface UseWildduckGetMessageParams {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
- * @param params - Query parameters including userAuth and messageId
+ * @param params - Query parameters including userAuth, mailboxId and messageId
  * @returns React Query result with message data
  */
 export const useWildduckGetMessage = (
@@ -26,7 +27,7 @@ export const useWildduckGetMessage = (
   config: WildduckConfig,
   params: UseWildduckGetMessageParams = {},
 ) => {
-  const { userAuth, messageId, devMode = false } = params;
+  const { userAuth, mailboxId, messageId, devMode = false } = params;
 
   const api = useMemo(
     () => new WildduckAPI(networkClient, config),
@@ -35,10 +36,11 @@ export const useWildduckGetMessage = (
 
   const queryFn = useCallback(async () => {
     if (!userAuth) throw new Error("userAuth is required");
+    if (!mailboxId) throw new Error("mailboxId is required");
     if (!messageId) throw new Error("messageId is required");
 
     try {
-      return await api.getMessage(userAuth, messageId);
+      return await api.getMessage(userAuth, mailboxId, messageId);
     } catch (err) {
       if (devMode) {
         console.warn("[DevMode] getMessage failed, returning mock data:", err);
@@ -50,12 +52,12 @@ export const useWildduckGetMessage = (
       }
       throw err;
     }
-  }, [userAuth, messageId, api, devMode]);
+  }, [userAuth, mailboxId, messageId, api, devMode]);
 
   const query = useQuery({
-    queryKey: ["wildduck-message", userAuth?.userId, messageId],
+    queryKey: ["wildduck-message", userAuth?.userId, mailboxId, messageId],
     queryFn,
-    enabled: !!userAuth && !!messageId,
+    enabled: !!userAuth && !!mailboxId && !!messageId,
   });
 
   return useMemo(

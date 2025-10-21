@@ -452,6 +452,7 @@ const useWildduckUserMessages = (
 const useWildduckMessage = (
   config: WildduckConfig,
   userId: string,
+  mailboxId: string,
   messageId: string,
   devMode: boolean = false,
   options?: UseQueryOptions<WildduckMessage>,
@@ -472,7 +473,7 @@ const useWildduckMessage = (
 
     try {
       const response = await axios.get(
-        `${apiUrl}/users/${userId}/messages/${messageId}`,
+        `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
         { headers },
       );
       const messageData = response.data as any;
@@ -526,15 +527,16 @@ const useWildduckMessage = (
     config.backendUrl,
     config.apiToken,
     userId,
+    mailboxId,
     messageId,
     devMode,
   ]);
 
   const query = useQuery({
-    queryKey: queryKeys.wildduck.message(userId, messageId),
+    queryKey: queryKeys.wildduck.message(userId, mailboxId, messageId),
     queryFn,
     staleTime: STALE_TIMES.MESSAGE_CONTENT,
-    enabled: !!(userId && messageId),
+    enabled: !!(userId && mailboxId && messageId),
     ...options,
   });
 
