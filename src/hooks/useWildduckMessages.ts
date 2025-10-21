@@ -124,8 +124,8 @@ const useWildduckMessages = (
     options?: GetMessagesOptions;
   } | null>(null);
 
-  // Helper to build headers
-  const buildHeaders = (): Record<string, string> => {
+  // Helper to build headers - memoized to prevent unnecessary re-renders
+  const buildHeaders = useCallback((): Record<string, string> => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -139,7 +139,7 @@ const useWildduckMessages = (
     }
 
     return headers;
-  };
+  }, [config]);
 
   // Get messages function (imperative)
   const getMessages = useCallback(
@@ -185,7 +185,7 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+    [config, buildHeaders, queryClient],
   );
 
   // Get single message function (imperative)
@@ -218,7 +218,7 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+    [config, buildHeaders, queryClient],
   );
 
   // Search messages function (imperative)
@@ -257,7 +257,7 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders],
+    [config, buildHeaders],
   );
 
   // Send message mutation
