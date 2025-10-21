@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { useStorageService } from "./useServices";
+import type { StorageService } from "@sudobility/di";
 import type { Optional } from "@sudobility/types";
 import type {
   WildduckAuthResponse as AuthenticationResponse,
@@ -87,12 +87,16 @@ interface UseWildduckAuthReturn {
 /**
  * Hook for Wildduck authentication operations using React Query
  * All mutations are automatically deduplicated and cached by React Query
+ *
+ * @param config - WildDuck configuration
+ * @param storage - Storage service for persisting auth tokens
+ * @param devMode - Enable development mode with mock data fallback
  */
 const useWildduckAuth = (
   config: WildduckConfig,
+  storage: StorageService,
   devMode: boolean = false,
 ): UseWildduckAuthReturn => {
-  const storageService = useStorageService();
   const queryClient = useQueryClient();
 
   // Subscribe to singleton authData changes
@@ -145,7 +149,7 @@ const useWildduckAuth = (
 
         // Store token if authentication was successful
         if (result.success && result.token) {
-          await storageService.setItem("wildduck_token", result.token);
+          await storage.setItem("wildduck_token", result.token);
         }
 
         return result;
@@ -166,7 +170,7 @@ const useWildduckAuth = (
 
           // Store mock token
           if (mockResult.token) {
-            await storageService.setItem("wildduck_token", mockResult.token);
+            await storage.setItem("wildduck_token", mockResult.token);
           }
           return mockResult;
         }
@@ -234,8 +238,7 @@ const useWildduckAuth = (
     mutationFn: async (token?: string): Promise<{ success: boolean }> => {
       try {
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const authToken =
-          token || (await storageService.getItem("wildduck_token"));
+        const authToken = token || (await storage.getItem("wildduck_token"));
 
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -258,7 +261,7 @@ const useWildduckAuth = (
 
         // Clear stored token on successful logout
         if (result.success) {
-          await storageService.removeItem("wildduck_token");
+          await storage.removeItem("wildduck_token");
         }
 
         return result;
@@ -273,7 +276,7 @@ const useWildduckAuth = (
             "[DevMode] logout failed, returning mock data:",
             errorMessage,
           );
-          await storageService.removeItem("wildduck_token");
+          await storage.removeItem("wildduck_token");
           return WildduckMockData.getLogout();
         }
 
@@ -295,7 +298,7 @@ const useWildduckAuth = (
   }> => {
     try {
       // Check if user has valid token or authentication status
-      const token = await storageService.getItem("wildduck_token");
+      const token = await storage.getItem("wildduck_token");
       if (!token) {
         return { authenticated: false };
       }
@@ -339,7 +342,7 @@ const useWildduckAuth = (
 
       return { authenticated: false };
     }
-  }, [storageService, config.cloudflareWorkerUrl, config.backendUrl, devMode]);
+  }, [storage, config.cloudflareWorkerUrl, config.backendUrl, devMode]);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =

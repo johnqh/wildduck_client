@@ -12,9 +12,9 @@ export * from "./utils";
 // Export hooks
 export * from "./hooks";
 
-// Export service provider hooks
-export * from "./hooks/ServiceProvider";
-export * from "./hooks/useServices";
+// ServiceProvider pattern removed - use direct dependency injection instead
+// export * from "./hooks/ServiceProvider";
+// export * from "./hooks/useServices";
 
 // Export network client
 export * from "./network";

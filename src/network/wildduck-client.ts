@@ -95,8 +95,6 @@ const createApiConfig = (config: WildduckConfig) => ({
       `/users/${userId}/mailboxes/${mailboxId}/messages`,
     MESSAGE: (userId: string, mailboxId: string, messageId: string) =>
       `/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-    MESSAGE_BY_ID: (userId: string, messageId: string) =>
-      `/users/${userId}/messages/${messageId}`,
 
     // Addresses
     ADDRESSES: (userId: string) => `/users/${userId}/addresses`,
