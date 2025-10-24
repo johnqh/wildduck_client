@@ -293,11 +293,22 @@ export class WildduckMockData {
   // TanStack Query specific mocks
   static getHealthQuery() {
     return {
-      status: "healthy",
+      success: true,
       version: "1.16.0",
-      uptime: 86400,
-      database: "connected",
-      redis: "connected",
+      mongodb: {
+        status: "connected",
+        responseTime: "5ms",
+      },
+      redis: {
+        status: "connected",
+        responseTime: "2ms",
+      },
+      imap: {
+        status: "running",
+      },
+      smtp: {
+        status: "running",
+      },
     };
   }
 

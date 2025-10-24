@@ -15,42 +15,20 @@ import { STALE_TIMES } from "./query-config";
 import type {
   WildduckAddress,
   WildduckConfig,
+  WildduckFilterListItem,
+  WildduckHealthResponse,
   WildduckMailboxResponse,
   WildduckMessage,
   WildduckMessagesResponse,
   WildduckUser,
+  WildduckUserListResponse,
 } from "@sudobility/types";
 import axios from "axios";
 import { WildduckMockData } from "./mocks";
 
-// Define response types based on Wildduck API
-interface WildduckHealthResponse {
-  status: string;
-  version: string;
-  uptime: number;
-  // Add other health response fields as needed
-}
-
-// Users list response (not defined in @sudobility/types)
-interface WildduckUsersResponse {
-  success: boolean;
-  results: WildduckUser[];
-  error?: string;
-}
-
 interface WildduckUserSettings {
   // Define based on actual API response
   [key: string]: unknown;
-}
-
-interface WildduckFilter {
-  id: string;
-  name: string;
-  query: object;
-  action: object;
-  disabled: boolean;
-  created: string;
-  // Add other filter fields
 }
 
 interface WildduckAuthStatusResponse {
@@ -122,9 +100,9 @@ const useWildduckUsersList = (
   config: WildduckConfig,
   devMode: boolean = false,
   filters?: Record<string, unknown>,
-  options?: UseQueryOptions<WildduckUsersResponse>,
-): UseQueryResult<WildduckUsersResponse> => {
-  const queryFn = useCallback(async (): Promise<WildduckUsersResponse> => {
+  options?: UseQueryOptions<WildduckUserListResponse>,
+): UseQueryResult<WildduckUserListResponse> => {
+  const queryFn = useCallback(async (): Promise<WildduckUserListResponse> => {
     const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -150,14 +128,14 @@ const useWildduckUsersList = (
       const response = await axios.get(`${apiUrl}/users?${params}`, {
         headers,
       });
-      return response.data as WildduckUsersResponse;
+      return response.data as WildduckUserListResponse;
     } catch (err) {
       if (devMode) {
         console.warn(
           "[DevMode] Get users list failed, returning mock data:",
           err,
         );
-        return WildduckMockData.getUsersListQuery() as unknown as WildduckUsersResponse;
+        return WildduckMockData.getUsersListQuery() as unknown as WildduckUserListResponse;
       }
       throw err;
     }
@@ -556,9 +534,9 @@ const useWildduckUserFilters = (
   config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
-  options?: UseQueryOptions<WildduckFilter[]>,
-): UseQueryResult<WildduckFilter[]> => {
-  const queryFn = useCallback(async (): Promise<WildduckFilter[]> => {
+  options?: UseQueryOptions<WildduckFilterListItem[]>,
+): UseQueryResult<WildduckFilterListItem[]> => {
+  const queryFn = useCallback(async (): Promise<WildduckFilterListItem[]> => {
     const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -594,7 +572,7 @@ const useWildduckUserFilters = (
           err,
         );
         const mockData = WildduckMockData.getUserFiltersQuery();
-        return mockData.filters as WildduckFilter[];
+        return mockData.filters as WildduckFilterListItem[];
       }
       throw err;
     }
@@ -946,8 +924,6 @@ export {
   useWildduckUserMailboxes,
   useWildduckAuthStatus,
   useWildduckSearchMessages,
-  type WildduckHealthResponse,
   type WildduckUserSettings,
-  type WildduckFilter,
   type WildduckAuthStatusResponse,
 };

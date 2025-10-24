@@ -1,26 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Optional } from "@sudobility/types";
-import type { WildduckConfig } from "@sudobility/types";
+import type { Optional, WildduckConfig, WildduckUser } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
-
-interface WildduckUser {
-  success: boolean;
-  id: string;
-  username: string;
-  address?: string;
-  name?: string;
-  language?: string;
-  quota?: {
-    allowed: number;
-    used: number;
-  };
-  hasPasswordSet?: boolean;
-  activated?: boolean;
-  disabled?: boolean;
-  suspended?: boolean;
-}
 
 interface UseWildduckUsersReturn {
   isLoading: boolean;
@@ -203,4 +185,4 @@ const useWildduckUsers = (
   );
 };
 
-export { useWildduckUsers, type WildduckUser, type UseWildduckUsersReturn };
+export { useWildduckUsers, type UseWildduckUsersReturn };

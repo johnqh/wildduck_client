@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import type { Optional } from "@sudobility/types";
 import type {
+  Optional,
   WildduckConfig,
   WildduckMessage,
   WildduckMessageResponse,
   WildduckMessagesResponse,
+  WildduckUpdateMessageRequest,
 } from "@sudobility/types";
 import { useCallback, useMemo, useState } from "react";
 
@@ -32,13 +33,6 @@ interface SendMessageParams {
   }>;
   inReplyTo?: string;
   references?: string[];
-}
-
-interface UpdateMessageParams {
-  seen?: boolean;
-  flagged?: boolean;
-  deleted?: boolean;
-  mailbox?: string;
 }
 
 interface UseWildduckMessagesReturn {
@@ -80,7 +74,7 @@ interface UseWildduckMessagesReturn {
     userId: string,
     mailboxId: string,
     messageId: string,
-    params: UpdateMessageParams,
+    params: WildduckUpdateMessageRequest,
   ) => Promise<{ success: boolean }>;
   isUpdating: boolean;
   updateError: Optional<Error>;
@@ -318,7 +312,7 @@ const useWildduckMessages = (
       userId: string;
       mailboxId: string;
       messageId: string;
-      params: UpdateMessageParams;
+      params: WildduckUpdateMessageRequest;
     }): Promise<{ success: boolean }> => {
       try {
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
@@ -488,7 +482,7 @@ const useWildduckMessages = (
       userId: string,
       mailboxId: string,
       messageId: string,
-      params: UpdateMessageParams,
+      params: WildduckUpdateMessageRequest,
     ) => updateMutation.mutateAsync({ userId, mailboxId, messageId, params }),
     [updateMutation],
   );
@@ -586,6 +580,5 @@ export {
   useWildduckMessages,
   type GetMessagesOptions,
   type SendMessageParams,
-  type UpdateMessageParams,
   type UseWildduckMessagesReturn,
 };

@@ -34,45 +34,31 @@ export * from "./useWildduckAddresses"; // Deprecated - use useWildduckGetAddres
 export * from "./useWildduckAuth";
 
 // ============================================================================
-// TanStack Query hooks (with prefixed names to avoid conflicts)
+// TanStack Query hooks
 // ============================================================================
 export {
-  useWildduckHealth as useWildduckHealthQuery,
-  useWildduckUsersList as useWildduckUsersListQuery,
-  useWildduckUser as useWildduckUserQuery,
-  useWildduckUserAddresses as useWildduckUserAddressesQuery,
-  useWildduckUserMessages as useWildduckUserMessagesQuery,
-  useWildduckMessage as useWildduckMessageQuery,
-  useWildduckUserFilters as useWildduckUserFiltersQuery,
-  useWildduckUserSettings as useWildduckUserSettingsQuery,
-  useWildduckUserMailboxes as useWildduckUserMailboxesQuery,
-  useWildduckAuthStatus as useWildduckAuthStatusQuery,
-  useWildduckSearchMessages as useWildduckSearchMessagesQuery,
+  useWildduckUsersList,
+  useWildduckUser,
+  useWildduckUserAddresses,
+  useWildduckUserMessages,
+  useWildduckMessage,
+  useWildduckUserFilters,
+  useWildduckUserSettings,
+  useWildduckUserMailboxes,
+  useWildduckAuthStatus,
 } from "./useWildduckQueries";
 
 // ============================================================================
 // Types
 // ============================================================================
 
-// Export types from TanStack Query hooks
+// Export hook-specific types from TanStack Query hooks
 export type {
   WildduckUserSettings,
-  WildduckFilter,
   WildduckAuthStatusResponse,
 } from "./useWildduckQueries";
 
-// Export Wildduck API response types from local types
-export type {
-  WildduckUser as WildduckUser,
-  WildduckAddress as WildduckAddress,
-  WildduckMessage as WildduckMessage,
-  WildduckMessagesResponse as WildduckMessagesResponse,
-  WildduckMailbox as WildduckMailbox,
-  WildduckMailboxResponse as WildduckMailboxesResponse,
-} from "@sudobility/types";
-
-// Export WildduckUserAuth type for authentication
-export type { WildduckUserAuth } from "@sudobility/types";
+// Note: WildduckHealthResponse is exported from @sudobility/types via src/types/index.ts
 
 // ============================================================================
 // Utilities

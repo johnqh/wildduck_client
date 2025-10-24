@@ -1,91 +1,31 @@
 import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
-import type { Optional } from "@sudobility/types";
-import type { WildduckConfig } from "@sudobility/types";
+import type {
+  Optional,
+  WildduckConfig,
+  WildduckCreateFilterRequest,
+  WildduckFilterListItem,
+  WildduckUpdateFilterRequest,
+} from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
-
-interface WildduckFilter {
-  id: string;
-  name?: string;
-  query: {
-    from?: string;
-    to?: string;
-    subject?: string;
-    text?: string;
-    ha?: boolean; // has attachments
-    size?: number;
-  };
-  action: {
-    seen?: boolean;
-    flag?: boolean;
-    delete?: boolean;
-    spam?: boolean;
-    mailbox?: string;
-    forward?: string;
-    targetUrl?: string;
-  };
-  disabled?: boolean;
-  created: string;
-}
-
-interface CreateFilterParams {
-  name?: string;
-  query: {
-    from?: string;
-    to?: string;
-    subject?: string;
-    text?: string;
-    ha?: boolean;
-    size?: number;
-  };
-  action: {
-    seen?: boolean;
-    flag?: boolean;
-    delete?: boolean;
-    spam?: boolean;
-    mailbox?: string;
-    forward?: string;
-    targetUrl?: string;
-  };
-  disabled?: boolean;
-}
-
-interface UpdateFilterParams {
-  name?: string;
-  query?: {
-    from?: string;
-    to?: string;
-    subject?: string;
-    text?: string;
-    ha?: boolean;
-    size?: number;
-  };
-  action?: {
-    seen?: boolean;
-    flag?: boolean;
-    delete?: boolean;
-    spam?: boolean;
-    mailbox?: string;
-    forward?: string;
-    targetUrl?: string;
-  };
-  disabled?: boolean;
-}
 
 interface UseWildduckFiltersReturn {
   isLoading: boolean;
   error: Optional<string>;
-  filters: WildduckFilter[];
-  getFilters: (userId: string) => Promise<WildduckFilter[]>;
-  getFilter: (userId: string, filterId: string) => Promise<WildduckFilter>;
+  filters: WildduckFilterListItem[];
+  getFilters: (userId: string) => Promise<WildduckFilterListItem[]>;
+  getFilter: (
+    userId: string,
+    filterId: string,
+  ) => Promise<WildduckFilterListItem>;
   createFilter: (
     userId: string,
-    params: CreateFilterParams,
+    params: WildduckCreateFilterRequest,
   ) => Promise<{ success: boolean; id: string }>;
   updateFilter: (
     userId: string,
     filterId: string,
-    params: UpdateFilterParams,
+    params: WildduckUpdateFilterRequest,
   ) => Promise<{ success: boolean }>;
   deleteFilter: (
     userId: string,
@@ -104,14 +44,14 @@ const useWildduckFilters = (
 ): UseWildduckFiltersReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Optional<string>>(null);
-  const [filters, setFilters] = useState<WildduckFilter[]>([]);
+  const [filters, setFilters] = useState<WildduckFilterListItem[]>([]);
 
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
   const getFilters = useCallback(
-    async (userId: string): Promise<WildduckFilter[]> => {
+    async (userId: string): Promise<WildduckFilterListItem[]> => {
       setIsLoading(true);
       setError(null);
 
@@ -135,7 +75,8 @@ const useWildduckFilters = (
         });
 
         const filterList =
-          (response.data as { results?: WildduckFilter[] }).results || [];
+          (response.data as { results?: WildduckFilterListItem[] }).results ||
+          [];
         setFilters(filterList);
         return filterList;
       } catch (err) {
@@ -146,7 +87,7 @@ const useWildduckFilters = (
           );
           const mockData = WildduckMockData.getFilters();
           const mockFilters = mockData.data
-            .filters as unknown as WildduckFilter[];
+            .filters as unknown as WildduckFilterListItem[];
           setFilters(mockFilters);
           return mockFilters;
         }
@@ -164,7 +105,10 @@ const useWildduckFilters = (
   );
 
   const getFilter = useCallback(
-    async (userId: string, filterId: string): Promise<WildduckFilter> => {
+    async (
+      userId: string,
+      filterId: string,
+    ): Promise<WildduckFilterListItem> => {
       setIsLoading(true);
       setError(null);
 
@@ -188,7 +132,7 @@ const useWildduckFilters = (
           { headers },
         );
 
-        return response.data as WildduckFilter;
+        return response.data as WildduckFilterListItem;
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -196,7 +140,7 @@ const useWildduckFilters = (
             err,
           );
           const mockData = WildduckMockData.getFilter(filterId);
-          return mockData.data.filter as unknown as WildduckFilter;
+          return mockData.data.filter as unknown as WildduckFilterListItem;
         }
 
         const errorMessage =
@@ -213,7 +157,7 @@ const useWildduckFilters = (
   const createFilter = useCallback(
     async (
       userId: string,
-      params: CreateFilterParams,
+      params: WildduckCreateFilterRequest,
     ): Promise<{ success: boolean; id: string }> => {
       setIsLoading(true);
       setError(null);
@@ -264,7 +208,7 @@ const useWildduckFilters = (
     async (
       userId: string,
       filterId: string,
-      params: UpdateFilterParams,
+      params: WildduckUpdateFilterRequest,
     ): Promise<{ success: boolean }> => {
       setIsLoading(true);
       setError(null);
@@ -392,10 +336,4 @@ const useWildduckFilters = (
   );
 };
 
-export {
-  useWildduckFilters,
-  type WildduckFilter,
-  type CreateFilterParams,
-  type UpdateFilterParams,
-  type UseWildduckFiltersReturn,
-};
+export { useWildduckFilters, type UseWildduckFiltersReturn };

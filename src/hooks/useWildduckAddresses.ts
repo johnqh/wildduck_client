@@ -1,31 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Optional } from "@sudobility/types";
-import type { WildduckConfig } from "@sudobility/types";
+import type {
+  Optional,
+  WildduckAddress,
+  WildduckConfig,
+  WildduckCreateAddressRequest,
+  WildduckUpdateAddressRequest,
+} from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
-
-interface WildduckAddress {
-  id: string;
-  address: string;
-  name?: string;
-  main: boolean;
-  created: string;
-  tags?: string[];
-}
-
-interface CreateAddressParams {
-  address: string;
-  name?: string;
-  main?: boolean;
-  tags?: string[];
-}
-
-interface UpdateAddressParams {
-  name?: string;
-  main?: boolean;
-  tags?: string[];
-}
 
 interface ForwardedAddress {
   id: string;
@@ -52,7 +35,7 @@ interface UseWildduckAddressesReturn {
   // Create address mutation
   createAddress: (
     userId: string,
-    params: CreateAddressParams,
+    params: WildduckCreateAddressRequest,
   ) => Promise<{ success: boolean; id: string }>;
   isCreating: boolean;
   createError: Optional<Error>;
@@ -61,7 +44,7 @@ interface UseWildduckAddressesReturn {
   updateAddress: (
     userId: string,
     addressId: string,
-    params: UpdateAddressParams,
+    params: WildduckUpdateAddressRequest,
   ) => Promise<{ success: boolean }>;
   isUpdating: boolean;
   updateError: Optional<Error>;
@@ -258,7 +241,7 @@ const useWildduckAddresses = (
       params,
     }: {
       userId: string;
-      params: CreateAddressParams;
+      params: WildduckCreateAddressRequest;
     }): Promise<{ success: boolean; id: string }> => {
       try {
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
@@ -308,7 +291,7 @@ const useWildduckAddresses = (
     }: {
       userId: string;
       addressId: string;
-      params: UpdateAddressParams;
+      params: WildduckUpdateAddressRequest;
     }): Promise<{ success: boolean }> => {
       try {
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
@@ -510,14 +493,17 @@ const useWildduckAddresses = (
     null;
 
   const createAddress = useCallback(
-    async (userId: string, params: CreateAddressParams) =>
+    async (userId: string, params: WildduckCreateAddressRequest) =>
       createMutation.mutateAsync({ userId, params }),
     [createMutation],
   );
 
   const updateAddress = useCallback(
-    async (userId: string, addressId: string, params: UpdateAddressParams) =>
-      updateMutation.mutateAsync({ userId, addressId, params }),
+    async (
+      userId: string,
+      addressId: string,
+      params: WildduckUpdateAddressRequest,
+    ) => updateMutation.mutateAsync({ userId, addressId, params }),
     [updateMutation],
   );
 
@@ -613,9 +599,6 @@ const useWildduckAddresses = (
 
 export {
   useWildduckAddresses,
-  type WildduckAddress,
-  type CreateAddressParams,
-  type UpdateAddressParams,
   type ForwardedAddress,
   type UseWildduckAddressesReturn,
 };
