@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WildduckAPI } from "../../network/wildduck-client";
-import { type NetworkClient } from "@sudobility/di";
+import { type NetworkClient } from "@sudobility/types";
 import { type WildduckConfig } from "@sudobility/types";
 import { WildduckMockData } from "../mocks";
 import type { WildduckUserAuth } from "@sudobility/types";

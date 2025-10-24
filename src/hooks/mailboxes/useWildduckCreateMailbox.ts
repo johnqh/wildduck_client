@@ -1,7 +1,7 @@
 import type { Optional } from "@sudobility/types";
 import { useCallback, useMemo } from "react";
 import { WildduckAPI } from "../../network/wildduck-client";
-import { type NetworkClient } from "@sudobility/di";
+import { type NetworkClient } from "@sudobility/types";
 import {
   type CreateMailboxRequest,
   type WildduckConfig,

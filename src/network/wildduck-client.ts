@@ -1,4 +1,4 @@
-import type { NetworkClient } from "@sudobility/di";
+import type { NetworkClient } from "@sudobility/types";
 import type { Optional } from "@sudobility/types";
 import type {
   CreateMailboxRequest,

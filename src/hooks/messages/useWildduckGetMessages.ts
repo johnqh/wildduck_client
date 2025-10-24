@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WildduckAPI } from "../../network/wildduck-client";
-import { type NetworkClient } from "@sudobility/di";
+import { type NetworkClient } from "@sudobility/types";
 import {
   type GetMessagesRequest,
   type WildduckConfig,
