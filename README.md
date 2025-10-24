@@ -279,7 +279,6 @@ For more details, see [docs/INTEGRATION_TESTS.md](./docs/INTEGRATION_TESTS.md).
 - **[docs/WILDDUCK_API_ENDPOINTS.md](./docs/WILDDUCK_API_ENDPOINTS.md)** - Complete API endpoint reference
 - **[docs/GAP_ANALYSIS.md](./docs/GAP_ANALYSIS.md)** - Analysis of implemented vs. missing endpoints
 - **[docs/INTEGRATION_TESTS.md](./docs/INTEGRATION_TESTS.md)** - Integration testing guide
-- **[docs/INTEGRATION_TESTS_DETAILED.md](./docs/INTEGRATION_TESTS_DETAILED.md)** - Detailed integration testing guide for contributors
 - **[docs/CI_CD_SETUP.md](./docs/CI_CD_SETUP.md)** - CI/CD workflow documentation
 - **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)** - Deployment guide
 

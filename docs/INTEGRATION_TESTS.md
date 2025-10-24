@@ -1,123 +1,138 @@
-# Integration Tests Setup
+# Wildduck API Integration Tests
 
-This document describes the integration test setup for the WildDuck client library.
+This directory contains integration tests that run against a live Wildduck server in crypto mode.
 
-## Overview
+## Prerequisites
 
-Integration tests have been added to test the WildDuck client against a live WildDuck server running in crypto mode. These tests use EVM wallet signatures for authentication.
-
-## Files Created
-
-### Test Files
-- `src/__tests__/integration/setup.ts` - Test utilities and configuration
-- `src/__tests__/integration/wildduck-api.integration.test.ts` - Main integration test suite
-- `src/__tests__/integration/README.md` - Detailed integration test documentation
-
-### Configuration
-- `vitest.integration.config.ts` - Vitest configuration for integration tests
-- `.env.example` - Example environment variables
+1. **Running Wildduck Server**: You need a Wildduck server running in crypto mode
+2. **Environment Variables**: Set the required environment variables (see below)
 
 ## Environment Variables
 
-Create a `.env` file or set these environment variables to run integration tests:
+### Required
 
-```bash
-# Required - Tests will be skipped if not set
-WILDDUCK_ENDPOINT=http://localhost:8080
+- `WILDDUCK_ENDPOINT` - The URL of your Wildduck server
+  - Example: `http://localhost:8080`
+  - **Tests will be skipped if this is not set**
 
-# Optional
-WILDDUCK_EMAIL_DOMAIN=example.com
-WILDDUCK_API_TOKEN=your-api-token
-```
+### Optional
+
+- `WILDDUCK_EMAIL_DOMAIN` - Email domain for testing (default: `example.com`)
+  - Example: `0xmail.box`
+- `WILDDUCK_API_TOKEN` - Admin API token if needed for certain operations
+  - This is optional and only used for admin-level operations
+
+## Test Wallet
+
+The integration tests use a deterministic test wallet for consistent testing:
+
+- **Private Key**: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
+- **Address**: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
+
+This is the first account from Hardhat/Anvil's test mnemonic. **This is for testing only** and should never be used in production.
+
+## Test Email Format
+
+The tests create email addresses in the format: `{walletAddress}@{emailDomain}`
+
+Example: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266@example.com`
 
 ## Running Integration Tests
 
-### Basic usage
+### Run all integration tests
+
 ```bash
 WILDDUCK_ENDPOINT=http://localhost:8080 npm run test:integration
 ```
 
-### With custom email domain
+### Run with custom email domain
+
 ```bash
 WILDDUCK_ENDPOINT=http://localhost:8080 WILDDUCK_EMAIL_DOMAIN=0xmail.box npm run test:integration
 ```
 
-### Watch mode
+### Run in watch mode
+
 ```bash
 WILDDUCK_ENDPOINT=http://localhost:8080 npm run test:integration:watch
 ```
 
-## Test Wallet
+### Run with coverage
 
-The tests use a deterministic test wallet:
-- **Private Key**: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
-- **Address**: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
+```bash
+WILDDUCK_ENDPOINT=http://localhost:8080 npm run test:integration -- --coverage
+```
 
-**⚠️ This is the first account from Hardhat/Anvil's test mnemonic. For testing only!**
-
-## Authentication Flow
-
-1. Generate EVM wallet using viem
-2. Create SIWE (Sign-in with Ethereum) message following EIP-4361
-3. Sign message with private key
-4. Send authentication request with:
-   - `username`: Email address (format: `{walletAddress}@{emailDomain}`)
-   - `signature`: The cryptographic signature
-   - `nonce`: Random nonce
-   - `message`: The SIWE message that was signed
-   - `signer`: The wallet address
-
-## Test Coverage
+## What Gets Tested
 
 The integration tests cover:
 
 ### Authentication
-- ✓ Crypto signature-based authentication
+- ✓ Crypto signature-based authentication with SIWE (Sign-in with Ethereum)
 - ✓ Invalid signature handling
+- ✓ Token generation
 
 ### User Operations
 - ✓ Get user information
 - ✓ Update user settings
-- ✓ Get user limits
+- ✓ Get user limits/quotas
 
 ### Mailbox Operations
 - ✓ List mailboxes
 - ✓ Get specific mailbox
-- ✓ Create and delete mailboxes
+- ✓ Create mailbox
+- ✓ Delete mailbox
 
 ### Message Operations
 - ✓ List messages
-- ✓ Upload, retrieve, and delete messages
-- ✓ Submit messages for delivery
+- ✓ Upload message
+- ✓ Get message
+- ✓ Delete message
+- ✓ Submit message for delivery
 
 ### Autoreply Operations
 - ✓ Get autoreply status
-- ✓ Enable and disable autoreply
+- ✓ Enable autoreply
+- ✓ Disable autoreply
 
-## NPM Scripts
+## Authentication Flow
 
-New scripts added to `package.json`:
+The integration tests use the Wildduck crypto authentication flow:
 
-```json
-{
-  "test:integration": "vitest run --config vitest.integration.config.ts",
-  "test:integration:watch": "vitest --config vitest.integration.config.ts"
-}
-```
+1. Generate an EVM wallet (using viem)
+2. Create a SIWE (Sign-in with Ethereum) message following EIP-4361
+3. Sign the message with the private key
+4. Send authentication request with:
+   - `username`: Email address
+   - `signature`: The signature from step 3
+   - `nonce`: Random nonce used in the message
+   - `message`: The SIWE message that was signed
+   - `signer`: The wallet address that created the signature
 
-## Dependencies
+## Troubleshooting
 
-- **viem** (^2.38.0) - For EVM wallet signing and SIWE message generation
+### Tests are being skipped
 
-## Skip Behavior
+Make sure `WILDDUCK_ENDPOINT` is set. The tests will automatically skip if this environment variable is not configured.
 
-Tests automatically skip when `WILDDUCK_ENDPOINT` is not set, making them safe to run in CI/CD without configuration.
+### Authentication fails
+
+1. Verify your Wildduck server is running in crypto mode
+2. Check that the email domain matches your server configuration
+3. Ensure the server accepts the test wallet address
+
+### Connection errors
+
+1. Check that the Wildduck server is accessible at the endpoint URL
+2. Verify firewall settings allow connections
+3. Check server logs for more details
 
 ## CI/CD Integration
 
-Example GitHub Actions workflow:
+For CI/CD pipelines, you can conditionally run integration tests:
 
 ```yaml
+# Example GitHub Actions workflow
 - name: Run Integration Tests
   if: env.WILDDUCK_ENDPOINT != ''
   env:
@@ -126,11 +141,31 @@ Example GitHub Actions workflow:
   run: npm run test:integration
 ```
 
-## Next Steps
+## Adding New Tests
 
-1. Configure your WildDuck server endpoint
-2. Set environment variables
-3. Run the tests to verify your setup
-4. Add more tests as needed for your specific use cases
+To add new integration tests:
 
-For more detailed information, see `src/__tests__/integration/README.md`.
+1. Import the test utilities from `./setup.ts`
+2. Use `skipIfNoIntegrationEnv()` to skip tests when environment is not configured
+3. Use `generateAuthPayload()` to create authentication payloads
+4. Follow the existing test structure for consistency
+
+Example:
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { generateAuthPayload, skipIfNoIntegrationEnv } from './setup';
+
+describe('My New Feature', () => {
+  const skipCheck = skipIfNoIntegrationEnv();
+
+  if (skipCheck.skip) {
+    it.skip(skipCheck.reason, () => {});
+    return;
+  }
+
+  it('should test my feature', async () => {
+    // Your test code here
+  });
+});
+```
