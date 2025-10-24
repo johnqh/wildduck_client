@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import type { StorageService } from "@sudobility/di";
 import type { Optional } from "@sudobility/types";
 import type {
   WildduckAuthResponse as AuthenticationResponse,
@@ -13,13 +14,6 @@ import {
   createAuthenticateRequest,
   createPreAuthRequest,
 } from "@sudobility/types";
-
-// Storage service interface for persisting auth tokens
-interface StorageService {
-  getItem(key: string): Promise<string | null>;
-  setItem(key: string, value: string): Promise<void>;
-  removeItem(key: string): Promise<void>;
-}
 
 // Type aliases for legacy compatibility
 type AuthenticateRequest = WildduckAuthenticateRequest;
