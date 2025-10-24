@@ -292,5 +292,6 @@ For issues with CI/CD:
 
 ---
 
-**Last Updated**: 2025-10-08
+**Last Updated**: 2025-10-24
+**Package Version**: 1.0.5
 **Workflow Version**: 1.0.0

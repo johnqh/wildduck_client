@@ -1657,4 +1657,5 @@ interface WildDuckAddress {
 
 ---
 
-**Last Updated:** 2025-10-09
+**Last Updated:** 2025-10-24
+**Package Version:** 1.0.5

@@ -143,7 +143,7 @@ function ComposeEmail({ userAuth }) {
 
 ## API Coverage
 
-Currently implements ~15% of the WildDuck API endpoints (see [GAP_ANALYSIS.md](./GAP_ANALYSIS.md) for details):
+Currently implements ~15% of the WildDuck API endpoints (see [docs/GAP_ANALYSIS.md](./docs/GAP_ANALYSIS.md) for details):
 
 ### Implemented Endpoints
 
@@ -161,7 +161,7 @@ Currently implements ~15% of the WildDuck API endpoints (see [GAP_ANALYSIS.md](.
 
 ### Priority Features to Implement
 
-See [GAP_ANALYSIS.md](./GAP_ANALYSIS.md) for a comprehensive breakdown of missing endpoints and implementation priorities.
+See [docs/GAP_ANALYSIS.md](./docs/GAP_ANALYSIS.md) for a comprehensive breakdown of missing endpoints and implementation priorities.
 
 ## Available Hooks
 
@@ -207,7 +207,7 @@ See [GAP_ANALYSIS.md](./GAP_ANALYSIS.md) for a comprehensive breakdown of missin
 - `useWildduckHealth` - Server health check
 - `useWildduckSettings` - Settings management
 
-For detailed documentation on all hooks, see [HOOKS_DOCUMENTATION.md](./HOOKS_DOCUMENTATION.md).
+For detailed documentation on all hooks, see [docs/HOOKS_DOCUMENTATION.md](./docs/HOOKS_DOCUMENTATION.md).
 
 ## Development
 
@@ -271,16 +271,17 @@ export WILDDUCK_EMAIL_DOMAIN=example.com  # Optional
 npm run test:integration
 ```
 
-For more details, see [INTEGRATION_TESTS.md](./INTEGRATION_TESTS.md).
+For more details, see [docs/INTEGRATION_TESTS.md](./docs/INTEGRATION_TESTS.md).
 
 ## Documentation
 
-- **[HOOKS_DOCUMENTATION.md](./HOOKS_DOCUMENTATION.md)** - Comprehensive hook documentation with examples
-- **[WILDDUCK_API_ENDPOINTS.md](./WILDDUCK_API_ENDPOINTS.md)** - Complete API endpoint reference
-- **[GAP_ANALYSIS.md](./GAP_ANALYSIS.md)** - Analysis of implemented vs. missing endpoints
-- **[INTEGRATION_TESTS.md](./INTEGRATION_TESTS.md)** - Integration testing guide
-- **[CI_CD_SETUP.md](./CI_CD_SETUP.md)** - CI/CD workflow documentation
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment guide
+- **[docs/HOOKS_DOCUMENTATION.md](./docs/HOOKS_DOCUMENTATION.md)** - Comprehensive hook documentation with examples
+- **[docs/WILDDUCK_API_ENDPOINTS.md](./docs/WILDDUCK_API_ENDPOINTS.md)** - Complete API endpoint reference
+- **[docs/GAP_ANALYSIS.md](./docs/GAP_ANALYSIS.md)** - Analysis of implemented vs. missing endpoints
+- **[docs/INTEGRATION_TESTS.md](./docs/INTEGRATION_TESTS.md)** - Integration testing guide
+- **[docs/INTEGRATION_TESTS_DETAILED.md](./docs/INTEGRATION_TESTS_DETAILED.md)** - Detailed integration testing guide for contributors
+- **[docs/CI_CD_SETUP.md](./docs/CI_CD_SETUP.md)** - CI/CD workflow documentation
+- **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)** - Deployment guide
 
 ## Architecture
 
@@ -332,7 +333,7 @@ The library is automatically published to NPM when you push to the `main` branch
 2. Push to main: `git push origin main --tags`
 3. CI/CD automatically publishes to NPM
 
-For more details, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+For more details, see [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
 ## License
 

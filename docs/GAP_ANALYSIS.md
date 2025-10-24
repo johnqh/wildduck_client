@@ -1,7 +1,7 @@
 # WildDuck Client API Gap Analysis
 
-**Date:** 2025-10-08
-**Client Version:** Current TypeScript implementation
+**Date:** 2025-10-24
+**Client Version:** 1.0.5
 **API Documentation:** WILDDUCK_API_ENDPOINTS.md
 
 ---
