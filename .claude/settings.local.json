@@ -38,7 +38,9 @@
       "Bash(npm view:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm audit)",
+      "Bash(npm run clean:*)"
     ],
     "deny": [],
     "ask": []
