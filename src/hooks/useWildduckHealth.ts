@@ -138,11 +138,15 @@ const useWildduckHealth = (
       setIsMonitoring(true);
 
       // Initial health check
-      checkHealth().catch(console.error);
+      checkHealth().catch((error) => {
+        console.error("[useWildduckHealth] Health check failed:", error);
+      });
 
       // Set up periodic health checks
       const interval = setInterval(() => {
-        checkHealth().catch(console.error);
+        checkHealth().catch((error) => {
+          console.error("[useWildduckHealth] Health check failed:", error);
+        });
       }, intervalMs);
 
       setMonitoringInterval(interval);

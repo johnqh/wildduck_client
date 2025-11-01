@@ -170,7 +170,6 @@ class WildduckAPI {
   setUserToken(token: string): void {
     this.userToken = token;
     this.updateHeaders();
-    console.log("✅ User token set for Wildduck API");
   }
 
   /**
@@ -180,7 +179,6 @@ class WildduckAPI {
   clearUserToken(): void {
     this.userToken = null;
     this.updateHeaders();
-    console.log("🗑️ User token cleared, reverting to API token");
   }
 
   /**
@@ -194,7 +192,6 @@ class WildduckAPI {
 
       if (storedToken) {
         this.setUserToken(storedToken);
-        console.log("✅ Loaded user token from session storage for:", username);
         return true;
       }
 
@@ -321,7 +318,6 @@ class WildduckAPI {
           sessionStorage.setItem(keys.token, response.token);
           // Set the user token for this API client instance
           this.setUserToken(response.token);
-          console.log("✅ User token stored and activated for API calls");
         }
       } catch (e) {
         console.warn("Failed to store user ID/token in session storage:", e);
@@ -372,7 +368,6 @@ class WildduckAPI {
           sessionStorage.setItem(keys.token, response.token);
           // Set the user token for this API client instance
           this.setUserToken(response.token);
-          console.log("✅ User token stored and activated for API calls");
         }
       } catch (e) {
         console.warn("Failed to store user ID/token in session storage:", e);
