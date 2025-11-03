@@ -130,6 +130,7 @@ const useWildduckAuth = (
             ...(params.protocol && { protocol: params.protocol }),
             ...(params.token !== undefined && { token: params.token }),
             ...(params.appId && { appId: params.appId }),
+            ...(params.referralCode && { referralCode: params.referralCode }),
             sess: "api-session",
             ip: "127.0.0.1",
           },
