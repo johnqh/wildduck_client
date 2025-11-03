@@ -119,6 +119,11 @@ const useWildduckAuth = (
       params: Omit<AuthenticateRequest, "sess" | "ip">,
     ): Promise<AuthenticationResponse> => {
       try {
+        const mutationId = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        console.log(
+          `🔵 [${mutationId}] authenticateMutation.mutationFn called with username: ${params.username}`,
+        );
+
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const requestBody = createAuthenticateRequest(
           params.username,
@@ -136,6 +141,13 @@ const useWildduckAuth = (
           },
         );
 
+        console.log(
+          `🌐 [${mutationId}] Making axios POST to ${apiUrl}/authenticate`,
+        );
+        console.log(
+          `📦 [${mutationId}] Request body:`,
+          JSON.stringify(requestBody, null, 2),
+        );
         const response = await axios.post(
           `${apiUrl}/authenticate`,
           requestBody,
@@ -146,6 +158,7 @@ const useWildduckAuth = (
           },
         );
 
+        console.log(`✅ [${mutationId}] axios POST completed successfully`);
         const result = response.data as AuthenticationResponse;
 
         // Store token if authentication was successful
