@@ -293,6 +293,7 @@ class WildduckAPI {
       ...(request.signature && { signature: request.signature }), // Signature that was created by signing the message
       ...(request.message && { message: request.message }), // SIWE/SIWS message that was signed
       ...(request.signer && { signer: request.signer }), // The wallet address that created the signature
+      ...(request.referralCode && { referralCode: request.referralCode }), // Referral code from another user
       // Wildduck handles ENS/SNS resolution internally
       scope: request.scope || "master", // master scope for full access
       token: request.token !== undefined ? request.token : true, // Request a token to get access token in response
