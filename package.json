@@ -46,7 +46,7 @@
     "react": "^19.2.0"
   },
   "devDependencies": {
-    "@sudobility/configs": "^0.0.12",
+    "@sudobility/configs": "^0.0.17",
     "@sudobility/di": "^1.4.9",
     "@sudobility/types": "^1.9.2",
     "@tanstack/react-query": "^5.90.5",
