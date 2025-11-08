@@ -15,9 +15,6 @@ export * from "./users";
 // Addresses API hooks
 export * from "./addresses";
 
-// Autoreply API hooks
-export * from "./autoreply";
-
 // ============================================================================
 // Legacy monolithic hooks (deprecated - use individual hooks instead)
 // ============================================================================
@@ -29,6 +26,7 @@ export * from "./useWildduckUsers"; // Deprecated - use individual user hooks
 export * from "./useWildduckFilters";
 export * from "./useWildduckAddresses"; // Deprecated - use useWildduckGetAddresses
 export * from "./useWildduckAuth";
+export * from "./useWildduckAutoReply";
 
 // ============================================================================
 // TanStack Query hooks
