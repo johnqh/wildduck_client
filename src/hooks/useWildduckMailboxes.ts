@@ -23,7 +23,7 @@ interface UseWildduckMailboxesReturn {
     userId: string,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
   ) => Promise<WildduckMailbox[]>;
-  refresh: (userId: string) => Promise<void>;
+  refresh: () => Promise<void>;
 
   // Mutations
   createMailbox: (
@@ -194,11 +194,9 @@ const useWildduckMailboxes = (
         throw new Error(errorMessage);
       }
     },
-    onSuccess: (_, variables) => {
-      // Invalidate mailboxes query to refetch
-      queryClient.invalidateQueries({
-        queryKey: ["wildduck-mailboxes", variables.userId],
-      });
+    onSuccess: async (_, variables) => {
+      // Automatically refresh mailboxes after creation
+      await getMailboxes(variables.userId, { counters: true });
     },
   });
 
@@ -238,11 +236,9 @@ const useWildduckMailboxes = (
         throw new Error(errorMessage);
       }
     },
-    onSuccess: (_, variables) => {
-      // Invalidate mailboxes query to refetch
-      queryClient.invalidateQueries({
-        queryKey: ["wildduck-mailboxes", variables.userId],
-      });
+    onSuccess: async (_, variables) => {
+      // Automatically refresh mailboxes after update
+      await getMailboxes(variables.userId, { counters: true });
     },
   });
 
@@ -279,21 +275,19 @@ const useWildduckMailboxes = (
         throw new Error(errorMessage);
       }
     },
-    onSuccess: (_, variables) => {
-      // Invalidate mailboxes query to refetch
-      queryClient.invalidateQueries({
-        queryKey: ["wildduck-mailboxes", variables.userId],
-      });
+    onSuccess: async (_, variables) => {
+      // Automatically refresh mailboxes after deletion
+      await getMailboxes(variables.userId, { counters: true });
     },
   });
 
   // Refresh function (refetch with counters)
-  const refresh = useCallback(
-    async (userId: string): Promise<void> => {
-      await getMailboxes(userId, { counters: true });
-    },
-    [getMailboxes],
-  );
+  const refresh = useCallback(async (): Promise<void> => {
+    if (!userId) {
+      throw new Error("Cannot refresh: user not authenticated");
+    }
+    await getMailboxes(userId, { counters: true });
+  }, [userId, getMailboxes]);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
