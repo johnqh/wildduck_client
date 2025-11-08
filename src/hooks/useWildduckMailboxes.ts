@@ -23,6 +23,7 @@ interface UseWildduckMailboxesReturn {
     userId: string,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
   ) => Promise<WildduckMailbox[]>;
+  getMailbox: (userId: string, mailboxId: string) => Promise<WildduckMailbox>;
   refresh: () => Promise<void>;
 
   // Mutations
@@ -125,6 +126,48 @@ const useWildduckMailboxes = (
           err instanceof Error ? err.message : "Failed to get mailboxes";
         console.error(
           "[useWildduckMailboxes] Failed to get mailboxes:",
+          errorMessage,
+        );
+        throw new Error(errorMessage);
+      }
+    },
+    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+  );
+
+  // Get single mailbox
+  const getMailbox = useCallback(
+    async (userId: string, mailboxId: string): Promise<WildduckMailbox> => {
+      try {
+        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+        const headers = buildHeaders();
+
+        const endpoint = `/users/${userId}/mailboxes/${mailboxId}`;
+
+        const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
+        const mailboxData = response.data as WildduckMailboxResponse;
+
+        // The API returns a response with a single mailbox in results array
+        if (!mailboxData.results || mailboxData.results.length === 0) {
+          throw new Error("Mailbox not found");
+        }
+
+        const mailbox = mailboxData.results[0];
+        if (!mailbox) {
+          throw new Error("Mailbox not found");
+        }
+
+        // Update cache for this specific mailbox
+        queryClient.setQueryData(
+          ["wildduck-mailbox", userId, mailboxId],
+          mailbox,
+        );
+
+        return mailbox;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to get mailbox";
+        console.error(
+          "[useWildduckMailboxes] Failed to get mailbox:",
           errorMessage,
         );
         throw new Error(errorMessage);
@@ -336,6 +379,7 @@ const useWildduckMailboxes = (
 
       // Query functions
       getMailboxes,
+      getMailbox,
       refresh,
 
       // Create mutation
@@ -361,6 +405,7 @@ const useWildduckMailboxes = (
       isLoading,
       error,
       getMailboxes,
+      getMailbox,
       refresh,
       createMailbox,
       createMutation.isPending,

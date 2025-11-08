@@ -9,9 +9,6 @@
 // Messages API hooks
 export * from "./messages";
 
-// Mailboxes API hooks
-export * from "./mailboxes";
-
 // Users API hooks
 export * from "./users";
 
