@@ -18,7 +18,6 @@ import {
 // Type aliases for legacy compatibility
 type AuthenticateRequest = WildduckAuthenticateRequest;
 type PreAuthRequest = WildduckPreAuthRequest;
-import { WildduckMockData } from "./mocks";
 
 // Singleton to persist authData across all hook instances
 class AuthDataStore {
@@ -90,7 +89,7 @@ interface UseWildduckAuthReturn {
  *
  * @param config - WildDuck configuration
  * @param storage - Storage service for persisting auth tokens
- * @param devMode - Enable development mode with mock data fallback
+ * @param devMode - Enable development mode (passed as isDev parameter to authenticate)
  */
 const useWildduckAuth = (
   config: WildduckConfig,
@@ -125,21 +124,24 @@ const useWildduckAuth = (
         );
 
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const requestBody = createAuthenticateRequest(
-          params.username,
-          params.signature,
-          params.message,
-          {
-            ...(params.signer && { signer: params.signer }),
-            ...(params.scope && { scope: params.scope }),
-            ...(params.protocol && { protocol: params.protocol }),
-            ...(params.token !== undefined && { token: params.token }),
-            ...(params.appId && { appId: params.appId }),
-            ...(params.referralCode && { referralCode: params.referralCode }),
-            sess: "api-session",
-            ip: "127.0.0.1",
-          },
-        );
+        const requestBody = {
+          ...createAuthenticateRequest(
+            params.username,
+            params.signature,
+            params.message,
+            {
+              ...(params.signer && { signer: params.signer }),
+              ...(params.scope && { scope: params.scope }),
+              ...(params.protocol && { protocol: params.protocol }),
+              ...(params.token !== undefined && { token: params.token }),
+              ...(params.appId && { appId: params.appId }),
+              ...(params.referralCode && { referralCode: params.referralCode }),
+              sess: "api-session",
+              ip: "127.0.0.1",
+            },
+          ),
+          isDev: devMode,
+        };
 
         console.log(
           `🌐 [${mutationId}] Making axios POST to ${apiUrl}/authenticate`,
@@ -171,23 +173,6 @@ const useWildduckAuth = (
         const errorMessage =
           (err as any)?.response?.data?.error ||
           (err instanceof Error ? err.message : "Authentication failed");
-
-        // Return mock data in devMode when API fails
-        if (devMode) {
-          console.warn(
-            "[DevMode] authenticate failed, returning mock data:",
-            errorMessage,
-          );
-          const mockResult = WildduckMockData.getAuthentication(
-            params.username,
-          );
-
-          // Store mock token
-          if (mockResult.token) {
-            await storage.setItem("wildduck_token", mockResult.token);
-          }
-          return mockResult;
-        }
 
         throw new Error(errorMessage);
       }
@@ -228,15 +213,6 @@ const useWildduckAuth = (
         const errorMessage =
           (err as any)?.response?.data?.error ||
           (err instanceof Error ? err.message : "Pre-authentication failed");
-
-        // Return mock data in devMode when API fails
-        if (devMode) {
-          console.warn(
-            "[DevMode] preAuth failed, returning mock data:",
-            errorMessage,
-          );
-          return WildduckMockData.getPreAuth();
-        }
 
         throw new Error(errorMessage);
       }
@@ -283,16 +259,6 @@ const useWildduckAuth = (
         const errorMessage =
           (err as any)?.response?.data?.error ||
           (err instanceof Error ? err.message : "Logout failed");
-
-        // Return mock data in devMode when API fails
-        if (devMode) {
-          console.warn(
-            "[DevMode] logout failed, returning mock data:",
-            errorMessage,
-          );
-          await storage.removeItem("wildduck_token");
-          return WildduckMockData.getLogout();
-        }
 
         throw new Error(errorMessage);
       }
@@ -344,19 +310,11 @@ const useWildduckAuth = (
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to check auth status";
-
-      // Return mock data in devMode when API fails
-      if (devMode) {
-        console.warn(
-          "[DevMode] getAuthStatus failed, returning mock data:",
-          errorMessage,
-        );
-        return WildduckMockData.getAuthStatus();
-      }
+      console.error("[useWildduckAuth] getAuthStatus error:", errorMessage);
 
       return { authenticated: false };
     }
-  }, [storage, config.cloudflareWorkerUrl, config.backendUrl, devMode]);
+  }, [storage, config.cloudflareWorkerUrl, config.backendUrl]);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
