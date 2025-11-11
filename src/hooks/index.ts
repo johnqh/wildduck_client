@@ -18,7 +18,6 @@ export * from "./addresses";
 // ============================================================================
 // Legacy monolithic hooks (deprecated - use individual hooks instead)
 // ============================================================================
-export * from "./useWildduckHealth";
 export * from "./useWildduckSettings";
 export * from "./useWildduckMessages"; // Deprecated - use individual message hooks
 export * from "./useWildduckMailboxes"; // Deprecated - use individual mailbox hooks
@@ -32,6 +31,7 @@ export * from "./useWildduckAutoReply";
 // TanStack Query hooks
 // ============================================================================
 export {
+  useWildduckHealth,
   useWildduckUsersList,
   useWildduckUser,
   useWildduckUserAddresses,
@@ -41,6 +41,7 @@ export {
   useWildduckUserSettings,
   useWildduckUserMailboxes,
   useWildduckAuthStatus,
+  useWildduckSearchMessages,
 } from "./useWildduckQueries";
 
 // ============================================================================
