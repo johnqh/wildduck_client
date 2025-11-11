@@ -60,7 +60,8 @@ export const useWildduckUpdateUser = (
         if (devMode) {
           return { success: true };
         }
-        throw err;
+        console.error("Failed to update user:", err);
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {

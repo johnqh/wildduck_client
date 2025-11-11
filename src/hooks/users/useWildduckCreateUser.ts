@@ -57,7 +57,11 @@ export const useWildduckCreateUser = (
             id: `mock-user-${Date.now()}`,
           };
         }
-        throw err;
+        console.error("Failed to create user:", err);
+        return {
+          success: false,
+          id: "",
+        };
       }
     },
     onSuccess: () => {

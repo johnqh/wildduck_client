@@ -71,7 +71,8 @@ export const useWildduckUpdateMessage = (
         if (devMode) {
           return { success: true };
         }
-        throw err;
+        console.error("Failed to update message:", err);
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {

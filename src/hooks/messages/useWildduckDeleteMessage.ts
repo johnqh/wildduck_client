@@ -66,7 +66,8 @@ export const useWildduckDeleteMessage = (
         if (devMode) {
           return { success: true };
         }
-        throw err;
+        console.error("Failed to delete message:", err);
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {

@@ -49,10 +49,22 @@ export const useWildduckGetMessageAttachment = (
       attachmentId,
     ],
     queryFn: async () => {
-      if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
-      if (!mailboxId) throw new Error("mailboxId is required");
-      if (!messageId) throw new Error("messageId is required");
-      if (!attachmentId) throw new Error("attachmentId is required");
+      if (!wildduckUserAuth) {
+        console.error("wildduckUserAuth is required");
+        return undefined;
+      }
+      if (!mailboxId) {
+        console.error("mailboxId is required");
+        return undefined;
+      }
+      if (!messageId) {
+        console.error("messageId is required");
+        return undefined;
+      }
+      if (!attachmentId) {
+        console.error("attachmentId is required");
+        return undefined;
+      }
 
       try {
         return await api.getMessageAttachment(
@@ -67,7 +79,8 @@ export const useWildduckGetMessageAttachment = (
             type: "text/plain",
           });
         }
-        throw err;
+        console.error("Failed to get message attachment:", err);
+        return undefined;
       }
     },
     enabled:

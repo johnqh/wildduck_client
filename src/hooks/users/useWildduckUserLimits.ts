@@ -35,7 +35,10 @@ export const useWildduckUserLimits = (
   const limitsQuery = useQuery({
     queryKey: ["user", userId, "limits"],
     queryFn: async (): Promise<WildduckLimits | undefined> => {
-      if (!wildduckUserAuth) throw new Error("User auth is required");
+      if (!wildduckUserAuth) {
+        console.error("User auth is required");
+        return undefined;
+      }
       const user = (await api.getUser(
         wildduckUserAuth,
       )) as unknown as WildduckUserResponse;

@@ -54,7 +54,8 @@ export const useWildduckDeleteUser = (
         if (devMode) {
           return { success: true };
         }
-        throw err;
+        console.error("Failed to delete user:", err);
+        return { success: false };
       }
     },
     onSuccess: (_, wildduckUserAuth) => {

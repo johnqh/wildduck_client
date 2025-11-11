@@ -32,7 +32,10 @@ export const useWildduckUserQuota = (
 
   // Query to get user info (includes quota)
   const quotaQueryFn = useCallback(async () => {
-    if (!wildduckUserAuth) throw new Error("User auth is required");
+    if (!wildduckUserAuth) {
+      console.error("User auth is required");
+      return undefined;
+    }
     const user = (await api.getUser(
       wildduckUserAuth,
     )) as unknown as WildduckUserResponse;
@@ -68,7 +71,8 @@ export const useWildduckUserQuota = (
       // Note: This endpoint needs to be added to WildduckAPI
       // For now, return a placeholder
       void recalcUserId; // Suppress unused variable warning until endpoint is implemented
-      throw new Error("Recalculate quota endpoint not yet implemented");
+      console.error("Recalculate quota endpoint not yet implemented");
+      return { success: false, storageUsed: 0, previousStorageUsed: 0 };
     },
     onSuccess: (_, recalcUserId) => {
       queryClient.invalidateQueries({ queryKey: ["user", recalcUserId] });

@@ -44,8 +44,14 @@ export const useWildduckSearchMessages = (
       page,
     ],
     queryFn: async () => {
-      if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
-      if (!query) throw new Error("query is required");
+      if (!wildduckUserAuth) {
+        console.error("wildduckUserAuth is required");
+        return [];
+      }
+      if (!query) {
+        console.error("query is required");
+        return [];
+      }
 
       const response = await api.searchMessages(wildduckUserAuth, query, {
         limit,

@@ -29,7 +29,10 @@ export const useWildduckUserForwarding = (
   const forwardingQuery = useQuery({
     queryKey: ["user", userId, "forwarding"],
     queryFn: async (): Promise<ForwardingSettings | undefined> => {
-      if (!wildduckUserAuth) throw new Error("User auth is required");
+      if (!wildduckUserAuth) {
+        console.error("User auth is required");
+        return undefined;
+      }
       const user = (await api.getUser(
         wildduckUserAuth,
       )) as unknown as WildduckUserResponse;

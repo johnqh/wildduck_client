@@ -71,7 +71,8 @@ export const useWildduckForwardMessage = (
         if (devMode) {
           return { success: true };
         }
-        throw err;
+        console.error("Failed to forward message:", err);
+        return { success: false, queueId: "" };
       }
     },
     onSuccess: (_, variables) => {

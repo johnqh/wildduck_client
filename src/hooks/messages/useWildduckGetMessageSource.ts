@@ -41,9 +41,18 @@ export const useWildduckGetMessageSource = (
       messageId,
     ],
     queryFn: async () => {
-      if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
-      if (!mailboxId) throw new Error("mailboxId is required");
-      if (!messageId) throw new Error("messageId is required");
+      if (!wildduckUserAuth) {
+        console.error("wildduckUserAuth is required");
+        return undefined;
+      }
+      if (!mailboxId) {
+        console.error("mailboxId is required");
+        return undefined;
+      }
+      if (!messageId) {
+        console.error("messageId is required");
+        return undefined;
+      }
 
       try {
         return await api.getMessageSource(
@@ -55,7 +64,8 @@ export const useWildduckGetMessageSource = (
         if (devMode) {
           return `From: mock@example.com\nTo: user@example.com\nSubject: Mock Message\nDate: ${new Date().toISOString()}\n\nMock message body`;
         }
-        throw err;
+        console.error("Failed to get message source:", err);
+        return undefined;
       }
     },
     enabled: !!wildduckUserAuth && !!mailboxId && messageId !== undefined,

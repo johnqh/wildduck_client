@@ -32,7 +32,10 @@ export const useWildduckGetAddresses = (
   );
 
   const queryFn = useCallback(async () => {
-    if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
+    if (!wildduckUserAuth) {
+      console.error("wildduckUserAuth is required");
+      return undefined;
+    }
 
     try {
       return await api.getAddresses(wildduckUserAuth);
@@ -44,7 +47,8 @@ export const useWildduckGetAddresses = (
           error: null,
         };
       }
-      throw err;
+      console.error("Failed to get addresses:", err);
+      return undefined;
     }
   }, [wildduckUserAuth, api, devMode]);
 

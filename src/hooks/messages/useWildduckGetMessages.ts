@@ -40,7 +40,8 @@ export const useWildduckGetMessages = (
     queryKey: ["messages", wildduckUserAuth?.userId, mailboxId, options],
     queryFn: async () => {
       if (!wildduckUserAuth || !mailboxId) {
-        throw new Error("wildduckUserAuth and mailboxId are required");
+        console.error("wildduckUserAuth and mailboxId are required");
+        return undefined;
       }
       return await api.getMessages(wildduckUserAuth, mailboxId, options);
     },

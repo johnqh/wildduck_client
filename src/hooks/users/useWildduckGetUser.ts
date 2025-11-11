@@ -32,7 +32,10 @@ export const useWildduckGetUser = (
   );
 
   const queryFn = useCallback(async () => {
-    if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
+    if (!wildduckUserAuth) {
+      console.error("wildduckUserAuth is required");
+      return undefined;
+    }
 
     try {
       return await api.getUser(wildduckUserAuth);
@@ -55,7 +58,8 @@ export const useWildduckGetUser = (
           error: null,
         };
       }
-      throw err;
+      console.error("Failed to get user:", err);
+      return undefined;
     }
   }, [wildduckUserAuth, api, devMode]);
 

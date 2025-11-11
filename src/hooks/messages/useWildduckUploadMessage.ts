@@ -71,7 +71,8 @@ export const useWildduckUploadMessage = (
             message: { id: Date.now(), mailbox: mailboxId },
           } as WildduckUploadMessageResponse;
         }
-        throw err;
+        console.error("Failed to upload message:", err);
+        return { success: false, message: { id: "" } };
       }
     },
     onSuccess: (_, variables) => {

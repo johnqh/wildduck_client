@@ -29,7 +29,10 @@ export const useWildduckUserSpam = (
   const spamQueryFn = useCallback(async (): Promise<
     SpamSettingsInternal | undefined
   > => {
-    if (!wildduckUserAuth) throw new Error("User auth is required");
+    if (!wildduckUserAuth) {
+      console.error("User auth is required");
+      return undefined;
+    }
     const user = (await api.getUser(
       wildduckUserAuth,
     )) as unknown as WildduckUserResponse;
@@ -71,7 +74,8 @@ export const useWildduckUserSpam = (
       spamLevel: number;
     }) => {
       if (spamLevel < 0 || spamLevel > 100) {
-        throw new Error("Spam level must be between 0 and 100");
+        console.error("Spam level must be between 0 and 100");
+        return { success: false };
       }
       return await api.updateUser(wildduckUserAuth, { spamLevel });
     },

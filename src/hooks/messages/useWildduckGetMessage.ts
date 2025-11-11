@@ -35,9 +35,18 @@ export const useWildduckGetMessage = (
   );
 
   const queryFn = useCallback(async () => {
-    if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
-    if (!mailboxId) throw new Error("mailboxId is required");
-    if (!messageId) throw new Error("messageId is required");
+    if (!wildduckUserAuth) {
+      console.error("wildduckUserAuth is required");
+      return undefined;
+    }
+    if (!mailboxId) {
+      console.error("mailboxId is required");
+      return undefined;
+    }
+    if (!messageId) {
+      console.error("messageId is required");
+      return undefined;
+    }
 
     try {
       return await api.getMessage(wildduckUserAuth, mailboxId, messageId);
@@ -52,7 +61,8 @@ export const useWildduckGetMessage = (
           error: null,
         };
       }
-      throw err;
+      console.error("Failed to get message:", err);
+      return undefined;
     }
   }, [wildduckUserAuth, mailboxId, messageId, api, devMode]);
 
