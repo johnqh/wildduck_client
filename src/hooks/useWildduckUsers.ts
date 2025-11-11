@@ -13,7 +13,7 @@ import { WildduckClient } from "../network/wildduck-client";
 interface UseWildduckUsersReturn {
   isLoading: boolean;
   error: Optional<string>;
-  getUser: (userId: string) => Promise<WildduckUser>;
+  getUser: (wildduckUserAuth: WildduckUserAuth) => Promise<WildduckUser>;
   getUsers: (
     query?: string,
     limit?: number,
@@ -44,28 +44,20 @@ const useWildduckUsers = (
     [networkClient, config],
   );
 
-  // Helper to create WildduckUserAuth from userId
-  const createUserAuth = useCallback(
-    (userId: string): WildduckUserAuth => ({
-      userId,
-      username: "",
-      accessToken: "",
-    }),
-    [],
-  );
-
   // Get user function (imperative)
   const getUser = useCallback(
-    async (userId: string): Promise<WildduckUser> => {
+    async (wildduckUserAuth: WildduckUserAuth): Promise<WildduckUser> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const wildduckUserAuth = createUserAuth(userId);
         const userData = await api.getUser(wildduckUserAuth);
 
         // Update cache
-        queryClient.setQueryData(["wildduck-user", userId], userData);
+        queryClient.setQueryData(
+          ["wildduck-user", wildduckUserAuth.userId],
+          userData,
+        );
 
         return userData as unknown as WildduckUser;
       } catch (err) {
@@ -78,11 +70,14 @@ const useWildduckUsers = (
             "[DevMode] Get user failed, returning mock data:",
             errorMessage,
           );
-          const mockData = WildduckMockData.getUser(userId);
+          const mockData = WildduckMockData.getUser(wildduckUserAuth.userId);
           const mockUser = mockData.data.user as unknown as WildduckUser;
 
           // Update cache with mock data
-          queryClient.setQueryData(["wildduck-user", userId], mockUser);
+          queryClient.setQueryData(
+            ["wildduck-user", wildduckUserAuth.userId],
+            mockUser,
+          );
 
           return mockUser;
         }
@@ -93,7 +88,7 @@ const useWildduckUsers = (
         setIsLoading(false);
       }
     },
-    [api, createUserAuth, queryClient, devMode],
+    [api, queryClient, devMode],
   );
 
   // Get users function (imperative)

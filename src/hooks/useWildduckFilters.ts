@@ -15,26 +15,28 @@ interface UseWildduckFiltersReturn {
   isLoading: boolean;
   error: Optional<string>;
   filters: WildduckFilterListItem[];
-  getFilters: (userId: string) => Promise<WildduckFilterListItem[]>;
+  getFilters: (
+    wildduckUserAuth: WildduckUserAuth,
+  ) => Promise<WildduckFilterListItem[]>;
   getFilter: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     filterId: string,
   ) => Promise<WildduckFilterListItem>;
   createFilter: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     params: WildduckCreateFilterRequest,
   ) => Promise<{ success: boolean; id: string }>;
   updateFilter: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     filterId: string,
     params: WildduckUpdateFilterRequest,
   ) => Promise<{ success: boolean }>;
   deleteFilter: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     filterId: string,
   ) => Promise<{ success: boolean }>;
   clearError: () => void;
-  refresh: (userId: string) => Promise<void>;
+  refresh: (wildduckUserAuth: WildduckUserAuth) => Promise<void>;
 }
 
 /**
@@ -59,27 +61,18 @@ const useWildduckFilters = (
     [networkClient, config],
   );
 
-  // Helper to create WildduckUserAuth from userId
-  const createUserAuth = useCallback(
-    (userId: string): WildduckUserAuth => ({
-      userId,
-      username: "",
-      accessToken: "",
-    }),
-    [],
-  );
-
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
   const getFilters = useCallback(
-    async (userId: string): Promise<WildduckFilterListItem[]> => {
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+    ): Promise<WildduckFilterListItem[]> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const wildduckUserAuth = createUserAuth(userId);
         const response = await api.getFilters(wildduckUserAuth);
 
         const filterList =
@@ -108,19 +101,18 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [api, createUserAuth, devMode],
+    [api, devMode],
   );
 
   const getFilter = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       filterId: string,
     ): Promise<WildduckFilterListItem> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const wildduckUserAuth = createUserAuth(userId);
         const response = await api.getFilter(wildduckUserAuth, filterId);
 
         return response as WildduckFilterListItem;
@@ -142,19 +134,18 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [api, createUserAuth, devMode],
+    [api, devMode],
   );
 
   const createFilter = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       params: WildduckCreateFilterRequest,
     ): Promise<{ success: boolean; id: string }> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const wildduckUserAuth = createUserAuth(userId);
         const response = await api.createFilter(wildduckUserAuth, params);
 
         return response as { success: boolean; id: string };
@@ -175,12 +166,12 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [api, createUserAuth, devMode],
+    [api, devMode],
   );
 
   const updateFilter = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       filterId: string,
       params: WildduckUpdateFilterRequest,
     ): Promise<{ success: boolean }> => {
@@ -188,7 +179,6 @@ const useWildduckFilters = (
       setError(null);
 
       try {
-        const wildduckUserAuth = createUserAuth(userId);
         const response = await api.updateFilter(
           wildduckUserAuth,
           filterId,
@@ -213,16 +203,18 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [api, createUserAuth, devMode],
+    [api, devMode],
   );
 
   const deleteFilter = useCallback(
-    async (userId: string, filterId: string): Promise<{ success: boolean }> => {
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+      filterId: string,
+    ): Promise<{ success: boolean }> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const wildduckUserAuth = createUserAuth(userId);
         const response = await api.deleteFilter(wildduckUserAuth, filterId);
 
         return response as { success: boolean };
@@ -243,12 +235,12 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [api, createUserAuth, devMode],
+    [api, devMode],
   );
 
   const refresh = useCallback(
-    async (userId: string): Promise<void> => {
-      await getFilters(userId);
+    async (wildduckUserAuth: WildduckUserAuth): Promise<void> => {
+      await getFilters(wildduckUserAuth);
     },
     [getFilters],
   );

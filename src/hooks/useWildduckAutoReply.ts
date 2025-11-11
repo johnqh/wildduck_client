@@ -16,18 +16,22 @@ interface UseWildduckAutoReplyReturn {
   error: Optional<string>;
 
   // Query functions
-  getAutoreply: (userId: string) => Promise<WildduckAutoreplyResponse>;
+  getAutoreply: (
+    wildduckUserAuth: WildduckUserAuth,
+  ) => Promise<WildduckAutoreplyResponse>;
   refresh: () => Promise<void>;
 
   // Mutations
   updateAutoreply: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     params: WildduckAutoreplyRequest,
   ) => Promise<{ success: boolean }>;
   isUpdating: boolean;
   updateError: Optional<Error>;
 
-  deleteAutoreply: (userId: string) => Promise<{ success: boolean }>;
+  deleteAutoreply: (
+    wildduckUserAuth: WildduckUserAuth,
+  ) => Promise<{ success: boolean }>;
   isDeleting: boolean;
   deleteError: Optional<Error>;
 
@@ -64,18 +68,17 @@ const useWildduckAutoReply = (
 
   // Get autoreply
   const getAutoreply = useCallback(
-    async (userId: string): Promise<WildduckAutoreplyResponse> => {
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+    ): Promise<WildduckAutoreplyResponse> => {
       try {
-        const wildduckUserAuth: WildduckUserAuth = {
-          userId,
-          username: "",
-          accessToken: "",
-        };
-
         const autoreplyData = await api.getAutoreply(wildduckUserAuth);
 
         // Update cache
-        queryClient.setQueryData(["wildduck-autoreply", userId], autoreplyData);
+        queryClient.setQueryData(
+          ["wildduck-autoreply", wildduckUserAuth.userId],
+          autoreplyData,
+        );
 
         return autoreplyData;
       } catch (err) {
@@ -106,19 +109,13 @@ const useWildduckAutoReply = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
+      wildduckUserAuth,
       params,
     }: {
-      userId: string;
+      wildduckUserAuth: WildduckUserAuth;
       params: WildduckAutoreplyRequest;
     }): Promise<{ success: boolean }> => {
       try {
-        const wildduckUserAuth: WildduckUserAuth = {
-          userId,
-          username: "",
-          accessToken: "",
-        };
-
         const response = await api.updateAutoreply(wildduckUserAuth, params);
 
         return response;
@@ -134,7 +131,7 @@ const useWildduckAutoReply = (
     },
     onSuccess: async (_, variables) => {
       // Automatically refresh autoreply after update
-      await getAutoreply(variables.userId);
+      await getAutoreply(variables.wildduckUserAuth);
     },
   });
 
@@ -144,14 +141,10 @@ const useWildduckAutoReply = (
       "wildduck-delete-autoreply",
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
-    mutationFn: async (userId: string): Promise<{ success: boolean }> => {
+    mutationFn: async (
+      wildduckUserAuth: WildduckUserAuth,
+    ): Promise<{ success: boolean }> => {
       try {
-        const wildduckUserAuth: WildduckUserAuth = {
-          userId,
-          username: "",
-          accessToken: "",
-        };
-
         const response = await api.deleteAutoreply(wildduckUserAuth);
 
         return response;
@@ -165,19 +158,19 @@ const useWildduckAutoReply = (
         throw new Error(errorMessage);
       }
     },
-    onSuccess: async (_, userId) => {
+    onSuccess: async (_, wildduckUserAuth) => {
       // Automatically refresh autoreply after deletion
-      await getAutoreply(userId);
+      await getAutoreply(wildduckUserAuth);
     },
   });
 
   // Refresh function (refetch autoreply)
   const refresh = useCallback(async (): Promise<void> => {
-    if (!userId) {
+    if (!wildduckUserAuth) {
       throw new Error("Cannot refresh: user not authenticated");
     }
-    await getAutoreply(userId);
-  }, [userId, getAutoreply]);
+    await getAutoreply(wildduckUserAuth);
+  }, [wildduckUserAuth, getAutoreply]);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading = updateMutation.isPending || deleteMutation.isPending;
@@ -185,13 +178,16 @@ const useWildduckAutoReply = (
     updateMutation.error?.message || deleteMutation.error?.message || null;
 
   const updateAutoreply = useCallback(
-    async (userId: string, params: WildduckAutoreplyRequest) =>
-      updateMutation.mutateAsync({ userId, params }),
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+      params: WildduckAutoreplyRequest,
+    ) => updateMutation.mutateAsync({ wildduckUserAuth, params }),
     [updateMutation],
   );
 
   const deleteAutoreply = useCallback(
-    async (userId: string) => deleteMutation.mutateAsync(userId),
+    async (wildduckUserAuth: WildduckUserAuth) =>
+      deleteMutation.mutateAsync(wildduckUserAuth),
     [deleteMutation],
   );
 

@@ -19,22 +19,25 @@ interface UseWildduckMailboxesReturn {
 
   // Query functions
   getMailboxes: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
   ) => Promise<WildduckMailbox[]>;
-  getMailbox: (userId: string, mailboxId: string) => Promise<WildduckMailbox>;
+  getMailbox: (
+    wildduckUserAuth: WildduckUserAuth,
+    mailboxId: string,
+  ) => Promise<WildduckMailbox>;
   refresh: () => Promise<void>;
 
   // Mutations
   createMailbox: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     params: Omit<CreateMailboxRequest, "sess" | "ip">,
   ) => Promise<{ success: boolean; id: string }>;
   isCreating: boolean;
   createError: Optional<Error>;
 
   updateMailbox: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     params: Omit<UpdateMailboxRequest, "sess" | "ip">,
   ) => Promise<{ success: boolean }>;
@@ -42,7 +45,7 @@ interface UseWildduckMailboxesReturn {
   updateError: Optional<Error>;
 
   deleteMailbox: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
   ) => Promise<{ success: boolean }>;
   isDeleting: boolean;
@@ -83,7 +86,7 @@ const useWildduckMailboxes = (
   // Get mailboxes query (not auto-fetched, only when explicitly called)
   const getMailboxes = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       options: {
         specialUse?: Optional<boolean>;
         showHidden?: Optional<boolean>;
@@ -92,10 +95,6 @@ const useWildduckMailboxes = (
       } = {},
     ): Promise<WildduckMailbox[]> => {
       try {
-        if (!wildduckUserAuth) {
-          throw new Error("User not authenticated");
-        }
-
         const getMailboxesOptions: any = {};
         if (options.specialUse !== undefined)
           getMailboxesOptions.specialUse = options.specialUse;
@@ -113,7 +112,10 @@ const useWildduckMailboxes = (
         const mailboxList = mailboxData.results || [];
 
         // Update cache
-        queryClient.setQueryData(["wildduck-mailboxes", userId], mailboxList);
+        queryClient.setQueryData(
+          ["wildduck-mailboxes", wildduckUserAuth.userId],
+          mailboxList,
+        );
 
         return mailboxList;
       } catch (err) {
@@ -131,7 +133,10 @@ const useWildduckMailboxes = (
 
   // Get single mailbox
   const getMailbox = useCallback(
-    async (userId: string, mailboxId: string): Promise<WildduckMailbox> => {
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+      mailboxId: string,
+    ): Promise<WildduckMailbox> => {
       try {
         if (!wildduckUserAuth) {
           throw new Error("User not authenticated");
@@ -180,15 +185,15 @@ const useWildduckMailboxes = (
 
   // Auto-fetch mailboxes when user is authenticated (only once per userId)
   useEffect(() => {
-    if (userId && !hasFetchedRef.current) {
+    if (wildduckUserAuth && !hasFetchedRef.current) {
       const cached = queryClient.getQueryData<WildduckMailbox[]>([
         "wildduck-mailboxes",
-        userId,
+        wildduckUserAuth.userId,
       ]);
 
       if (!cached || cached.length === 0) {
         hasFetchedRef.current = true;
-        getMailboxes(userId, {
+        getMailboxes(wildduckUserAuth, {
           counters: true,
           specialUse: false,
           showHidden: false,
@@ -200,7 +205,7 @@ const useWildduckMailboxes = (
         });
       }
     }
-  }, [userId, getMailboxes, queryClient]);
+  }, [wildduckUserAuth, getMailboxes, queryClient]);
 
   // Create mailbox mutation
   const createMutation = useMutation({
@@ -233,8 +238,8 @@ const useWildduckMailboxes = (
     },
     onSuccess: async () => {
       // Automatically refresh mailboxes after creation
-      if (userId) {
-        await getMailboxes(userId, { counters: true });
+      if (wildduckUserAuth) {
+        await getMailboxes(wildduckUserAuth, { counters: true });
       }
     },
   });
@@ -276,8 +281,8 @@ const useWildduckMailboxes = (
     },
     onSuccess: async () => {
       // Automatically refresh mailboxes after update
-      if (userId) {
-        await getMailboxes(userId, { counters: true });
+      if (wildduckUserAuth) {
+        await getMailboxes(wildduckUserAuth, { counters: true });
       }
     },
   });
@@ -313,19 +318,19 @@ const useWildduckMailboxes = (
     },
     onSuccess: async () => {
       // Automatically refresh mailboxes after deletion
-      if (userId) {
-        await getMailboxes(userId, { counters: true });
+      if (wildduckUserAuth) {
+        await getMailboxes(wildduckUserAuth, { counters: true });
       }
     },
   });
 
   // Refresh function (refetch with counters)
   const refresh = useCallback(async (): Promise<void> => {
-    if (!userId) {
+    if (!wildduckUserAuth) {
       throw new Error("Cannot refresh: user not authenticated");
     }
-    await getMailboxes(userId, { counters: true });
-  }, [userId, getMailboxes]);
+    await getMailboxes(wildduckUserAuth, { counters: true });
+  }, [wildduckUserAuth, getMailboxes]);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
@@ -340,7 +345,7 @@ const useWildduckMailboxes = (
 
   const createMailbox = useCallback(
     async (
-      _userId: string,
+      _wildduckUserAuth: WildduckUserAuth,
       params: Omit<CreateMailboxRequest, "sess" | "ip">,
     ) => createMutation.mutateAsync({ params }),
     [createMutation],
@@ -348,7 +353,7 @@ const useWildduckMailboxes = (
 
   const updateMailbox = useCallback(
     async (
-      _userId: string,
+      _wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       params: Omit<UpdateMailboxRequest, "sess" | "ip">,
     ) => updateMutation.mutateAsync({ mailboxId, params }),
@@ -356,7 +361,7 @@ const useWildduckMailboxes = (
   );
 
   const deleteMailbox = useCallback(
-    async (_userId: string, mailboxId: string) =>
+    async (_wildduckUserAuth: WildduckUserAuth, mailboxId: string) =>
       deleteMutation.mutateAsync({ mailboxId }),
     [deleteMutation],
   );

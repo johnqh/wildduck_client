@@ -27,16 +27,18 @@ interface UseWildduckAddressesReturn {
   error: Optional<string>;
 
   // Query functions
-  getUserAddresses: (userId: string) => Promise<WildduckAddress[]>;
+  getUserAddresses: (
+    wildduckUserAuth: WildduckUserAuth,
+  ) => Promise<WildduckAddress[]>;
   getForwardedAddresses: () => Promise<ForwardedAddress[]>;
   resolveAddress: (
     address: string,
   ) => Promise<{ success: boolean; user?: string }>;
-  refresh: (userId: string) => Promise<void>;
+  refresh: (wildduckUserAuth: WildduckUserAuth) => Promise<void>;
 
   // Create address mutation
   createAddress: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     params: WildduckCreateAddressRequest,
   ) => Promise<{ success: boolean; id: string }>;
   isCreating: boolean;
@@ -44,7 +46,7 @@ interface UseWildduckAddressesReturn {
 
   // Update address mutation
   updateAddress: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     addressId: string,
     params: WildduckUpdateAddressRequest,
   ) => Promise<{ success: boolean }>;
@@ -53,7 +55,7 @@ interface UseWildduckAddressesReturn {
 
   // Delete address mutation
   deleteAddress: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     addressId: string,
   ) => Promise<{ success: boolean }>;
   isDeleting: boolean;
@@ -94,21 +96,10 @@ const useWildduckAddresses = (
     [networkClient, config],
   );
 
-  // Helper to create WildduckUserAuth from userId
-  const createUserAuth = useCallback(
-    (userId: string): WildduckUserAuth => ({
-      userId,
-      username: "", // Not needed for API calls
-      accessToken: "", // Will be handled by API if needed
-    }),
-    [],
-  );
-
   // Get user addresses function (imperative)
   const getUserAddresses = useCallback(
-    async (userId: string): Promise<WildduckAddress[]> => {
+    async (wildduckUserAuth: WildduckUserAuth): Promise<WildduckAddress[]> => {
       try {
-        const wildduckUserAuth = createUserAuth(userId);
         const response = await api.getAddresses(wildduckUserAuth);
 
         const addressList =
@@ -124,7 +115,10 @@ const useWildduckAddresses = (
         setAddresses(addressList);
 
         // Update cache
-        queryClient.setQueryData(["wildduck-addresses", userId], addressList);
+        queryClient.setQueryData(
+          ["wildduck-addresses", wildduckUserAuth.userId],
+          addressList,
+        );
 
         return addressList;
       } catch (err) {
@@ -143,7 +137,7 @@ const useWildduckAddresses = (
 
           // Update cache with mock data
           queryClient.setQueryData(
-            ["wildduck-addresses", userId],
+            ["wildduck-addresses", wildduckUserAuth.userId],
             mockAddresses,
           );
 
@@ -154,7 +148,7 @@ const useWildduckAddresses = (
         throw new Error(errorMessage);
       }
     },
-    [api, createUserAuth, devMode, queryClient],
+    [api, devMode, queryClient],
   );
 
   // Get forwarded addresses function (imperative)
@@ -422,8 +416,8 @@ const useWildduckAddresses = (
 
   // Refresh function (refetch user addresses)
   const refresh = useCallback(
-    async (userId: string): Promise<void> => {
-      await getUserAddresses(userId);
+    async (wildduckUserAuth: WildduckUserAuth): Promise<void> => {
+      await getUserAddresses(wildduckUserAuth);
     },
     [getUserAddresses],
   );
@@ -445,35 +439,38 @@ const useWildduckAddresses = (
     null;
 
   const createAddress = useCallback(
-    async (userId: string, params: WildduckCreateAddressRequest) =>
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+      params: WildduckCreateAddressRequest,
+    ) =>
       createMutation.mutateAsync({
-        wildduckUserAuth: createUserAuth(userId),
+        wildduckUserAuth,
         params,
       }),
-    [createMutation, createUserAuth],
+    [createMutation],
   );
 
   const updateAddress = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       addressId: string,
       params: WildduckUpdateAddressRequest,
     ) =>
       updateMutation.mutateAsync({
-        wildduckUserAuth: createUserAuth(userId),
+        wildduckUserAuth,
         addressId,
         params,
       }),
-    [updateMutation, createUserAuth],
+    [updateMutation],
   );
 
   const deleteAddress = useCallback(
-    async (userId: string, addressId: string) =>
+    async (wildduckUserAuth: WildduckUserAuth, addressId: string) =>
       deleteMutation.mutateAsync({
-        wildduckUserAuth: createUserAuth(userId),
+        wildduckUserAuth,
         addressId,
       }),
-    [deleteMutation, createUserAuth],
+    [deleteMutation],
   );
 
   const createForwardedAddress = useCallback(
