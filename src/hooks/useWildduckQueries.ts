@@ -22,9 +22,11 @@ import type {
   WildduckMessage,
   WildduckMessagesResponse,
   WildduckUser,
+  WildduckUserAuth,
   WildduckUserListResponse,
 } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
+import { WildduckAPI } from "../network/wildduck-client";
 
 interface WildduckUserSettings {
   // Define based on actual API response
@@ -191,81 +193,45 @@ const useWildduckUsersList = (
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
- * @param userId - User ID to fetch
- * @param devMode - Development mode flag
+ * @param wildduckUserAuth - User authentication info
  * @param options - React Query options
  */
 const useWildduckUser = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
-  devMode: boolean = false,
+  wildduckUserAuth: WildduckUserAuth,
   options?: UseQueryOptions<WildduckUser>,
 ): UseQueryResult<WildduckUser> => {
+  const api = useMemo(
+    () => new WildduckAPI(networkClient, config),
+    [networkClient, config],
+  );
+
   const queryFn = useCallback(async (): Promise<WildduckUser> => {
-    const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+    const response = await api.getUser(wildduckUserAuth);
+    return {
+      id: response.id,
+      username: response.username,
+      name: response.name || response.address || response.username,
+      ...(response.address && { address: response.address }),
+      tags: response.tags || [],
+      quota: {
+        allowed: 0,
+        used: 0,
+      },
+      hasPasswordSet: response.hasPasswordSet || false,
+      activated: response.activated || false,
+      disabled: response.disabled || false,
+      suspended: response.suspended || false,
+      created: new Date().toISOString(),
     };
-
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
-    }
-
-    try {
-      const response = await networkClient.request<{
-        success: boolean;
-        id: string;
-        username: string;
-        address?: string;
-      }>(`${apiUrl}/users/${userId}`, { method: "GET", headers });
-      const userData = response.data as {
-        success: boolean;
-        id: string;
-        username: string;
-        address?: string;
-      };
-      return {
-        id: userData.id,
-        username: userData.username,
-        name: userData.address || userData.username,
-        ...(userData.address && { address: userData.address }),
-        tags: [],
-        quota: {
-          allowed: 0,
-          used: 0,
-        },
-        hasPasswordSet: false,
-        activated: userData.success || false,
-        disabled: false,
-        suspended: false,
-        created: new Date().toISOString(),
-      };
-    } catch (err) {
-      if (devMode) {
-        console.warn("[DevMode] Get user failed, returning mock data:", err);
-        return WildduckMockData.getUserQuery(userId) as WildduckUser;
-      }
-      throw err;
-    }
-  }, [
-    networkClient,
-    config.cloudflareWorkerUrl,
-    config.backendUrl,
-    config.apiToken,
-    userId,
-    devMode,
-  ]);
+  }, [api, wildduckUserAuth]);
 
   const query = useQuery({
-    queryKey: queryKeys.wildduck.user(userId),
+    queryKey: queryKeys.wildduck.user(wildduckUserAuth.userId),
     queryFn,
     staleTime: STALE_TIMES.USER_PROFILE,
-    enabled: !!userId,
+    enabled: !!wildduckUserAuth,
     ...options,
   });
 
@@ -282,73 +248,37 @@ const useWildduckUser = (
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
- * @param userId - User ID to fetch addresses for
- * @param devMode - Development mode flag
+ * @param wildduckUserAuth - User authentication info
  * @param options - React Query options
  */
 const useWildduckUserAddresses = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
-  devMode: boolean = false,
+  wildduckUserAuth: WildduckUserAuth,
   options?: UseQueryOptions<WildduckAddress[]>,
 ): UseQueryResult<WildduckAddress[]> => {
+  const api = useMemo(
+    () => new WildduckAPI(networkClient, config),
+    [networkClient, config],
+  );
+
   const queryFn = useCallback(async (): Promise<WildduckAddress[]> => {
-    const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
-    }
-
-    try {
-      const response = await networkClient.request<{
-        success: boolean;
-        results: Array<{ id: string; address: string; main: boolean }>;
-      }>(`${apiUrl}/users/${userId}/addresses`, { method: "GET", headers });
-      const addressData = response.data as {
-        success: boolean;
-        results: Array<{ id: string; address: string; main: boolean }>;
-      };
-      return (
-        addressData.results?.map((addr) => ({
-          id: addr.id,
-          address: addr.address,
-          created: new Date().toISOString(),
-          main: addr.main,
-        })) || []
-      );
-    } catch (err) {
-      if (devMode) {
-        console.warn(
-          "[DevMode] Get user addresses failed, returning mock data:",
-          err,
-        );
-        const mockData = WildduckMockData.getUserAddressesQuery();
-        return mockData.addresses as WildduckAddress[];
-      }
-      throw err;
-    }
-  }, [
-    networkClient,
-    config.cloudflareWorkerUrl,
-    config.backendUrl,
-    config.apiToken,
-    userId,
-    devMode,
-  ]);
+    const response = await api.getAddresses(wildduckUserAuth);
+    return (
+      response.results?.map((addr) => ({
+        id: addr.id,
+        address: addr.address,
+        created: addr.created || new Date().toISOString(),
+        main: addr.main,
+      })) || []
+    );
+  }, [api, wildduckUserAuth]);
 
   const query = useQuery({
-    queryKey: queryKeys.wildduck.userAddresses(userId),
+    queryKey: queryKeys.wildduck.userAddresses(wildduckUserAuth.userId),
     queryFn,
     staleTime: STALE_TIMES.EMAIL_ADDRESSES,
-    enabled: !!userId,
+    enabled: !!wildduckUserAuth,
     ...options,
   });
 
@@ -365,113 +295,42 @@ const useWildduckUserAddresses = (
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
- * @param userId - User ID
+ * @param wildduckUserAuth - User authentication info
  * @param mailboxId - Mailbox ID
- * @param devMode - Development mode flag
  * @param filters - Optional filters
  * @param options - React Query options
  */
 const useWildduckUserMessages = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   mailboxId: string,
-  devMode: boolean = false,
   filters?: Record<string, unknown>,
   options?: UseQueryOptions<WildduckMessagesResponse>,
 ): UseQueryResult<WildduckMessagesResponse> => {
+  const api = useMemo(
+    () => new WildduckAPI(networkClient, config),
+    [networkClient, config],
+  );
+
   const queryFn = useCallback(async (): Promise<WildduckMessagesResponse> => {
-    const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
-    }
-
-    try {
-      const response = await networkClient.request<{
-        success: boolean;
-        results: any[];
-        total: number;
-        page: number;
-      }>(`${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages`, {
-        method: "GET",
-        headers,
-      });
-      const messagesData = response.data as {
-        success: boolean;
-        results: any[];
-        total: number;
-        page: number;
-      };
-      return {
-        success: messagesData.success as true,
-        total: messagesData.total,
-        page: messagesData.page,
-        results: messagesData.results.map((msg) => ({
-          id: msg.id,
-          mailbox: msg.mailbox,
-          thread: msg.thread || "",
-          ...(msg.from && {
-            from: { name: msg.from.name, address: msg.from.address || "" },
-          }),
-          to:
-            msg.to?.map((addr: any) => ({
-              name: addr.name,
-              address: addr.address || "",
-            })) || [],
-          cc: msg.cc?.map((addr: any) => ({
-            name: addr.name,
-            address: addr.address || "",
-          })),
-          bcc: msg.bcc?.map((addr: any) => ({
-            name: addr.name,
-            address: addr.address || "",
-          })),
-          subject: msg.subject || "",
-          date: msg.date || "",
-          intro: msg.intro || "",
-          seen: msg.seen || false,
-          deleted: msg.deleted || false,
-          flagged: msg.flagged || false,
-          draft: msg.draft || false,
-          answered: msg.answered || false,
-          size: msg.size || 0,
-          ha: msg.attachments || false,
-          attachments: msg.attachments || false,
-        })) as WildduckMessage[],
-      };
-    } catch (err) {
-      if (devMode) {
-        console.warn(
-          "[DevMode] Get user messages failed, returning mock data:",
-          err,
-        );
-        return WildduckMockData.getUserMessagesQuery() as unknown as WildduckMessagesResponse;
-      }
-      throw err;
-    }
-  }, [
-    networkClient,
-    config.cloudflareWorkerUrl,
-    config.backendUrl,
-    config.apiToken,
-    userId,
-    mailboxId,
-    devMode,
-  ]);
+    const response = await api.getMessages(
+      wildduckUserAuth,
+      mailboxId,
+      filters,
+    );
+    return response;
+  }, [api, wildduckUserAuth, mailboxId, filters]);
 
   const query = useQuery({
-    queryKey: queryKeys.wildduck.userMessages(userId, mailboxId, filters),
+    queryKey: queryKeys.wildduck.userMessages(
+      wildduckUserAuth.userId,
+      mailboxId,
+      filters,
+    ),
     queryFn,
     staleTime: STALE_TIMES.MESSAGES,
-    enabled: !!(userId && mailboxId),
+    enabled: !!(wildduckUserAuth && mailboxId),
     ...options,
   });
 
@@ -488,102 +347,91 @@ const useWildduckUserMessages = (
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
- * @param userId - User ID
+ * @param wildduckUserAuth - User authentication info
  * @param mailboxId - Mailbox ID
  * @param messageId - Message ID
- * @param devMode - Development mode flag
  * @param options - React Query options
  */
 const useWildduckMessage = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   mailboxId: string,
   messageId: string,
-  devMode: boolean = false,
   options?: UseQueryOptions<WildduckMessage>,
 ): UseQueryResult<WildduckMessage> => {
+  const api = useMemo(
+    () => new WildduckAPI(networkClient, config),
+    [networkClient, config],
+  );
+
   const queryFn = useCallback(async (): Promise<WildduckMessage> => {
-    const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+    const response = await api.getMessage(
+      wildduckUserAuth,
+      mailboxId,
+      messageId,
+    );
+    if (!response.success || !response.data) {
+      throw new Error(response.error || "Failed to fetch message");
+    }
+    const msg = response.data;
+    const result: WildduckMessage = {
+      id: msg.id,
+      mailbox: msg.mailbox,
+      thread: msg.thread || "",
+      to:
+        msg.to?.map((addr) => ({
+          address: addr.address || "",
+          ...(addr.name !== undefined && { name: addr.name }),
+        })) || [],
+      subject: msg.subject || "",
+      date: msg.date || "",
+      intro: msg.intro || "",
+      seen: msg.seen || false,
+      deleted: msg.deleted || false,
+      flagged: msg.flagged || false,
+      draft: msg.draft || false,
+      answered: msg.answered || false,
+      size: msg.size || 0,
+      ha: Array.isArray(msg.attachments) ? msg.attachments.length > 0 : false,
+      attachments: Array.isArray(msg.attachments)
+        ? msg.attachments.length > 0
+        : false,
     };
 
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
+    if (msg.from) {
+      result.from = {
+        address: msg.from.address || "",
+        ...(msg.from.name !== undefined && { name: msg.from.name }),
+      };
     }
 
-    try {
-      const response = await networkClient.request<any>(
-        `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-        { method: "GET", headers },
-      );
-      const messageData = response.data as any;
-      return {
-        id: messageData.id,
-        mailbox: messageData.mailbox,
-        thread: messageData.thread || "",
-        ...(messageData.from && {
-          from: {
-            name: messageData.from.name,
-            address: messageData.from.address || "",
-          },
-        }),
-        to:
-          messageData.to?.map((addr: any) => ({
-            name: addr.name,
-            address: addr.address || "",
-          })) || [],
-        cc: messageData.cc?.map((addr: any) => ({
-          name: addr.name,
-          address: addr.address || "",
-        })),
-        bcc: messageData.bcc?.map((addr: any) => ({
-          name: addr.name,
-          address: addr.address || "",
-        })),
-        subject: messageData.subject || "",
-        date: messageData.date || "",
-        intro: messageData.intro || "",
-        seen: messageData.seen || false,
-        deleted: messageData.deleted || false,
-        flagged: messageData.flagged || false,
-        draft: messageData.draft || false,
-        answered: messageData.answered || false,
-        size: messageData.size || 0,
-        ha: messageData.attachments || false,
-        attachments: messageData.attachments || false,
-      };
-    } catch (err) {
-      if (devMode) {
-        console.warn("[DevMode] Get message failed, returning mock data:", err);
-        return WildduckMockData.getMessageQuery(
-          messageId,
-          userId,
-        ) as unknown as WildduckMessage;
-      }
-      throw err;
+    if (msg.cc) {
+      result.cc = msg.cc.map((addr) => ({
+        address: addr.address || "",
+        ...(addr.name !== undefined && { name: addr.name }),
+      }));
     }
-  }, [
-    networkClient,
-    config.cloudflareWorkerUrl,
-    config.backendUrl,
-    config.apiToken,
-    userId,
-    mailboxId,
-    messageId,
-    devMode,
-  ]);
+
+    if (msg.bcc) {
+      result.bcc = msg.bcc.map((addr) => ({
+        address: addr.address || "",
+        ...(addr.name !== undefined && { name: addr.name }),
+      }));
+    }
+
+    return result;
+  }, [api, wildduckUserAuth, mailboxId, messageId]);
 
   const query = useQuery({
-    queryKey: queryKeys.wildduck.message(userId, mailboxId, messageId),
+    queryKey: queryKeys.wildduck.message(
+      wildduckUserAuth.userId,
+      mailboxId,
+      messageId,
+    ),
     queryFn,
     staleTime: STALE_TIMES.MESSAGE_CONTENT,
-    enabled: !!(userId && mailboxId && messageId),
+    enabled: !!(wildduckUserAuth && mailboxId && messageId),
     ...options,
   });
 
@@ -604,6 +452,7 @@ const useWildduckMessage = (
  * @param devMode - Development mode flag
  * @param options - React Query options
  */
+// TODO: Add getFilters method to WildduckAPI
 const useWildduckUserFilters = (
   networkClient: NetworkClient,
   config: WildduckConfig,
@@ -686,6 +535,7 @@ const useWildduckUserFilters = (
  * @param devMode - Development mode flag
  * @param options - React Query options
  */
+// TODO: Add getUserSettings method to WildduckAPI
 const useWildduckUserSettings = (
   networkClient: NetworkClient,
   config: WildduckConfig,
@@ -755,16 +605,14 @@ const useWildduckUserSettings = (
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
- * @param userId - User ID
- * @param devMode - Development mode flag
+ * @param wildduckUserAuth - User authentication info
  * @param options - Mailbox query options
  * @param queryOptions - React Query options
  */
 const useWildduckUserMailboxes = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
-  devMode: boolean = false,
+  wildduckUserAuth: WildduckUserAuth,
   options?: {
     specialUse?: boolean;
     showHidden?: boolean;
@@ -773,64 +621,24 @@ const useWildduckUserMailboxes = (
   },
   queryOptions?: UseQueryOptions<WildduckMailboxResponse>,
 ): UseQueryResult<WildduckMailboxResponse> => {
+  const api = useMemo(
+    () => new WildduckAPI(networkClient, config),
+    [networkClient, config],
+  );
+
   const queryFn = useCallback(async (): Promise<WildduckMailboxResponse> => {
-    const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
-    }
-
-    const params = new URLSearchParams();
-    if (options?.specialUse) params.set("specialUse", "true");
-    if (options?.showHidden) params.set("showHidden", "true");
-    if (options?.counters) params.set("counters", "true");
-    if (options?.sizes) params.set("sizes", "true");
-
-    const queryString = params.toString();
-    const endpoint = `${apiUrl}/users/${userId}/mailboxes${queryString ? `?${queryString}` : ""}`;
-
-    try {
-      const response = await networkClient.request<WildduckMailboxResponse>(
-        endpoint,
-        { method: "GET", headers },
-      );
-      return response.data as WildduckMailboxResponse;
-    } catch (err) {
-      if (devMode) {
-        console.warn(
-          "[DevMode] Get user mailboxes failed, returning mock data:",
-          err,
-        );
-        const mockData = WildduckMockData.getUserMailboxesQuery();
-        return {
-          success: true,
-          results: mockData.mailboxes,
-        } as unknown as WildduckMailboxResponse;
-      }
-      throw err;
-    }
-  }, [
-    networkClient,
-    config.cloudflareWorkerUrl,
-    config.backendUrl,
-    config.apiToken,
-    userId,
-    options,
-    devMode,
-  ]);
+    const response = await api.getMailboxes(wildduckUserAuth, options);
+    return response;
+  }, [api, wildduckUserAuth, options]);
 
   const query = useQuery({
-    queryKey: queryKeys.wildduck.userMailboxes(userId, options),
+    queryKey: queryKeys.wildduck.userMailboxes(
+      wildduckUserAuth.userId,
+      options,
+    ),
     queryFn,
     staleTime: STALE_TIMES.MAILBOXES,
-    enabled: !!userId,
+    enabled: !!wildduckUserAuth,
     ...queryOptions,
   });
 
@@ -943,85 +751,44 @@ const useWildduckAuthStatus = (
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
- * @param userId - User ID
+ * @param wildduckUserAuth - User authentication info
  * @param mailboxId - Mailbox ID
  * @param query - Search query string
- * @param devMode - Development mode flag
  * @param searchOptions - Optional search options
  * @param queryOptions - React Query options
  */
 const useWildduckSearchMessages = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   mailboxId: string,
   query: string,
-  devMode: boolean = false,
   searchOptions?: Record<string, unknown>,
   queryOptions?: UseQueryOptions<WildduckMessagesResponse>,
 ): UseQueryResult<WildduckMessagesResponse> => {
+  const api = useMemo(
+    () => new WildduckAPI(networkClient, config),
+    [networkClient, config],
+  );
+
   const queryFn = useCallback(async (): Promise<WildduckMessagesResponse> => {
-    const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
-    }
-
-    const params = new URLSearchParams();
-    params.set("q", query);
-    if (searchOptions) {
-      Object.entries(searchOptions).forEach(([key, value]) => {
-        if (value !== undefined) {
-          params.set(key, String(value));
-        }
-      });
-    }
-
-    try {
-      const response = await networkClient.request<WildduckMessagesResponse>(
-        `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages?${params}`,
-        { method: "GET", headers },
-      );
-      return response.data as WildduckMessagesResponse;
-    } catch (err) {
-      if (devMode) {
-        console.warn(
-          "[DevMode] Search messages failed, returning mock data:",
-          err,
-        );
-        return WildduckMockData.getSearchMessagesQuery() as unknown as WildduckMessagesResponse;
-      }
-      throw err;
-    }
-  }, [
-    networkClient,
-    config.cloudflareWorkerUrl,
-    config.backendUrl,
-    config.apiToken,
-    userId,
-    mailboxId,
-    query,
-    searchOptions,
-    devMode,
-  ]);
+    const response = await api.getMessages(wildduckUserAuth, mailboxId, {
+      ...searchOptions,
+      q: query,
+    } as any);
+    return response;
+  }, [api, wildduckUserAuth, mailboxId, query, searchOptions]);
 
   const queryResult = useQuery({
     queryKey: queryKeys.wildduck.searchMessages(
-      userId,
+      wildduckUserAuth.userId,
       mailboxId,
       query,
       searchOptions,
     ),
     queryFn,
     staleTime: STALE_TIMES.MESSAGES,
-    enabled: !!(userId && mailboxId && query),
+    enabled: !!(wildduckUserAuth && mailboxId && query),
     ...queryOptions,
   });
 
