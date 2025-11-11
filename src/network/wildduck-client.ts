@@ -113,94 +113,46 @@ const createApiConfig = (config: WildduckConfig) => ({
 class WildduckAPI {
   private baseUrl: string;
   private headers: Record<string, string>;
-  private apiToken: string;
-  private userToken: Optional<string>; // User-specific token from /authenticate
   private networkClient: NetworkClient;
-  private useCloudflare: boolean;
   private config: ReturnType<typeof createApiConfig>;
 
   constructor(networkClient: NetworkClient, config: WildduckConfig) {
     this.config = createApiConfig(config);
     this.baseUrl = this.config.BASE_URL;
-    this.apiToken = this.config.API_TOKEN;
-    this.userToken = null;
-    this.useCloudflare = this.config.USE_CLOUDFLARE;
     this.networkClient = networkClient;
 
-    // Set headers based on whether we're using Cloudflare worker or direct connection
+    // Set basic headers - authentication is handled per-request via wildduckUserAuth
     this.headers = {
       ...this.config.DEFAULT_HEADERS,
     };
-
-    this.updateHeaders();
-  }
-
-  /**
-   * Update headers with the appropriate token
-   * Uses userToken if available (for authenticated user operations),
-   * otherwise falls back to apiToken (for public/admin operations)
-   */
-  private updateHeaders(): void {
-    const activeToken = this.userToken || this.apiToken;
-
-    if (this.useCloudflare) {
-      // When using Cloudflare worker, send token in a different header
-      // The worker will extract it and forward as X-Access-Token to Wildduck
-      this.headers["Authorization"] = `Bearer ${activeToken}`;
-      // Add a custom header to identify requests from the app
-      this.headers["X-App-Source"] = "0xmail-box";
-    } else {
-      // Direct connection to Wildduck API
-      // For user tokens, use Authorization: Bearer (recommended)
-      // For API tokens, use X-Access-Token (backward compatibility)
-      if (this.userToken) {
-        this.headers["Authorization"] = `Bearer ${activeToken}`;
-        delete this.headers["X-Access-Token"];
-      } else {
-        this.headers["X-Access-Token"] = activeToken;
-      }
-    }
   }
 
   /**
    * Set the user authentication token
-   * Should be called after successful authentication with token=true
-   * This token will be used for all subsequent API calls
+   * @deprecated Use wildduckUserAuth parameter in request methods instead.
+   * This method is kept for backward compatibility but does nothing.
    */
-  setUserToken(token: string): void {
-    this.userToken = token;
-    this.updateHeaders();
+  setUserToken(_token: string): void {
+    // No-op: Authentication is now handled via wildduckUserAuth parameter
   }
 
   /**
    * Clear the user authentication token
-   * Reverts to using the master API token
+   * @deprecated Use wildduckUserAuth parameter in request methods instead.
+   * This method is kept for backward compatibility but does nothing.
    */
   clearUserToken(): void {
-    this.userToken = null;
-    this.updateHeaders();
+    // No-op: Authentication is now handled via wildduckUserAuth parameter
   }
 
   /**
    * Load user token from session storage for a given username
-   * Useful for restoring authentication state across page reloads
+   * @deprecated Use wildduckUserAuth parameter in request methods instead.
+   * This method is kept for backward compatibility but does nothing.
    */
-  loadUserTokenFromStorage(username: string): boolean {
-    try {
-      const keys = getWildduckStorageKeys(username);
-      const storedToken = sessionStorage.getItem(keys.token);
-
-      if (storedToken) {
-        this.setUserToken(storedToken);
-        return true;
-      }
-
-      console.warn("⚠️ No stored token found for:", username);
-      return false;
-    } catch (e) {
-      console.error("❌ Failed to load token from session storage:", e);
-      return false;
-    }
+  loadUserTokenFromStorage(_username: string): boolean {
+    // No-op: Authentication is now handled via wildduckUserAuth parameter
+    return false;
   }
 
   private async request<T>(
@@ -214,11 +166,6 @@ class WildduckAPI {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
-    // Warn if no API authentication headers found
-    if (!this.headers["X-Access-Token"] && !this.headers["Authorization"]) {
-      console.warn("⚠️ No API authentication headers found!");
-    }
-
     try {
       const requestOptions: any = {
         method: options.method || "GET",
@@ -228,7 +175,7 @@ class WildduckAPI {
         },
       };
 
-      // If wildduckUserAuth is provided, override with Bearer token
+      // If wildduckUserAuth is provided, use its accessToken
       if (options.wildduckUserAuth?.accessToken) {
         requestOptions.headers["Authorization"] =
           `Bearer ${options.wildduckUserAuth.accessToken}`;
