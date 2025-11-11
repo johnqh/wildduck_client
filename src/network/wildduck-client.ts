@@ -209,7 +209,7 @@ class WildduckAPI {
       method?: Optional<"GET" | "POST" | "PUT" | "DELETE">;
       body?: Optional<Record<string, unknown> | string | FormData | Blob>;
       headers?: Optional<Record<string, string>>;
-      userAuth?: Optional<WildduckUserAuth>;
+      wildduckUserAuth?: Optional<WildduckUserAuth>;
     } = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
@@ -228,10 +228,10 @@ class WildduckAPI {
         },
       };
 
-      // If userAuth is provided, override with Bearer token
-      if (options.userAuth?.accessToken) {
+      // If wildduckUserAuth is provided, override with Bearer token
+      if (options.wildduckUserAuth?.accessToken) {
         requestOptions.headers["Authorization"] =
-          `Bearer ${options.userAuth.accessToken}`;
+          `Bearer ${options.wildduckUserAuth.accessToken}`;
       }
 
       // Only add body if it exists and method supports it
@@ -379,22 +379,24 @@ class WildduckAPI {
   }
 
   // Get user info
-  async getUser(userAuth: WildduckUserAuth): Promise<WildduckUserResponse> {
+  async getUser(
+    wildduckUserAuth: WildduckUserAuth,
+  ): Promise<WildduckUserResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     return this.request<WildduckUserResponse>(`/users/${validatedUserId}`, {
-      userAuth,
+      wildduckUserAuth,
     });
   }
 
   // Get mailboxes for a user
   async getMailboxes(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
   ): Promise<WildduckMailboxResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     const queryParams = createURLSearchParams();
 
@@ -411,18 +413,18 @@ class WildduckAPI {
     const endpoint = `/users/${validatedUserId}/mailboxes${query ? `?${query}` : ""}`;
 
     return this.request<WildduckMailboxResponse>(endpoint, {
-      userAuth,
+      wildduckUserAuth,
     });
   }
 
   // Get messages from a mailbox
   async getMessages(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     options?: Omit<GetMessagesRequest, "sess" | "ip">,
   ): Promise<WildduckMessagesResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     // Validate mailbox ID format (should also be ObjectId)
     if (!isValidObjectId(mailboxId)) {
@@ -455,18 +457,18 @@ class WildduckAPI {
     const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages${query ? `?${query}` : ""}`;
 
     return this.request<WildduckMessagesResponse>(endpoint, {
-      userAuth,
+      wildduckUserAuth,
     });
   }
 
   // Get a specific message by ID
   async getMessage(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: string,
   ): Promise<WildduckMessageResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     // Validate mailbox ID format
     if (!isValidObjectId(mailboxId)) {
@@ -485,30 +487,30 @@ class WildduckAPI {
     const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`;
 
     return this.request<WildduckMessageResponse>(endpoint, {
-      userAuth,
+      wildduckUserAuth,
     });
   }
 
   // Get user addresses (email addresses)
   async getAddresses(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckAddressResponse> {
     // Validate user ID format
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     const endpoint = `/users/${validatedUserId}/addresses`;
 
     return this.request<WildduckAddressResponse>(endpoint, {
-      userAuth,
+      wildduckUserAuth,
     });
   }
 
   // Create a new mailbox
   async createMailbox(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     request: CreateMailboxRequest,
   ): Promise<WildduckMailboxResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     const requestBody: Record<string, any> = {
       path: request.path,
@@ -527,7 +529,7 @@ class WildduckAPI {
       {
         method: "POST",
         body: JSON.stringify(requestBody),
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
@@ -548,27 +550,27 @@ class WildduckAPI {
 
   // Update user information
   async updateUser(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     request: WildduckUpdateUserRequest,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     return this.request<WildduckSuccessResponse>(`/users/${validatedUserId}`, {
       method: "PUT",
       body: request,
-      userAuth,
+      wildduckUserAuth,
     });
   }
 
   // Delete a user
   async deleteUser(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     return this.request<WildduckSuccessResponse>(`/users/${validatedUserId}`, {
       method: "DELETE",
-      userAuth,
+      wildduckUserAuth,
     });
   }
 
@@ -578,10 +580,10 @@ class WildduckAPI {
 
   // Get specific mailbox information
   async getMailbox(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
   ): Promise<WildduckMailboxResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -592,18 +594,18 @@ class WildduckAPI {
     return this.request<WildduckMailboxResponse>(
       `/users/${validatedUserId}/mailboxes/${mailboxId}`,
       {
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Update mailbox settings
   async updateMailbox(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     request: WildduckUpdateMailboxRequest,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -616,17 +618,17 @@ class WildduckAPI {
       {
         method: "PUT",
         body: request,
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Delete a mailbox
   async deleteMailbox(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -638,7 +640,7 @@ class WildduckAPI {
       `/users/${validatedUserId}/mailboxes/${mailboxId}`,
       {
         method: "DELETE",
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
@@ -649,7 +651,7 @@ class WildduckAPI {
 
   // Get full message details from a specific mailbox
   async getMessageFromMailbox(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     options?: {
@@ -657,7 +659,7 @@ class WildduckAPI {
       markAsSeen?: boolean;
     },
   ): Promise<WildduckMessageResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -675,17 +677,17 @@ class WildduckAPI {
     const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}${query ? `?${query}` : ""}`;
 
     return this.request<WildduckMessageResponse>(endpoint, {
-      userAuth,
+      wildduckUserAuth,
     });
   }
 
   // Upload/create a message in a mailbox (for drafts, imports, etc.)
   async uploadMessage(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     request: WildduckUploadMessageRequest,
   ): Promise<WildduckUploadMessageResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -698,19 +700,19 @@ class WildduckAPI {
       {
         method: "POST",
         body: request,
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Update message flags or move to different mailbox
   async updateMessage(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     request: WildduckUpdateMessageRequest,
   ): Promise<WildduckUpdateMessageResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -723,18 +725,18 @@ class WildduckAPI {
       {
         method: "PUT",
         body: request,
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Delete a message from mailbox
   async deleteMessage(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -746,18 +748,18 @@ class WildduckAPI {
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`,
       {
         method: "DELETE",
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Get raw message source (RFC822 format)
   async getMessageSource(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
   ): Promise<string> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -769,7 +771,7 @@ class WildduckAPI {
 
     const headers = {
       ...this.headers,
-      Authorization: `Bearer ${userAuth.accessToken}`,
+      Authorization: `Bearer ${wildduckUserAuth.accessToken}`,
     };
 
     const response = await this.networkClient.request<string>(url, {
@@ -782,12 +784,12 @@ class WildduckAPI {
 
   // Download message attachment
   async getMessageAttachment(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     attachmentId: string,
   ): Promise<Blob> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -799,7 +801,7 @@ class WildduckAPI {
 
     const headers = {
       ...this.headers,
-      Authorization: `Bearer ${userAuth.accessToken}`,
+      Authorization: `Bearer ${wildduckUserAuth.accessToken}`,
     };
 
     const response = await this.networkClient.request<Blob>(url, {
@@ -812,12 +814,12 @@ class WildduckAPI {
 
   // Forward a stored message
   async forwardMessage(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     request: WildduckForwardMessageRequest,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -830,18 +832,18 @@ class WildduckAPI {
       {
         method: "POST",
         body: request,
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Submit a draft message for delivery
   async submitDraft(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     if (!isValidObjectId(mailboxId)) {
       throw new Error(
@@ -853,24 +855,24 @@ class WildduckAPI {
       `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/submit`,
       {
         method: "POST",
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Submit a new message for delivery
   async submitMessage(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     request: WildduckSubmitMessageRequest,
   ): Promise<WildduckSubmitMessageResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     return this.request<WildduckSubmitMessageResponse>(
       `/users/${validatedUserId}/submit`,
       {
         method: "POST",
         body: request,
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
@@ -881,46 +883,46 @@ class WildduckAPI {
 
   // Get autoreply/vacation responder settings
   async getAutoreply(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckAutoreplyResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     return this.request<WildduckAutoreplyResponse>(
       `/users/${validatedUserId}/autoreply`,
       {
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Update autoreply/vacation responder settings
   async updateAutoreply(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     request: WildduckAutoreplyRequest,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/autoreply`,
       {
         method: "PUT",
         body: request,
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }
 
   // Disable autoreply/vacation responder
   async deleteAutoreply(
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckSuccessResponse> {
-    const validatedUserId = validateUserId(userAuth.userId);
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     return this.request<WildduckSuccessResponse>(
       `/users/${validatedUserId}/autoreply`,
       {
         method: "DELETE",
-        userAuth,
+        wildduckUserAuth,
       },
     );
   }

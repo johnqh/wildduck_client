@@ -9,7 +9,7 @@ interface SpamSettingsInternal {
 }
 
 export interface UpdateSpamParams {
-  userAuth: WildduckUserAuth;
+  wildduckUserAuth: WildduckUserAuth;
   spamLevel?: number; // 0-100
   fromWhitelist?: string[]; // Array of email addresses or patterns (wildcards allowed)
 }
@@ -20,43 +20,43 @@ export interface UpdateSpamParams {
  */
 export const useWildduckUserSpam = (
   api: WildduckAPI,
-  userAuth?: WildduckUserAuth,
+  wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
-  const userId = userAuth?.userId;
+  const userId = wildduckUserAuth?.userId;
 
   // Query to get user spam settings
   const spamQueryFn = useCallback(async (): Promise<
     SpamSettingsInternal | undefined
   > => {
-    if (!userAuth) throw new Error("User auth is required");
+    if (!wildduckUserAuth) throw new Error("User auth is required");
     const user = (await api.getUser(
-      userAuth,
+      wildduckUserAuth,
     )) as unknown as WildduckUserResponse;
     return {
       spamLevel: user.spamLevel,
       fromWhitelist: user.fromWhitelist || [],
     };
-  }, [userAuth, api]);
+  }, [wildduckUserAuth, api]);
 
   const spamQuery = useQuery({
     queryKey: ["user", userId, "spam"],
     queryFn: spamQueryFn,
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   // Mutation to update spam settings
   const updateSpam = useMutation({
     mutationFn: async (params: UpdateSpamParams) => {
-      const { userAuth, ...settings } = params;
-      return await api.updateUser(userAuth, settings);
+      const { wildduckUserAuth, ...settings } = params;
+      return await api.updateUser(wildduckUserAuth, settings);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "spam"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "spam"],
       });
     },
   });
@@ -64,23 +64,23 @@ export const useWildduckUserSpam = (
   // Mutation to update spam level only
   const updateSpamLevel = useMutation({
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       spamLevel,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       spamLevel: number;
     }) => {
       if (spamLevel < 0 || spamLevel > 100) {
         throw new Error("Spam level must be between 0 and 100");
       }
-      return await api.updateUser(userAuth, { spamLevel });
+      return await api.updateUser(wildduckUserAuth, { spamLevel });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "spam"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "spam"],
       });
     },
   });
@@ -88,25 +88,27 @@ export const useWildduckUserSpam = (
   // Mutation to add address to whitelist
   const addToWhitelist = useMutation({
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       address,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       address: string;
     }) => {
       const user = (await api.getUser(
-        userAuth,
+        wildduckUserAuth,
       )) as unknown as WildduckUserResponse;
       const currentWhitelist = user.fromWhitelist || [];
       const newWhitelist = [...currentWhitelist, address];
-      return await api.updateUser(userAuth, { fromWhitelist: newWhitelist });
+      return await api.updateUser(wildduckUserAuth, {
+        fromWhitelist: newWhitelist,
+      });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "spam"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "spam"],
       });
     },
   });
@@ -114,40 +116,44 @@ export const useWildduckUserSpam = (
   // Mutation to remove address from whitelist
   const removeFromWhitelist = useMutation({
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       address,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       address: string;
     }) => {
       const user = (await api.getUser(
-        userAuth,
+        wildduckUserAuth,
       )) as unknown as WildduckUserResponse;
       const currentWhitelist = user.fromWhitelist || [];
       const newWhitelist = currentWhitelist.filter(
         (a: string) => a !== address,
       );
-      return await api.updateUser(userAuth, { fromWhitelist: newWhitelist });
+      return await api.updateUser(wildduckUserAuth, {
+        fromWhitelist: newWhitelist,
+      });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "spam"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "spam"],
       });
     },
   });
 
   // Mutation to clear whitelist
   const clearWhitelist = useMutation({
-    mutationFn: async (userAuth: WildduckUserAuth) => {
-      return await api.updateUser(userAuth, { fromWhitelist: [] });
+    mutationFn: async (wildduckUserAuth: WildduckUserAuth) => {
+      return await api.updateUser(wildduckUserAuth, { fromWhitelist: [] });
     },
-    onSuccess: (_, userAuth) => {
-      queryClient.invalidateQueries({ queryKey: ["user", userAuth.userId] });
+    onSuccess: (_, wildduckUserAuth) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", userAuth.userId, "spam"],
+        queryKey: ["user", wildduckUserAuth.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", wildduckUserAuth.userId, "spam"],
       });
     },
   });

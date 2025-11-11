@@ -12,7 +12,7 @@ import type {
 
 interface UseWildduckUploadMessageReturn {
   uploadMessage: (
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     params: WildduckUploadMessageRequest,
   ) => Promise<WildduckUploadMessageResponse>;
@@ -50,16 +50,20 @@ export const useWildduckUploadMessage = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       mailboxId,
       params,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       params: WildduckUploadMessageRequest;
     }): Promise<WildduckUploadMessageResponse> => {
       try {
-        return await wildduckClient.uploadMessage(userAuth, mailboxId, params);
+        return await wildduckClient.uploadMessage(
+          wildduckUserAuth,
+          mailboxId,
+          params,
+        );
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -79,23 +83,27 @@ export const useWildduckUploadMessage = (
       queryClient.invalidateQueries({
         queryKey: [
           "wildduck-messages",
-          variables.userAuth.userId,
+          variables.wildduckUserAuth.userId,
           variables.mailboxId,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-mailboxes", variables.userAuth.userId],
+        queryKey: ["wildduck-mailboxes", variables.wildduckUserAuth.userId],
       });
     },
   });
 
   const uploadMessage = useCallback(
     async (
-      userAuth: WildduckUserAuth,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       params: WildduckUploadMessageRequest,
     ) => {
-      return uploadMutation.mutateAsync({ userAuth, mailboxId, params });
+      return uploadMutation.mutateAsync({
+        wildduckUserAuth,
+        mailboxId,
+        params,
+      });
     },
     [uploadMutation],
   );

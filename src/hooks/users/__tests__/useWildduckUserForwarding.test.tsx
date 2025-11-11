@@ -124,7 +124,7 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateForwarding({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         targets: ["new@example.com"],
         mtaRelay: "smtp://relay.example.com:587",
       });
@@ -156,7 +156,7 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.addTargetAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         target: "new@example.com",
       });
 
@@ -183,7 +183,7 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.addTargetAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         target: "first@example.com",
       });
 
@@ -211,7 +211,7 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.removeTargetAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         target: "remove@example.com",
       });
 
@@ -238,7 +238,7 @@ describe("useUserForwarding", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.removeTargetAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         target: "nonexistent@example.com",
       });
 

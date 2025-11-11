@@ -6,7 +6,7 @@ import { type WildduckConfig } from "@sudobility/types";
 import type { WildduckUserAuth } from "@sudobility/types";
 
 export interface UseWildduckGetMessageAttachmentParams {
-  userAuth?: WildduckUserAuth;
+  wildduckUserAuth?: WildduckUserAuth;
   mailboxId?: string;
   messageId?: number;
   attachmentId?: string;
@@ -19,7 +19,7 @@ export interface UseWildduckGetMessageAttachmentParams {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
- * @param params - Query parameters including userAuth, mailboxId, messageId, and attachmentId
+ * @param params - Query parameters including wildduckUserAuth, mailboxId, messageId, and attachmentId
  * @returns React Query result with attachment blob
  */
 export const useWildduckGetMessageAttachment = (
@@ -28,7 +28,7 @@ export const useWildduckGetMessageAttachment = (
   params: UseWildduckGetMessageAttachmentParams = {},
 ) => {
   const {
-    userAuth,
+    wildduckUserAuth,
     mailboxId,
     messageId,
     attachmentId,
@@ -43,20 +43,20 @@ export const useWildduckGetMessageAttachment = (
   return useQuery({
     queryKey: [
       "wildduck-message-attachment",
-      userAuth?.userId,
+      wildduckUserAuth?.userId,
       mailboxId,
       messageId,
       attachmentId,
     ],
     queryFn: async () => {
-      if (!userAuth) throw new Error("userAuth is required");
+      if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
       if (!mailboxId) throw new Error("mailboxId is required");
       if (!messageId) throw new Error("messageId is required");
       if (!attachmentId) throw new Error("attachmentId is required");
 
       try {
         return await api.getMessageAttachment(
-          userAuth,
+          wildduckUserAuth,
           mailboxId,
           messageId,
           attachmentId,
@@ -75,7 +75,10 @@ export const useWildduckGetMessageAttachment = (
       }
     },
     enabled:
-      !!userAuth && !!mailboxId && messageId !== undefined && !!attachmentId,
+      !!wildduckUserAuth &&
+      !!mailboxId &&
+      messageId !== undefined &&
+      !!attachmentId,
   });
 };
 

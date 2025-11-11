@@ -9,7 +9,7 @@ export interface UserQuotaInfo {
 }
 
 export interface UpdateQuotaParams {
-  userAuth: WildduckUserAuth;
+  wildduckUserAuth: WildduckUserAuth;
   quota: number; // Allowed quota in bytes
 }
 
@@ -25,37 +25,37 @@ export interface RecalculateQuotaResult {
  */
 export const useWildduckUserQuota = (
   api: WildduckAPI,
-  userAuth?: WildduckUserAuth,
+  wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
-  const userId = userAuth?.userId;
+  const userId = wildduckUserAuth?.userId;
 
   // Query to get user info (includes quota)
   const quotaQueryFn = useCallback(async () => {
-    if (!userAuth) throw new Error("User auth is required");
+    if (!wildduckUserAuth) throw new Error("User auth is required");
     const user = (await api.getUser(
-      userAuth,
+      wildduckUserAuth,
     )) as unknown as WildduckUserResponse;
     return user.limits?.quota;
-  }, [userAuth, api]);
+  }, [wildduckUserAuth, api]);
 
   const quotaQuery = useQuery({
     queryKey: ["user", userId, "quota"],
     queryFn: quotaQueryFn,
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   // Mutation to update quota limit
   const updateQuota = useMutation({
-    mutationFn: async ({ userAuth, quota }: UpdateQuotaParams) => {
-      return await api.updateUser(userAuth, { quota });
+    mutationFn: async ({ wildduckUserAuth, quota }: UpdateQuotaParams) => {
+      return await api.updateUser(wildduckUserAuth, { quota });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "quota"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "quota"],
       });
     },
   });

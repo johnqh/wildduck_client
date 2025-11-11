@@ -128,7 +128,7 @@ describe("useUserLimits", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateLimits({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         recipients: 200,
         forwards: 100,
       });
@@ -159,7 +159,7 @@ describe("useUserLimits", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updateLimitsAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         imapMaxConnections: 10,
       });
 
@@ -186,7 +186,7 @@ describe("useUserLimits", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.updateLimitsAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         recipients: 150,
       });
 
@@ -217,7 +217,7 @@ describe("useUserLimits", () => {
 
       await expect(
         result.current.updateLimitsAsync({
-          userAuth: TEST_USER_AUTH,
+          wildduckUserAuth: TEST_USER_AUTH,
           recipients: 200,
         }),
       ).rejects.toThrow("Update failed");

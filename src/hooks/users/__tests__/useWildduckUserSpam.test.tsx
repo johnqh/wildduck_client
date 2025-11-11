@@ -120,7 +120,7 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateSpam({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         spamLevel: 80,
         fromWhitelist: ["safe@example.com"],
       });
@@ -152,7 +152,7 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updateSpamLevelAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         spamLevel: 90,
       });
 
@@ -178,7 +178,7 @@ describe("useUserSpam", () => {
 
       await expect(
         result.current.updateSpamLevelAsync({
-          userAuth: TEST_USER_AUTH,
+          wildduckUserAuth: TEST_USER_AUTH,
           spamLevel: -1,
         }),
       ).rejects.toThrow("Spam level must be between 0 and 100");
@@ -201,7 +201,7 @@ describe("useUserSpam", () => {
 
       await expect(
         result.current.updateSpamLevelAsync({
-          userAuth: TEST_USER_AUTH,
+          wildduckUserAuth: TEST_USER_AUTH,
           spamLevel: 101,
         }),
       ).rejects.toThrow("Spam level must be between 0 and 100");
@@ -224,7 +224,7 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updateSpamLevelAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         spamLevel: 0,
       });
       expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
@@ -232,7 +232,7 @@ describe("useUserSpam", () => {
       });
 
       await result.current.updateSpamLevelAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         spamLevel: 100,
       });
       expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
@@ -259,7 +259,7 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.addToWhitelistAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         address: "new@example.com",
       });
 
@@ -286,7 +286,7 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.addToWhitelistAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         address: "first@example.com",
       });
 
@@ -314,7 +314,7 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.removeFromWhitelistAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         address: "remove@example.com",
       });
 
@@ -341,7 +341,7 @@ describe("useUserSpam", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.removeFromWhitelistAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         address: "nonexistent@example.com",
       });
 

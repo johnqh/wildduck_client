@@ -6,7 +6,7 @@ import type {
 } from "@sudobility/types";
 
 export interface UseWildduckSearchMessagesParams {
-  userAuth?: WildduckUserAuth;
+  wildduckUserAuth?: WildduckUserAuth;
   query?: string;
   limit?: number;
   page?: number;
@@ -19,7 +19,7 @@ export interface UseWildduckSearchMessagesParams {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
- * @param params - Query parameters including userAuth, query string, and pagination options
+ * @param params - Query parameters including wildduckUserAuth, query string, and pagination options
  * @returns React Query result with search results
  */
 export const useWildduckSearchMessages = (
@@ -27,18 +27,24 @@ export const useWildduckSearchMessages = (
   config: WildduckConfig,
   params: UseWildduckSearchMessagesParams = {},
 ) => {
-  const { userAuth, query, limit = 50, page = 1, devMode = false } = params;
+  const {
+    wildduckUserAuth,
+    query,
+    limit = 50,
+    page = 1,
+    devMode = false,
+  } = params;
 
   return useQuery({
     queryKey: [
       "wildduck-search-messages",
-      userAuth?.userId,
+      wildduckUserAuth?.userId,
       query,
       limit,
       page,
     ],
     queryFn: async () => {
-      if (!userAuth) throw new Error("userAuth is required");
+      if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
       if (!query) throw new Error("query is required");
 
       try {
@@ -62,7 +68,7 @@ export const useWildduckSearchMessages = (
           total?: number;
           page?: number;
         }>(
-          `${apiUrl}/users/${userAuth.userId}/search?q=${encodeURIComponent(query)}&limit=${limit}&page=${page}`,
+          `${apiUrl}/users/${wildduckUserAuth.userId}/search?q=${encodeURIComponent(query)}&limit=${limit}&page=${page}`,
           { method: "GET", headers },
         );
 
@@ -84,7 +90,7 @@ export const useWildduckSearchMessages = (
         throw err;
       }
     },
-    enabled: !!userAuth && !!query,
+    enabled: !!wildduckUserAuth && !!query,
   });
 };
 

@@ -12,7 +12,7 @@ import type {
 
 interface UseWildduckSendMessageReturn {
   sendMessage: (
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     params: WildduckSubmitMessageRequest,
   ) => Promise<WildduckSubmitMessageResponse>;
   isLoading: boolean;
@@ -48,14 +48,14 @@ export const useWildduckSendMessage = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       params,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       params: WildduckSubmitMessageRequest;
     }): Promise<WildduckSubmitMessageResponse> => {
       try {
-        return await wildduckClient.submitMessage(userAuth, params);
+        return await wildduckClient.submitMessage(wildduckUserAuth, params);
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -77,17 +77,17 @@ export const useWildduckSendMessage = (
     onSuccess: (_, variables) => {
       // Invalidate messages queries to refetch
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userAuth.userId],
+        queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
     },
   });
 
   const sendMessage = useCallback(
     async (
-      userAuth: WildduckUserAuth,
+      wildduckUserAuth: WildduckUserAuth,
       params: WildduckSubmitMessageRequest,
     ) => {
-      return sendMutation.mutateAsync({ userAuth, params });
+      return sendMutation.mutateAsync({ wildduckUserAuth, params });
     },
     [sendMutation],
   );

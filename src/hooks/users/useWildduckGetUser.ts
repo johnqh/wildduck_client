@@ -6,7 +6,7 @@ import { type WildduckConfig } from "@sudobility/types";
 import type { WildduckUserAuth } from "@sudobility/types";
 
 export interface UseWildduckGetUserParams {
-  userAuth?: WildduckUserAuth;
+  wildduckUserAuth?: WildduckUserAuth;
   devMode?: boolean;
 }
 
@@ -16,7 +16,7 @@ export interface UseWildduckGetUserParams {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
- * @param params - Query parameters including userAuth
+ * @param params - Query parameters including wildduckUserAuth
  * @returns React Query result with user data
  */
 export const useWildduckGetUser = (
@@ -24,7 +24,7 @@ export const useWildduckGetUser = (
   config: WildduckConfig,
   params: UseWildduckGetUserParams = {},
 ) => {
-  const { userAuth, devMode = false } = params;
+  const { wildduckUserAuth, devMode = false } = params;
 
   const api = useMemo(
     () => new WildduckAPI(networkClient, config),
@@ -32,19 +32,19 @@ export const useWildduckGetUser = (
   );
 
   const queryFn = useCallback(async () => {
-    if (!userAuth) throw new Error("userAuth is required");
+    if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
 
     try {
-      return await api.getUser(userAuth);
+      return await api.getUser(wildduckUserAuth);
     } catch (err) {
       if (devMode) {
         console.warn("[DevMode] getUser failed, returning mock data:", err);
         return {
           success: true,
-          id: userAuth.userId,
-          username: `${userAuth.userId}@example.com`,
-          name: `Mock User ${userAuth.userId}`,
-          address: `${userAuth.userId}@example.com`,
+          id: wildduckUserAuth.userId,
+          username: `${wildduckUserAuth.userId}@example.com`,
+          name: `Mock User ${wildduckUserAuth.userId}`,
+          address: `${wildduckUserAuth.userId}@example.com`,
           quota: {
             allowed: 1073741824,
             used: 134217728,
@@ -58,12 +58,12 @@ export const useWildduckGetUser = (
       }
       throw err;
     }
-  }, [userAuth, api, devMode]);
+  }, [wildduckUserAuth, api, devMode]);
 
   const query = useQuery({
-    queryKey: ["wildduck-user", userAuth?.userId],
+    queryKey: ["wildduck-user", wildduckUserAuth?.userId],
     queryFn,
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   return useMemo(

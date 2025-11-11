@@ -6,7 +6,7 @@ import { type WildduckConfig } from "@sudobility/types";
 import type { WildduckUserAuth } from "@sudobility/types";
 
 export interface UseWildduckGetMessageSourceParams {
-  userAuth?: WildduckUserAuth;
+  wildduckUserAuth?: WildduckUserAuth;
   mailboxId?: string;
   messageId?: number;
   devMode?: boolean;
@@ -18,7 +18,7 @@ export interface UseWildduckGetMessageSourceParams {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
- * @param params - Query parameters including userAuth, mailboxId, and messageId
+ * @param params - Query parameters including wildduckUserAuth, mailboxId, and messageId
  * @returns React Query result with message source
  */
 export const useWildduckGetMessageSource = (
@@ -26,7 +26,7 @@ export const useWildduckGetMessageSource = (
   config: WildduckConfig,
   params: UseWildduckGetMessageSourceParams = {},
 ) => {
-  const { userAuth, mailboxId, messageId, devMode = false } = params;
+  const { wildduckUserAuth, mailboxId, messageId, devMode = false } = params;
 
   const api = useMemo(
     () => new WildduckAPI(networkClient, config),
@@ -36,17 +36,21 @@ export const useWildduckGetMessageSource = (
   return useQuery({
     queryKey: [
       "wildduck-message-source",
-      userAuth?.userId,
+      wildduckUserAuth?.userId,
       mailboxId,
       messageId,
     ],
     queryFn: async () => {
-      if (!userAuth) throw new Error("userAuth is required");
+      if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
       if (!mailboxId) throw new Error("mailboxId is required");
       if (!messageId) throw new Error("messageId is required");
 
       try {
-        return await api.getMessageSource(userAuth, mailboxId, messageId);
+        return await api.getMessageSource(
+          wildduckUserAuth,
+          mailboxId,
+          messageId,
+        );
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -58,7 +62,7 @@ export const useWildduckGetMessageSource = (
         throw err;
       }
     },
-    enabled: !!userAuth && !!mailboxId && messageId !== undefined,
+    enabled: !!wildduckUserAuth && !!mailboxId && messageId !== undefined,
   });
 };
 

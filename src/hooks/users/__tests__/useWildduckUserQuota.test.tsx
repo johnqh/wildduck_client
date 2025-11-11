@@ -116,7 +116,7 @@ describe("useUserQuota", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateQuota({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         quota: 2147483648,
       });
 
@@ -147,7 +147,7 @@ describe("useUserQuota", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.updateQuotaAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         quota: 2147483648,
       });
 
@@ -180,7 +180,7 @@ describe("useUserQuota", () => {
 
       await expect(
         result.current.updateQuotaAsync({
-          userAuth: TEST_USER_AUTH,
+          wildduckUserAuth: TEST_USER_AUTH,
           quota: 2147483648,
         }),
       ).rejects.toThrow("Update failed");

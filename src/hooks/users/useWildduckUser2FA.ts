@@ -8,7 +8,7 @@ export interface TwoFASettings {
 }
 
 export interface DisableTwoFAParams {
-  userAuth: WildduckUserAuth;
+  wildduckUserAuth: WildduckUserAuth;
 }
 
 /**
@@ -21,41 +21,41 @@ export interface DisableTwoFAParams {
  */
 export const useWildduckUser2FA = (
   api: WildduckAPI,
-  userAuth?: WildduckUserAuth,
+  wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
-  const userId = userAuth?.userId;
+  const userId = wildduckUserAuth?.userId;
 
   // Query to get 2FA status
   const twoFAQueryFn = useCallback(async (): Promise<
     TwoFASettings | undefined
   > => {
-    if (!userAuth) throw new Error("User auth is required");
+    if (!wildduckUserAuth) throw new Error("User auth is required");
     const user = (await api.getUser(
-      userAuth,
+      wildduckUserAuth,
     )) as unknown as WildduckUserResponse;
     return {
       enabled2fa: user.enabled2fa || [],
     };
-  }, [userAuth, api]);
+  }, [wildduckUserAuth, api]);
 
   const twoFAQuery = useQuery({
     queryKey: ["user", userId, "2fa"],
     queryFn: twoFAQueryFn,
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   // Mutation to disable all 2FA methods
   const disable2FA = useMutation({
-    mutationFn: async ({ userAuth }: DisableTwoFAParams) => {
-      return await api.updateUser(userAuth, { disable2fa: true });
+    mutationFn: async ({ wildduckUserAuth }: DisableTwoFAParams) => {
+      return await api.updateUser(wildduckUserAuth, { disable2fa: true });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "2fa"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "2fa"],
       });
     },
   });

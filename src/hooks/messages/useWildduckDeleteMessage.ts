@@ -11,7 +11,7 @@ import type {
 
 interface UseWildduckDeleteMessageReturn {
   deleteMessage: (
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
   ) => Promise<WildduckSuccessResponse>;
@@ -48,17 +48,17 @@ export const useWildduckDeleteMessage = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       mailboxId,
       messageId,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: number;
     }): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.deleteMessage(
-          userAuth,
+          wildduckUserAuth,
           mailboxId,
           messageId,
         );
@@ -78,23 +78,27 @@ export const useWildduckDeleteMessage = (
       queryClient.invalidateQueries({
         queryKey: [
           "wildduck-message",
-          variables.userAuth.userId,
+          variables.wildduckUserAuth.userId,
           variables.messageId,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userAuth.userId],
+        queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
     },
   });
 
   const deleteMessage = useCallback(
     async (
-      userAuth: WildduckUserAuth,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: number,
     ) => {
-      return deleteMutation.mutateAsync({ userAuth, mailboxId, messageId });
+      return deleteMutation.mutateAsync({
+        wildduckUserAuth,
+        mailboxId,
+        messageId,
+      });
     },
     [deleteMutation],
   );

@@ -9,7 +9,7 @@ export interface ForwardingSettings {
 }
 
 export interface UpdateForwardingParams {
-  userAuth: WildduckUserAuth;
+  wildduckUserAuth: WildduckUserAuth;
   targets?: string[]; // Array of email addresses or relay URLs
   mtaRelay?: string; // SMTP relay URL (e.g., "smtp://mx2.zone.eu:25")
 }
@@ -20,39 +20,39 @@ export interface UpdateForwardingParams {
  */
 export const useWildduckUserForwarding = (
   api: WildduckAPI,
-  userAuth?: WildduckUserAuth,
+  wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
-  const userId = userAuth?.userId;
+  const userId = wildduckUserAuth?.userId;
 
   // Query to get user forwarding settings
   const forwardingQuery = useQuery({
     queryKey: ["user", userId, "forwarding"],
     queryFn: async (): Promise<ForwardingSettings | undefined> => {
-      if (!userAuth) throw new Error("User auth is required");
+      if (!wildduckUserAuth) throw new Error("User auth is required");
       const user = (await api.getUser(
-        userAuth,
+        wildduckUserAuth,
       )) as unknown as WildduckUserResponse;
       return {
         targets: user.targets || [],
         mtaRelay: user.mtaRelay,
       };
     },
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   // Mutation to update forwarding settings
   const updateForwarding = useMutation({
     mutationFn: async (params: UpdateForwardingParams) => {
-      const { userAuth, ...settings } = params;
-      return await api.updateUser(userAuth, settings);
+      const { wildduckUserAuth, ...settings } = params;
+      return await api.updateUser(wildduckUserAuth, settings);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "forwarding"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "forwarding"],
       });
     },
   });
@@ -60,26 +60,26 @@ export const useWildduckUserForwarding = (
   // Mutation to add forwarding target
   const addTarget = useMutation({
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       target,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       target: string;
     }) => {
       // Get current targets and add new one
       const user = (await api.getUser(
-        userAuth,
+        wildduckUserAuth,
       )) as unknown as WildduckUserResponse;
       const currentTargets = user.targets || [];
       const newTargets = [...currentTargets, target];
-      return await api.updateUser(userAuth, { targets: newTargets });
+      return await api.updateUser(wildduckUserAuth, { targets: newTargets });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "forwarding"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "forwarding"],
       });
     },
   });
@@ -87,39 +87,41 @@ export const useWildduckUserForwarding = (
   // Mutation to remove forwarding target
   const removeTarget = useMutation({
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       target,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       target: string;
     }) => {
       // Get current targets and remove specified one
       const user = (await api.getUser(
-        userAuth,
+        wildduckUserAuth,
       )) as unknown as WildduckUserResponse;
       const currentTargets = user.targets || [];
       const newTargets = currentTargets.filter((t: string) => t !== target);
-      return await api.updateUser(userAuth, { targets: newTargets });
+      return await api.updateUser(wildduckUserAuth, { targets: newTargets });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "forwarding"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "forwarding"],
       });
     },
   });
 
   // Mutation to clear all forwarding targets
   const clearTargets = useMutation({
-    mutationFn: async (userAuth: WildduckUserAuth) => {
-      return await api.updateUser(userAuth, { targets: [] });
+    mutationFn: async (wildduckUserAuth: WildduckUserAuth) => {
+      return await api.updateUser(wildduckUserAuth, { targets: [] });
     },
-    onSuccess: (_, userAuth) => {
-      queryClient.invalidateQueries({ queryKey: ["user", userAuth.userId] });
+    onSuccess: (_, wildduckUserAuth) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", userAuth.userId, "forwarding"],
+        queryKey: ["user", wildduckUserAuth.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", wildduckUserAuth.userId, "forwarding"],
       });
     },
   });
@@ -136,36 +138,38 @@ export const useWildduckUserForwarding = (
   );
 
   const handleAddTarget = useCallback(
-    (params: { userAuth: WildduckUserAuth; target: string }) =>
+    (params: { wildduckUserAuth: WildduckUserAuth; target: string }) =>
       addTarget.mutate(params),
     [addTarget],
   );
 
   const handleAddTargetAsync = useCallback(
-    async (params: { userAuth: WildduckUserAuth; target: string }) =>
+    async (params: { wildduckUserAuth: WildduckUserAuth; target: string }) =>
       addTarget.mutateAsync(params),
     [addTarget],
   );
 
   const handleRemoveTarget = useCallback(
-    (params: { userAuth: WildduckUserAuth; target: string }) =>
+    (params: { wildduckUserAuth: WildduckUserAuth; target: string }) =>
       removeTarget.mutate(params),
     [removeTarget],
   );
 
   const handleRemoveTargetAsync = useCallback(
-    async (params: { userAuth: WildduckUserAuth; target: string }) =>
+    async (params: { wildduckUserAuth: WildduckUserAuth; target: string }) =>
       removeTarget.mutateAsync(params),
     [removeTarget],
   );
 
   const handleClearTargets = useCallback(
-    (userAuth: WildduckUserAuth) => clearTargets.mutate(userAuth),
+    (wildduckUserAuth: WildduckUserAuth) =>
+      clearTargets.mutate(wildduckUserAuth),
     [clearTargets],
   );
 
   const handleClearTargetsAsync = useCallback(
-    async (userAuth: WildduckUserAuth) => clearTargets.mutateAsync(userAuth),
+    async (wildduckUserAuth: WildduckUserAuth) =>
+      clearTargets.mutateAsync(wildduckUserAuth),
     [clearTargets],
   );
 

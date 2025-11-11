@@ -15,7 +15,7 @@ export interface EncryptionSettings {
 }
 
 export interface UpdateEncryptionParams {
-  userAuth: WildduckUserAuth;
+  wildduckUserAuth: WildduckUserAuth;
   encryptMessages?: boolean;
   encryptForwarded?: boolean;
   pubKey?: string; // Use empty string to remove the key
@@ -27,18 +27,18 @@ export interface UpdateEncryptionParams {
  */
 export const useWildduckUserEncryption = (
   api: WildduckAPI,
-  userAuth?: WildduckUserAuth,
+  wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
-  const userId = userAuth?.userId;
+  const userId = wildduckUserAuth?.userId;
 
   // Query to get user encryption settings
   const encryptionQueryFn = useCallback(async (): Promise<
     EncryptionSettings | undefined
   > => {
-    if (!userAuth) throw new Error("User auth is required");
+    if (!wildduckUserAuth) throw new Error("User auth is required");
     const user = (await api.getUser(
-      userAuth,
+      wildduckUserAuth,
     )) as unknown as WildduckUserResponse;
     return {
       encryptMessages: user.encryptMessages,
@@ -46,26 +46,26 @@ export const useWildduckUserEncryption = (
       pubKey: user.pubKey,
       keyInfo: user.keyInfo,
     };
-  }, [userAuth, api]);
+  }, [wildduckUserAuth, api]);
 
   const encryptionQuery = useQuery({
     queryKey: ["user", userId, "encryption"],
     queryFn: encryptionQueryFn,
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   // Mutation to update encryption settings
   const updateEncryption = useMutation({
     mutationFn: async (params: UpdateEncryptionParams) => {
-      const { userAuth, ...settings } = params;
-      return await api.updateUser(userAuth, settings);
+      const { wildduckUserAuth, ...settings } = params;
+      return await api.updateUser(wildduckUserAuth, settings);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "encryption"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "encryption"],
       });
     },
   });
@@ -73,31 +73,33 @@ export const useWildduckUserEncryption = (
   // Mutation to upload/update PGP public key
   const updatePubKey = useMutation({
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       pubKey,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       pubKey: string;
     }) => {
-      return await api.updateUser(userAuth, { pubKey });
+      return await api.updateUser(wildduckUserAuth, { pubKey });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "encryption"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "encryption"],
       });
     },
   });
 
   // Mutation to remove PGP public key
   const removePubKey = useMutation({
-    mutationFn: async (userAuth: WildduckUserAuth) => {
-      return await api.updateUser(userAuth, { pubKey: "" });
+    mutationFn: async (wildduckUserAuth: WildduckUserAuth) => {
+      return await api.updateUser(wildduckUserAuth, { pubKey: "" });
     },
-    onSuccess: (_, userAuth) => {
-      queryClient.invalidateQueries({ queryKey: ["user", userAuth.userId] });
+    onSuccess: (_, wildduckUserAuth) => {
+      queryClient.invalidateQueries({
+        queryKey: ["user", wildduckUserAuth.userId],
+      });
       queryClient.invalidateQueries({
         queryKey: ["user", userId, "encryption"],
       });

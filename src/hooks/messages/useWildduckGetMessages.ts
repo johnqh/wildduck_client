@@ -9,19 +9,19 @@ import {
 import type { WildduckUserAuth } from "@sudobility/types";
 
 export interface UseWildduckGetMessagesParams {
-  userAuth?: WildduckUserAuth;
+  wildduckUserAuth?: WildduckUserAuth;
   mailboxId?: string;
   options?: Omit<GetMessagesRequest, "sess" | "ip">;
 }
 
 /**
  * React Query hook for fetching messages from a mailbox
- * Automatically fetches when userAuth and mailboxId are provided
+ * Automatically fetches when wildduckUserAuth and mailboxId are provided
  * Includes caching and automatic refetching
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
- * @param params - Query parameters (userAuth, mailboxId, options)
+ * @param params - Query parameters (wildduckUserAuth, mailboxId, options)
  * @returns React Query result with messages data and state
  */
 export const useWildduckGetMessages = (
@@ -29,7 +29,7 @@ export const useWildduckGetMessages = (
   config: WildduckConfig,
   params: UseWildduckGetMessagesParams = {},
 ) => {
-  const { userAuth, mailboxId, options } = params;
+  const { wildduckUserAuth, mailboxId, options } = params;
 
   const api = useMemo(
     () => new WildduckAPI(networkClient, config),
@@ -37,14 +37,14 @@ export const useWildduckGetMessages = (
   );
 
   return useQuery({
-    queryKey: ["messages", userAuth?.userId, mailboxId, options],
+    queryKey: ["messages", wildduckUserAuth?.userId, mailboxId, options],
     queryFn: async () => {
-      if (!userAuth || !mailboxId) {
-        throw new Error("userAuth and mailboxId are required");
+      if (!wildduckUserAuth || !mailboxId) {
+        throw new Error("wildduckUserAuth and mailboxId are required");
       }
-      return await api.getMessages(userAuth, mailboxId, options);
+      return await api.getMessages(wildduckUserAuth, mailboxId, options);
     },
-    enabled: !!userAuth && !!mailboxId,
+    enabled: !!wildduckUserAuth && !!mailboxId,
   });
 };
 

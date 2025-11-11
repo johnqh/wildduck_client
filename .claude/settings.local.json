@@ -41,7 +41,8 @@
       "Bash(git push:*)",
       "Bash(npm audit)",
       "Bash(npm run clean:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(do grep -c wildduckUserAuth $file)"
     ],
     "deny": [],
     "ask": []

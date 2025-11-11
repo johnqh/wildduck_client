@@ -12,7 +12,7 @@ import type {
 
 interface UseUpdateUserReturn {
   updateUser: (
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     params: WildduckUpdateUserRequest,
   ) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
@@ -48,14 +48,14 @@ export const useWildduckUpdateUser = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       params,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       params: WildduckUpdateUserRequest;
     }): Promise<WildduckSuccessResponse> => {
       try {
-        return await wildduckClient.updateUser(userAuth, params);
+        return await wildduckClient.updateUser(wildduckUserAuth, params);
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -70,7 +70,7 @@ export const useWildduckUpdateUser = (
     onSuccess: (_, variables) => {
       // Invalidate user detail and users list
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-user", variables.userAuth.userId],
+        queryKey: ["wildduck-user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
         queryKey: ["wildduck-users"],
@@ -79,8 +79,11 @@ export const useWildduckUpdateUser = (
   });
 
   const updateUser = useCallback(
-    async (userAuth: WildduckUserAuth, params: WildduckUpdateUserRequest) => {
-      return updateMutation.mutateAsync({ userAuth, params });
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+      params: WildduckUpdateUserRequest,
+    ) => {
+      return updateMutation.mutateAsync({ wildduckUserAuth, params });
     },
     [updateMutation],
   );

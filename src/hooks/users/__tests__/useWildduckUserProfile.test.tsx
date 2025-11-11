@@ -159,7 +159,7 @@ describe("useUserProfile", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateProfile({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         name: "Updated Name",
         language: "es",
       });
@@ -199,7 +199,7 @@ describe("useUserProfile", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.updateProfileAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         name: "New Name",
       });
 
@@ -238,7 +238,7 @@ describe("useUserProfile", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updatePasswordAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         password: "newpassword123",
       });
 
@@ -272,7 +272,7 @@ describe("useUserProfile", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updatePasswordAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         existingPassword: "oldpassword",
         password: "newpassword123",
       });
@@ -310,7 +310,7 @@ describe("useUserProfile", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updateTagsAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         tags: ["tag1", "tag2", "tag3"],
       });
 
@@ -346,7 +346,7 @@ describe("useUserProfile", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.setAccountStatusAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         disabled: true,
       });
 
@@ -380,7 +380,7 @@ describe("useUserProfile", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.setAccountStatusAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         suspended: true,
       });
 
@@ -414,7 +414,7 @@ describe("useUserProfile", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.setAccountStatusAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         disabled: true,
         suspended: true,
       });
@@ -450,7 +450,7 @@ describe("useUserProfile", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.setAccountStatusAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
       });
 
       expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {});
@@ -483,7 +483,7 @@ describe("useUserProfile", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.setAccountStatusAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         disabled: true,
       });
 

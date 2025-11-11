@@ -12,7 +12,7 @@ import type {
 
 interface UseWildduckUpdateMessageReturn {
   updateMessage: (
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     params: WildduckUpdateMessageRequest,
@@ -50,19 +50,19 @@ export const useWildduckUpdateMessage = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       mailboxId,
       messageId,
       params,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: number;
       params: WildduckUpdateMessageRequest;
     }): Promise<WildduckUpdateMessageResponse> => {
       try {
         return await wildduckClient.updateMessage(
-          userAuth,
+          wildduckUserAuth,
           mailboxId,
           messageId,
           params,
@@ -83,25 +83,25 @@ export const useWildduckUpdateMessage = (
       queryClient.invalidateQueries({
         queryKey: [
           "wildduck-message",
-          variables.userAuth.userId,
+          variables.wildduckUserAuth.userId,
           variables.messageId,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userAuth.userId],
+        queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
     },
   });
 
   const updateMessage = useCallback(
     async (
-      userAuth: WildduckUserAuth,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: number,
       params: WildduckUpdateMessageRequest,
     ) => {
       return updateMutation.mutateAsync({
-        userAuth,
+        wildduckUserAuth,
         mailboxId,
         messageId,
         params,

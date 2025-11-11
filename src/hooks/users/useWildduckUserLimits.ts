@@ -8,7 +8,7 @@ import type {
 } from "@sudobility/types";
 
 export interface UpdateWildduckLimitsParams {
-  userAuth: WildduckUserAuth;
+  wildduckUserAuth: WildduckUserAuth;
   recipients?: number; // How many messages per 24 hour can be sent
   forwards?: number; // How many messages per 24 hour can be forwarded
   filters?: number; // How many filters are allowed
@@ -26,36 +26,36 @@ export interface UpdateWildduckLimitsParams {
  */
 export const useWildduckUserLimits = (
   api: WildduckAPI,
-  userAuth?: WildduckUserAuth,
+  wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
-  const userId = userAuth?.userId;
+  const userId = wildduckUserAuth?.userId;
 
   // Query to get user limits
   const limitsQuery = useQuery({
     queryKey: ["user", userId, "limits"],
     queryFn: async (): Promise<WildduckLimits | undefined> => {
-      if (!userAuth) throw new Error("User auth is required");
+      if (!wildduckUserAuth) throw new Error("User auth is required");
       const user = (await api.getUser(
-        userAuth,
+        wildduckUserAuth,
       )) as unknown as WildduckUserResponse;
       return user.limits;
     },
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   // Mutation to update limits
   const updateLimits = useMutation({
     mutationFn: async (params: UpdateWildduckLimitsParams) => {
-      const { userAuth, ...limits } = params;
-      return await api.updateUser(userAuth, limits);
+      const { wildduckUserAuth, ...limits } = params;
+      return await api.updateUser(wildduckUserAuth, limits);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "limits"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "limits"],
       });
     },
   });

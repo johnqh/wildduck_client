@@ -194,7 +194,7 @@ describe("useUser2FA", () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      result.current.disable2FA({ userAuth: TEST_USER_AUTH });
+      result.current.disable2FA({ wildduckUserAuth: TEST_USER_AUTH });
 
       await waitFor(() => expect(result.current.isDisabling).toBe(false));
 
@@ -220,7 +220,7 @@ describe("useUser2FA", () => {
 
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
-      await result.current.disable2FAAsync({ userAuth: TEST_USER_AUTH });
+      await result.current.disable2FAAsync({ wildduckUserAuth: TEST_USER_AUTH });
 
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["user", "user123"],
@@ -248,7 +248,7 @@ describe("useUser2FA", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await expect(
-        result.current.disable2FAAsync({ userAuth: TEST_USER_AUTH }),
+        result.current.disable2FAAsync({ wildduckUserAuth: TEST_USER_AUTH }),
       ).rejects.toThrow("Failed to disable 2FA");
 
       expect(result.current.disableError).toBeDefined();
@@ -271,7 +271,7 @@ describe("useUser2FA", () => {
 
       expect(result.current.isEnabled).toBe(false);
 
-      await result.current.disable2FAAsync({ userAuth: TEST_USER_AUTH });
+      await result.current.disable2FAAsync({ wildduckUserAuth: TEST_USER_AUTH });
 
       expect(mockApi.updateUser).toHaveBeenCalledWith(TEST_USER_AUTH, {
         disable2fa: true,

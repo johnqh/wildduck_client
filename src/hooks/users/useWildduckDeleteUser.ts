@@ -10,7 +10,9 @@ import type {
 } from "@sudobility/types";
 
 interface UseDeleteUserReturn {
-  deleteUser: (userAuth: WildduckUserAuth) => Promise<WildduckSuccessResponse>;
+  deleteUser: (
+    wildduckUserAuth: WildduckUserAuth,
+  ) => Promise<WildduckSuccessResponse>;
   isLoading: boolean;
   error: Optional<Error>;
   clearError: () => void;
@@ -44,10 +46,10 @@ export const useWildduckDeleteUser = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async (
-      userAuth: WildduckUserAuth,
+      wildduckUserAuth: WildduckUserAuth,
     ): Promise<WildduckSuccessResponse> => {
       try {
-        return await wildduckClient.deleteUser(userAuth);
+        return await wildduckClient.deleteUser(wildduckUserAuth);
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -59,21 +61,21 @@ export const useWildduckDeleteUser = (
         throw err;
       }
     },
-    onSuccess: (_, userAuth) => {
+    onSuccess: (_, wildduckUserAuth) => {
       // Invalidate users list
       queryClient.invalidateQueries({
         queryKey: ["wildduck-users"],
       });
       // Remove the specific user from cache
       queryClient.removeQueries({
-        queryKey: ["wildduck-user", userAuth.userId],
+        queryKey: ["wildduck-user", wildduckUserAuth.userId],
       });
     },
   });
 
   const deleteUser = useCallback(
-    async (userAuth: WildduckUserAuth) => {
-      return deleteMutation.mutateAsync(userAuth);
+    async (wildduckUserAuth: WildduckUserAuth) => {
+      return deleteMutation.mutateAsync(wildduckUserAuth);
     },
     [deleteMutation],
   );

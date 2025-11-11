@@ -119,7 +119,7 @@ describe("useUserEncryption", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       result.current.updateEncryption({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         encryptMessages: true,
         encryptForwarded: true,
       });
@@ -153,7 +153,7 @@ describe("useUserEncryption", () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
       await result.current.updateEncryptionAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         encryptMessages: true,
       });
 
@@ -188,7 +188,7 @@ describe("useUserEncryption", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await result.current.updatePubKeyAsync({
-        userAuth: TEST_USER_AUTH,
+        wildduckUserAuth: TEST_USER_AUTH,
         pubKey: newPubKey,
       });
 
@@ -219,7 +219,7 @@ describe("useUserEncryption", () => {
 
       await expect(
         result.current.updatePubKeyAsync({
-          userAuth: TEST_USER_AUTH,
+          wildduckUserAuth: TEST_USER_AUTH,
           pubKey: "invalid key",
         }),
       ).rejects.toThrow("Invalid key format");

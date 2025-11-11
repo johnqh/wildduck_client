@@ -6,7 +6,7 @@ import { type WildduckConfig } from "@sudobility/types";
 import type { WildduckUserAuth } from "@sudobility/types";
 
 export interface UseWildduckGetAddressesParams {
-  userAuth?: WildduckUserAuth;
+  wildduckUserAuth?: WildduckUserAuth;
   devMode?: boolean;
 }
 
@@ -16,7 +16,7 @@ export interface UseWildduckGetAddressesParams {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
- * @param params - Query parameters including userAuth
+ * @param params - Query parameters including wildduckUserAuth
  * @returns React Query result with addresses list
  */
 export const useWildduckGetAddresses = (
@@ -24,7 +24,7 @@ export const useWildduckGetAddresses = (
   config: WildduckConfig,
   params: UseWildduckGetAddressesParams = {},
 ) => {
-  const { userAuth, devMode = false } = params;
+  const { wildduckUserAuth, devMode = false } = params;
 
   const api = useMemo(
     () => new WildduckAPI(networkClient, config),
@@ -32,10 +32,10 @@ export const useWildduckGetAddresses = (
   );
 
   const queryFn = useCallback(async () => {
-    if (!userAuth) throw new Error("userAuth is required");
+    if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
 
     try {
-      return await api.getAddresses(userAuth);
+      return await api.getAddresses(wildduckUserAuth);
     } catch (err) {
       if (devMode) {
         console.warn(
@@ -50,12 +50,12 @@ export const useWildduckGetAddresses = (
       }
       throw err;
     }
-  }, [userAuth, api, devMode]);
+  }, [wildduckUserAuth, api, devMode]);
 
   const query = useQuery({
-    queryKey: ["wildduck-addresses", userAuth?.userId],
+    queryKey: ["wildduck-addresses", wildduckUserAuth?.userId],
     queryFn,
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   return useMemo(

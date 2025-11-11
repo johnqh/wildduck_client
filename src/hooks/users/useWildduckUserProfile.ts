@@ -20,7 +20,7 @@ export interface UserProfile {
 }
 
 export interface UpdateProfileParams {
-  userAuth: WildduckUserAuth;
+  wildduckUserAuth: WildduckUserAuth;
   name?: string;
   language?: string;
   retention?: number;
@@ -33,7 +33,7 @@ export interface UpdateProfileParams {
 }
 
 export interface UpdatePasswordParams {
-  userAuth: WildduckUserAuth;
+  wildduckUserAuth: WildduckUserAuth;
   existingPassword?: string;
   password: string;
   hashedPassword?: boolean;
@@ -46,18 +46,18 @@ export interface UpdatePasswordParams {
  */
 export const useWildduckUserProfile = (
   api: WildduckAPI,
-  userAuth?: WildduckUserAuth,
+  wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();
-  const userId = userAuth?.userId;
+  const userId = wildduckUserAuth?.userId;
 
   // Query to get user profile
   const profileQuery = useQuery({
     queryKey: ["user", userId, "profile"],
     queryFn: async (): Promise<UserProfile | undefined> => {
-      if (!userAuth) throw new Error("User auth is required");
+      if (!wildduckUserAuth) throw new Error("User auth is required");
       const user = (await api.getUser(
-        userAuth,
+        wildduckUserAuth,
       )) as unknown as WildduckUserResponse;
       return {
         username: user.username,
@@ -75,21 +75,21 @@ export const useWildduckUserProfile = (
         disabledScopes: user.disabledScopes || [],
       };
     },
-    enabled: !!userAuth,
+    enabled: !!wildduckUserAuth,
   });
 
   // Mutation to update profile
   const updateProfile = useMutation({
     mutationFn: async (params: UpdateProfileParams) => {
-      const { userAuth, ...updates } = params;
-      return await api.updateUser(userAuth, updates);
+      const { wildduckUserAuth, ...updates } = params;
+      return await api.updateUser(wildduckUserAuth, updates);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "profile"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "profile"],
       });
     },
   });
@@ -97,12 +97,12 @@ export const useWildduckUserProfile = (
   // Mutation to update password
   const updatePassword = useMutation({
     mutationFn: async (params: UpdatePasswordParams) => {
-      const { userAuth, ...passwordData } = params;
-      return await api.updateUser(userAuth, passwordData);
+      const { wildduckUserAuth, ...passwordData } = params;
+      return await api.updateUser(wildduckUserAuth, passwordData);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
     },
   });
@@ -110,20 +110,20 @@ export const useWildduckUserProfile = (
   // Mutation to update tags
   const updateTags = useMutation({
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       tags,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       tags: string[];
     }) => {
-      return await api.updateUser(userAuth, { tags });
+      return await api.updateUser(wildduckUserAuth, { tags });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "profile"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "profile"],
       });
     },
   });
@@ -131,25 +131,25 @@ export const useWildduckUserProfile = (
   // Mutation to disable/enable account
   const setAccountStatus = useMutation({
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       disabled,
       suspended,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       disabled?: boolean;
       suspended?: boolean;
     }) => {
       const updates: { disabled?: boolean; suspended?: boolean } = {};
       if (disabled !== undefined) updates.disabled = disabled;
       if (suspended !== undefined) updates.suspended = suspended;
-      return await api.updateUser(userAuth, updates);
+      return await api.updateUser(wildduckUserAuth, updates);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId],
+        queryKey: ["user", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["user", variables.userAuth.userId, "profile"],
+        queryKey: ["user", variables.wildduckUserAuth.userId, "profile"],
       });
     },
   });
@@ -175,20 +175,20 @@ export const useWildduckUserProfile = (
   );
 
   const handleUpdateTags = useCallback(
-    (params: { userAuth: WildduckUserAuth; tags: string[] }) =>
+    (params: { wildduckUserAuth: WildduckUserAuth; tags: string[] }) =>
       updateTags.mutate(params),
     [updateTags],
   );
 
   const handleUpdateTagsAsync = useCallback(
-    async (params: { userAuth: WildduckUserAuth; tags: string[] }) =>
+    async (params: { wildduckUserAuth: WildduckUserAuth; tags: string[] }) =>
       updateTags.mutateAsync(params),
     [updateTags],
   );
 
   const handleSetAccountStatus = useCallback(
     (params: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       disabled?: boolean;
       suspended?: boolean;
     }) => setAccountStatus.mutate(params),
@@ -197,7 +197,7 @@ export const useWildduckUserProfile = (
 
   const handleSetAccountStatusAsync = useCallback(
     async (params: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       disabled?: boolean;
       suspended?: boolean;
     }) => setAccountStatus.mutateAsync(params),

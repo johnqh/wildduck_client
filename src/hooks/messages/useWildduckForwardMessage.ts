@@ -12,7 +12,7 @@ import type {
 
 interface UseWildduckForwardMessageReturn {
   forwardMessage: (
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
     params: WildduckForwardMessageRequest,
@@ -50,19 +50,19 @@ export const useWildduckForwardMessage = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       mailboxId,
       messageId,
       params,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: number;
       params: WildduckForwardMessageRequest;
     }): Promise<WildduckSuccessResponse> => {
       try {
         return await wildduckClient.forwardMessage(
-          userAuth,
+          wildduckUserAuth,
           mailboxId,
           messageId,
           params,
@@ -81,20 +81,20 @@ export const useWildduckForwardMessage = (
     onSuccess: (_, variables) => {
       // Invalidate sent messages to show the forwarded message
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userAuth.userId],
+        queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
     },
   });
 
   const forwardMessage = useCallback(
     async (
-      userAuth: WildduckUserAuth,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: number,
       params: WildduckForwardMessageRequest,
     ) => {
       return forwardMutation.mutateAsync({
-        userAuth,
+        wildduckUserAuth,
         mailboxId,
         messageId,
         params,

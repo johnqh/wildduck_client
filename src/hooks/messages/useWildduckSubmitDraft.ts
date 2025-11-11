@@ -11,7 +11,7 @@ import type {
 
 interface UseWildduckSubmitDraftReturn {
   submitDraft: (
-    userAuth: WildduckUserAuth,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: number,
   ) => Promise<WildduckSuccessResponse>;
@@ -48,16 +48,20 @@ export const useWildduckSubmitDraft = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userAuth,
+      wildduckUserAuth,
       mailboxId,
       messageId,
     }: {
-      userAuth: WildduckUserAuth;
+      wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: number;
     }): Promise<WildduckSuccessResponse> => {
       try {
-        return await wildduckClient.submitDraft(userAuth, mailboxId, messageId);
+        return await wildduckClient.submitDraft(
+          wildduckUserAuth,
+          mailboxId,
+          messageId,
+        );
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -72,21 +76,25 @@ export const useWildduckSubmitDraft = (
     onSuccess: (_, variables) => {
       // Invalidate drafts and sent messages
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userAuth.userId],
+        queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-mailboxes", variables.userAuth.userId],
+        queryKey: ["wildduck-mailboxes", variables.wildduckUserAuth.userId],
       });
     },
   });
 
   const submitDraft = useCallback(
     async (
-      userAuth: WildduckUserAuth,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: number,
     ) => {
-      return submitMutation.mutateAsync({ userAuth, mailboxId, messageId });
+      return submitMutation.mutateAsync({
+        wildduckUserAuth,
+        mailboxId,
+        messageId,
+      });
     },
     [submitMutation],
   );

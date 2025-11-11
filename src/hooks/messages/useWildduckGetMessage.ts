@@ -7,7 +7,7 @@ import { WildduckMockData } from "../mocks";
 import type { WildduckUserAuth } from "@sudobility/types";
 
 export interface UseWildduckGetMessageParams {
-  userAuth?: WildduckUserAuth;
+  wildduckUserAuth?: WildduckUserAuth;
   mailboxId?: string;
   messageId?: string;
   devMode?: boolean;
@@ -19,7 +19,7 @@ export interface UseWildduckGetMessageParams {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
- * @param params - Query parameters including userAuth, mailboxId and messageId
+ * @param params - Query parameters including wildduckUserAuth, mailboxId and messageId
  * @returns React Query result with message data
  */
 export const useWildduckGetMessage = (
@@ -27,7 +27,7 @@ export const useWildduckGetMessage = (
   config: WildduckConfig,
   params: UseWildduckGetMessageParams = {},
 ) => {
-  const { userAuth, mailboxId, messageId, devMode = false } = params;
+  const { wildduckUserAuth, mailboxId, messageId, devMode = false } = params;
 
   const api = useMemo(
     () => new WildduckAPI(networkClient, config),
@@ -35,29 +35,37 @@ export const useWildduckGetMessage = (
   );
 
   const queryFn = useCallback(async () => {
-    if (!userAuth) throw new Error("userAuth is required");
+    if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
     if (!mailboxId) throw new Error("mailboxId is required");
     if (!messageId) throw new Error("messageId is required");
 
     try {
-      return await api.getMessage(userAuth, mailboxId, messageId);
+      return await api.getMessage(wildduckUserAuth, mailboxId, messageId);
     } catch (err) {
       if (devMode) {
         console.warn("[DevMode] getMessage failed, returning mock data:", err);
         return {
           success: true,
-          data: WildduckMockData.getMessageQuery(messageId, userAuth.userId),
+          data: WildduckMockData.getMessageQuery(
+            messageId,
+            wildduckUserAuth.userId,
+          ),
           error: null,
         };
       }
       throw err;
     }
-  }, [userAuth, mailboxId, messageId, api, devMode]);
+  }, [wildduckUserAuth, mailboxId, messageId, api, devMode]);
 
   const query = useQuery({
-    queryKey: ["wildduck-message", userAuth?.userId, mailboxId, messageId],
+    queryKey: [
+      "wildduck-message",
+      wildduckUserAuth?.userId,
+      mailboxId,
+      messageId,
+    ],
     queryFn,
-    enabled: !!userAuth && !!mailboxId && !!messageId,
+    enabled: !!wildduckUserAuth && !!mailboxId && !!messageId,
   });
 
   return useMemo(
