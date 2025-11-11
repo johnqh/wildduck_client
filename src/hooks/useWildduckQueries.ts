@@ -323,7 +323,10 @@ const useWildduckMessage = (
       messageId,
     );
     if (!response.success || !response.data) {
-      console.error("[useWildduckQueries] getMessage error:", response.error || "Failed to fetch message");
+      console.error(
+        "[useWildduckQueries] getMessage error:",
+        response.error || "Failed to fetch message",
+      );
       return undefined as any;
     }
     const msg = response.data;

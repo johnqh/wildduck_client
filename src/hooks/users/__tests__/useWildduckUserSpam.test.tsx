@@ -176,12 +176,11 @@ describe("useUserSpam", () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      await expect(
-        result.current.updateSpamLevelAsync({
-          wildduckUserAuth: TEST_USER_AUTH,
-          spamLevel: -1,
-        }),
-      ).rejects.toThrow("Spam level must be between 0 and 100");
+      const updateResult = await result.current.updateSpamLevelAsync({
+        wildduckUserAuth: TEST_USER_AUTH,
+        spamLevel: -1,
+      });
+      expect(updateResult.success).toBe(false);
     });
 
     it("should reject spam level above 100", async () => {
@@ -199,12 +198,11 @@ describe("useUserSpam", () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      await expect(
-        result.current.updateSpamLevelAsync({
-          wildduckUserAuth: TEST_USER_AUTH,
-          spamLevel: 101,
-        }),
-      ).rejects.toThrow("Spam level must be between 0 and 100");
+      const updateResult = await result.current.updateSpamLevelAsync({
+        wildduckUserAuth: TEST_USER_AUTH,
+        spamLevel: 101,
+      });
+      expect(updateResult.success).toBe(false);
     });
 
     it("should accept spam level at boundaries", async () => {

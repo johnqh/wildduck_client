@@ -140,7 +140,10 @@ const useWildduckAddresses = (
           return mockAddresses;
         }
 
-        console.error("[useWildduckAddresses] getUserAddresses error:", errorMessage);
+        console.error(
+          "[useWildduckAddresses] getUserAddresses error:",
+          errorMessage,
+        );
         setAddresses([]);
         return [];
       }
@@ -166,7 +169,10 @@ const useWildduckAddresses = (
         return mockData.data.addresses as ForwardedAddress[];
       }
 
-      console.error("[useWildduckAddresses] getForwardedAddresses error:", errorMessage);
+      console.error(
+        "[useWildduckAddresses] getForwardedAddresses error:",
+        errorMessage,
+      );
       return [];
     }
   };
@@ -188,7 +194,10 @@ const useWildduckAddresses = (
         return WildduckMockData.getResolveAddress(address);
       }
 
-      console.error("[useWildduckAddresses] resolveAddress error:", errorMessage);
+      console.error(
+        "[useWildduckAddresses] resolveAddress error:",
+        errorMessage,
+      );
       return { success: false };
     }
   };
@@ -219,8 +228,11 @@ const useWildduckAddresses = (
           return WildduckMockData.getCreateAddress();
         }
 
-        console.error("[useWildduckAddresses] createAddress error:", errorMessage);
-        return { success: false, id: '' };
+        console.error(
+          "[useWildduckAddresses] createAddress error:",
+          errorMessage,
+        );
+        return { success: false, id: "" };
       }
     },
     onSuccess: (_, variables) => {
@@ -263,7 +275,10 @@ const useWildduckAddresses = (
           return WildduckMockData.getUpdateAddress();
         }
 
-        console.error("[useWildduckAddresses] updateAddress error:", errorMessage);
+        console.error(
+          "[useWildduckAddresses] updateAddress error:",
+          errorMessage,
+        );
         return { success: false };
       }
     },
@@ -301,7 +316,10 @@ const useWildduckAddresses = (
           return WildduckMockData.getDeleteAddress();
         }
 
-        console.error("[useWildduckAddresses] deleteAddress error:", errorMessage);
+        console.error(
+          "[useWildduckAddresses] deleteAddress error:",
+          errorMessage,
+        );
         return { success: false };
       }
     },
@@ -344,8 +362,11 @@ const useWildduckAddresses = (
           return WildduckMockData.getCreateForwardedAddress();
         }
 
-        console.error("[useWildduckAddresses] createForwardedAddress error:", errorMessage);
-        return { success: false, id: '' };
+        console.error(
+          "[useWildduckAddresses] createForwardedAddress error:",
+          errorMessage,
+        );
+        return { success: false, id: "" };
       }
     },
     onSuccess: () => {
@@ -378,7 +399,10 @@ const useWildduckAddresses = (
           return WildduckMockData.getDeleteForwardedAddress();
         }
 
-        console.error("[useWildduckAddresses] deleteForwardedAddress error:", errorMessage);
+        console.error(
+          "[useWildduckAddresses] deleteForwardedAddress error:",
+          errorMessage,
+        );
         return { success: false };
       }
     },

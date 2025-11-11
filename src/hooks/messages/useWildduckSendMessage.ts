@@ -68,7 +68,7 @@ export const useWildduckSendMessage = (
           } as WildduckSubmitMessageResponse;
         }
         console.error("Failed to send message:", err);
-        return { success: false, message: { id: "" } };
+        return { success: false, message: { id: "", from: "", to: [] } };
       }
     },
     onSuccess: (_, variables) => {

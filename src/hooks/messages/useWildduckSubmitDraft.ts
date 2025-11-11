@@ -67,7 +67,7 @@ export const useWildduckSubmitDraft = (
           return { success: true };
         }
         console.error("Failed to submit draft:", err);
-        return { success: false, queueId: "" };
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {

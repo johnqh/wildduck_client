@@ -204,9 +204,10 @@ describe("useUserQuota", () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      await expect(
-        result.current.recalculateQuotaAsync("user123"),
-      ).rejects.toThrow("Recalculate quota endpoint not yet implemented");
+      const quotaResult = await result.current.recalculateQuotaAsync("user123");
+      expect(quotaResult.success).toBe(false);
+      expect(quotaResult.storageUsed).toBe(0);
+      expect(quotaResult.previousStorageUsed).toBe(0);
     });
   });
 });

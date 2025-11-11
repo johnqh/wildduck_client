@@ -21,7 +21,7 @@ interface UseWildduckFiltersReturn {
   getFilter: (
     wildduckUserAuth: WildduckUserAuth,
     filterId: string,
-  ) => Promise<WildduckFilterListItem>;
+  ) => Promise<WildduckFilterListItem | undefined>;
   createFilter: (
     wildduckUserAuth: WildduckUserAuth,
     params: WildduckCreateFilterRequest,
@@ -105,7 +105,7 @@ const useWildduckFilters = (
     async (
       wildduckUserAuth: WildduckUserAuth,
       filterId: string,
-    ): Promise<WildduckFilterListItem> => {
+    ): Promise<WildduckFilterListItem | undefined> => {
       setIsLoading(true);
       setError(null);
 
@@ -152,7 +152,7 @@ const useWildduckFilters = (
           err instanceof Error ? err.message : "Failed to create filter";
         setError(errorMessage);
         console.error(errorMessage);
-        return { success: false };
+        return { success: false, id: "" };
       } finally {
         setIsLoading(false);
       }
