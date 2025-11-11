@@ -23,7 +23,7 @@ describe("useUserLimits", () => {
     mockApi = {
       getUser: vi.fn(),
       updateUser: vi.fn(),
-    } as unknown as WildduckAPI;
+    } as unknown as WildduckClient;
 
     vi.clearAllMocks();
   });

@@ -113,13 +113,14 @@ const useWildduckFilters = (
 
   const getFilter = useCallback(
     async (
-      wildduckUserAuth: WildduckUserAuth,
+      userId: string,
       filterId: string,
     ): Promise<WildduckFilterListItem> => {
       setIsLoading(true);
       setError(null);
 
       try {
+        const wildduckUserAuth = createUserAuth(userId);
         const response = await api.getFilter(wildduckUserAuth, filterId);
 
         return response as WildduckFilterListItem;
@@ -141,7 +142,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [api, devMode],
+    [api, createUserAuth, devMode],
   );
 
   const createFilter = useCallback(

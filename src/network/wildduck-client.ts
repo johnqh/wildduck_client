@@ -162,7 +162,6 @@ class WildduckClient {
       body?: Optional<Record<string, unknown> | string | FormData | Blob>;
       headers?: Optional<Record<string, string>>;
       wildduckUserAuth?: Optional<WildduckUserAuth>;
-      useSystemToken?: boolean;
     } = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
@@ -180,16 +179,6 @@ class WildduckClient {
       if (options.wildduckUserAuth?.accessToken) {
         requestOptions.headers["Authorization"] =
           `Bearer ${options.wildduckUserAuth.accessToken}`;
-      }
-      // Otherwise, if useSystemToken is true and we have a system token, use it
-      else if (options.useSystemToken && this.config.API_TOKEN) {
-        if (this.config.USE_CLOUDFLARE) {
-          requestOptions.headers["Authorization"] =
-            `Bearer ${this.config.API_TOKEN}`;
-          requestOptions.headers["X-App-Source"] = "0xmail-box";
-        } else {
-          requestOptions.headers["X-Access-Token"] = this.config.API_TOKEN;
-        }
       }
 
       // Only add body if it exists and method supports it
@@ -1154,7 +1143,6 @@ class WildduckClient {
   async getHealth(): Promise<any> {
     return this.request("/health", {
       method: "GET",
-      useSystemToken: true,
     });
   }
 
@@ -1177,7 +1165,6 @@ class WildduckClient {
 
     return this.request(endpoint, {
       method: "GET",
-      useSystemToken: true,
     });
   }
 
@@ -1188,7 +1175,6 @@ class WildduckClient {
   async getSettings(): Promise<any> {
     return this.request("/settings", {
       method: "GET",
-      useSystemToken: true,
     });
   }
 
@@ -1202,7 +1188,6 @@ class WildduckClient {
     return this.request<{ success: boolean }>(`/settings/${key}`, {
       method: "PUT",
       body: { value },
-      useSystemToken: true,
     });
   }
 
@@ -1214,7 +1199,6 @@ class WildduckClient {
   async deleteSetting(key: string): Promise<{ success: boolean }> {
     return this.request<{ success: boolean }>(`/settings/${key}`, {
       method: "DELETE",
-      useSystemToken: true,
     });
   }
 
@@ -1243,7 +1227,6 @@ class WildduckClient {
   async getForwardedAddresses(): Promise<any> {
     return this.request("/addresses/forwarded", {
       method: "GET",
-      useSystemToken: true,
     });
   }
 
@@ -1261,7 +1244,6 @@ class WildduckClient {
       {
         method: "POST",
         body: params,
-        useSystemToken: true,
       },
     );
   }
@@ -1278,7 +1260,6 @@ class WildduckClient {
       `/addresses/forwarded/${addressId}`,
       {
         method: "DELETE",
-        useSystemToken: true,
       },
     );
   }
@@ -1291,7 +1272,6 @@ class WildduckClient {
   async resolveAddress(address: string): Promise<any> {
     return this.request(`/addresses/resolve/${encodeURIComponent(address)}`, {
       method: "GET",
-      useSystemToken: true,
     });
   }
 

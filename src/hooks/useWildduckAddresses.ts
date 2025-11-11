@@ -446,8 +446,11 @@ const useWildduckAddresses = (
 
   const createAddress = useCallback(
     async (userId: string, params: WildduckCreateAddressRequest) =>
-      createMutation.mutateAsync({ userId, params }),
-    [createMutation],
+      createMutation.mutateAsync({
+        wildduckUserAuth: createUserAuth(userId),
+        params,
+      }),
+    [createMutation, createUserAuth],
   );
 
   const updateAddress = useCallback(
@@ -455,14 +458,22 @@ const useWildduckAddresses = (
       userId: string,
       addressId: string,
       params: WildduckUpdateAddressRequest,
-    ) => updateMutation.mutateAsync({ userId, addressId, params }),
-    [updateMutation],
+    ) =>
+      updateMutation.mutateAsync({
+        wildduckUserAuth: createUserAuth(userId),
+        addressId,
+        params,
+      }),
+    [updateMutation, createUserAuth],
   );
 
   const deleteAddress = useCallback(
     async (userId: string, addressId: string) =>
-      deleteMutation.mutateAsync({ userId, addressId }),
-    [deleteMutation],
+      deleteMutation.mutateAsync({
+        wildduckUserAuth: createUserAuth(userId),
+        addressId,
+      }),
+    [deleteMutation, createUserAuth],
   );
 
   const createForwardedAddress = useCallback(
