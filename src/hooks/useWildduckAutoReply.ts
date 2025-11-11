@@ -84,7 +84,8 @@ const useWildduckAutoReply = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get autoreply";
-        throw new Error(errorMessage);
+        console.error("[useWildduckAutoReply] getAutoreply error:", errorMessage);
+        return undefined as any;
       }
     },
     [api, queryClient],
@@ -118,7 +119,8 @@ const useWildduckAutoReply = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update autoreply";
-        throw new Error(errorMessage);
+        console.error("[useWildduckAutoReply] updateAutoreply error:", errorMessage);
+        return { success: false };
       }
     },
     onSuccess: async (_, variables) => {
@@ -143,7 +145,8 @@ const useWildduckAutoReply = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete autoreply";
-        throw new Error(errorMessage);
+        console.error("[useWildduckAutoReply] deleteAutoreply error:", errorMessage);
+        return { success: false };
       }
     },
     onSuccess: async (_, wildduckUserAuth) => {
@@ -155,7 +158,8 @@ const useWildduckAutoReply = (
   // Refresh function (refetch autoreply)
   const refresh = useCallback(async (): Promise<void> => {
     if (!wildduckUserAuth) {
-      throw new Error("Cannot refresh: user not authenticated");
+      console.error("[useWildduckAutoReply] Cannot refresh: user not authenticated");
+      return;
     }
     await getAutoreply(wildduckUserAuth);
   }, [wildduckUserAuth, getAutoreply]);

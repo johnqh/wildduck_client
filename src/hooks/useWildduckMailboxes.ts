@@ -121,7 +121,8 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get mailboxes";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return [];
       }
     },
     [api, wildduckUserAuth, queryClient],
@@ -135,19 +136,22 @@ const useWildduckMailboxes = (
     ): Promise<WildduckMailbox> => {
       try {
         if (!wildduckUserAuth) {
-          throw new Error("User not authenticated");
+          console.error("User not authenticated");
+          return undefined as any;
         }
 
         const mailboxData = await api.getMailbox(wildduckUserAuth, mailboxId);
 
         // The API returns a response with a single mailbox in results array
         if (!mailboxData.results || mailboxData.results.length === 0) {
-          throw new Error("Mailbox not found");
+          console.error("Mailbox not found");
+          return undefined as any;
         }
 
         const mailbox = mailboxData.results[0];
         if (!mailbox) {
-          throw new Error("Mailbox not found");
+          console.error("Mailbox not found");
+          return undefined as any;
         }
 
         // Update cache for this specific mailbox

@@ -74,7 +74,8 @@ const useWildduckSettings = (
         err instanceof Error ? err.message : "Failed to get settings";
       setError(errorMessage);
       setSettings({});
-      throw err;
+      console.error("Failed to get settings:", err);
+      return {};
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +102,8 @@ const useWildduckSettings = (
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update setting";
         setError(errorMessage);
-        throw err;
+        console.error("Failed to update setting:", err);
+        return { success: false };
       } finally {
         setIsLoading(false);
       }
@@ -136,7 +138,8 @@ const useWildduckSettings = (
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete setting";
         setError(errorMessage);
-        throw err;
+        console.error("Failed to delete setting:", err);
+        return { success: false };
       } finally {
         setIsLoading(false);
       }

@@ -78,8 +78,9 @@ const useWildduckUsers = (
           return mockUser;
         }
 
+        console.error("[useWildduckUsers] getUser error:", errorMessage);
         setError(errorMessage);
-        throw new Error(errorMessage);
+        return undefined as any;
       } finally {
         setIsLoading(false);
       }
@@ -136,8 +137,9 @@ const useWildduckUsers = (
           return mockResult;
         }
 
+        console.error("[useWildduckUsers] getUsers error:", errorMessage);
         setError(errorMessage);
-        throw new Error(errorMessage);
+        return { users: [], total: 0 };
       } finally {
         setIsLoading(false);
       }

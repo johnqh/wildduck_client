@@ -171,9 +171,10 @@ const useWildduckMessages = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get messages";
+        console.error(errorMessage);
         setMessages([]);
         setTotalMessages(0);
-        throw new Error(errorMessage);
+        return [];
       }
     },
     [api, queryClient],
@@ -203,7 +204,8 @@ const useWildduckMessages = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get message";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return undefined as any;
       }
     },
     [api, queryClient],
@@ -232,9 +234,10 @@ const useWildduckMessages = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to search messages";
+        console.error(errorMessage);
         setMessages([]);
         setTotalMessages(0);
-        throw new Error(errorMessage);
+        return [];
       }
     },
     [api],
@@ -275,7 +278,8 @@ const useWildduckMessages = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to send message";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return { success: false, id: "" };
       }
     },
     onSuccess: (_, variables) => {
@@ -315,7 +319,8 @@ const useWildduckMessages = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update message";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {
@@ -364,7 +369,8 @@ const useWildduckMessages = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete message";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {
@@ -416,7 +422,8 @@ const useWildduckMessages = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to move message";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {

@@ -140,8 +140,9 @@ const useWildduckAddresses = (
           return mockAddresses;
         }
 
+        console.error("[useWildduckAddresses] getUserAddresses error:", errorMessage);
         setAddresses([]);
-        throw new Error(errorMessage);
+        return [];
       }
     },
     [api, devMode, queryClient],
@@ -165,7 +166,8 @@ const useWildduckAddresses = (
         return mockData.data.addresses as ForwardedAddress[];
       }
 
-      throw new Error(errorMessage);
+      console.error("[useWildduckAddresses] getForwardedAddresses error:", errorMessage);
+      return [];
     }
   };
 
@@ -186,7 +188,8 @@ const useWildduckAddresses = (
         return WildduckMockData.getResolveAddress(address);
       }
 
-      throw new Error(errorMessage);
+      console.error("[useWildduckAddresses] resolveAddress error:", errorMessage);
+      return { success: false };
     }
   };
 
@@ -216,7 +219,8 @@ const useWildduckAddresses = (
           return WildduckMockData.getCreateAddress();
         }
 
-        throw new Error(errorMessage);
+        console.error("[useWildduckAddresses] createAddress error:", errorMessage);
+        return { success: false, id: '' };
       }
     },
     onSuccess: (_, variables) => {
@@ -259,7 +263,8 @@ const useWildduckAddresses = (
           return WildduckMockData.getUpdateAddress();
         }
 
-        throw new Error(errorMessage);
+        console.error("[useWildduckAddresses] updateAddress error:", errorMessage);
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {
@@ -296,7 +301,8 @@ const useWildduckAddresses = (
           return WildduckMockData.getDeleteAddress();
         }
 
-        throw new Error(errorMessage);
+        console.error("[useWildduckAddresses] deleteAddress error:", errorMessage);
+        return { success: false };
       }
     },
     onSuccess: (_, variables) => {
@@ -338,7 +344,8 @@ const useWildduckAddresses = (
           return WildduckMockData.getCreateForwardedAddress();
         }
 
-        throw new Error(errorMessage);
+        console.error("[useWildduckAddresses] createForwardedAddress error:", errorMessage);
+        return { success: false, id: '' };
       }
     },
     onSuccess: () => {
@@ -371,7 +378,8 @@ const useWildduckAddresses = (
           return WildduckMockData.getDeleteForwardedAddress();
         }
 
-        throw new Error(errorMessage);
+        console.error("[useWildduckAddresses] deleteForwardedAddress error:", errorMessage);
+        return { success: false };
       }
     },
     onSuccess: () => {

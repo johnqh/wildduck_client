@@ -154,7 +154,8 @@ const useWildduckAuth = (
           (err as any)?.response?.data?.error ||
           (err instanceof Error ? err.message : "Authentication failed");
 
-        throw new Error(errorMessage);
+        console.error("Authentication failed:", errorMessage);
+        return undefined as any;
       }
     },
     onSuccess: (data) => {
@@ -189,7 +190,8 @@ const useWildduckAuth = (
           (err as any)?.response?.data?.error ||
           (err instanceof Error ? err.message : "Pre-authentication failed");
 
-        throw new Error(errorMessage);
+        console.error("Pre-authentication failed:", errorMessage);
+        return undefined as any;
       }
     },
   });
@@ -204,7 +206,8 @@ const useWildduckAuth = (
       try {
         const authToken = token || (await storage.getItem("wildduck_token"));
         if (!authToken) {
-          throw new Error("No authentication token available for logout");
+          console.error("No authentication token available for logout");
+          return { success: false };
         }
 
         const result = await api.logout(authToken);
@@ -220,7 +223,8 @@ const useWildduckAuth = (
           (err as any)?.response?.data?.error ||
           (err instanceof Error ? err.message : "Logout failed");
 
-        throw new Error(errorMessage);
+        console.error("Logout failed:", errorMessage);
+        return { success: false };
       }
     },
     onSuccess: () => {

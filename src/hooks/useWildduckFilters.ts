@@ -92,7 +92,8 @@ const useWildduckFilters = (
           err instanceof Error ? err.message : "Failed to get filters";
         setError(errorMessage);
         setFilters([]);
-        throw err;
+        console.error(errorMessage);
+        return [];
       } finally {
         setIsLoading(false);
       }
@@ -121,7 +122,8 @@ const useWildduckFilters = (
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get filter";
         setError(errorMessage);
-        throw err;
+        console.error(errorMessage);
+        return undefined;
       } finally {
         setIsLoading(false);
       }
@@ -149,7 +151,8 @@ const useWildduckFilters = (
         const errorMessage =
           err instanceof Error ? err.message : "Failed to create filter";
         setError(errorMessage);
-        throw err;
+        console.error(errorMessage);
+        return { success: false };
       } finally {
         setIsLoading(false);
       }
@@ -182,7 +185,8 @@ const useWildduckFilters = (
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update filter";
         setError(errorMessage);
-        throw err;
+        console.error(errorMessage);
+        return { success: false };
       } finally {
         setIsLoading(false);
       }

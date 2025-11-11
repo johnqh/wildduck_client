@@ -70,7 +70,8 @@ const useWildduckHealth = (
       if (devMode) {
         return WildduckMockData.getHealthQuery();
       }
-      throw err;
+      console.error("[useWildduckQueries] getHealth error:", err);
+      return undefined as any;
     }
   }, [api, devMode]);
 
@@ -118,7 +119,8 @@ const useWildduckUsersList = (
       if (devMode) {
         return WildduckMockData.getUsersListQuery() as unknown as WildduckUserListResponse;
       }
-      throw err;
+      console.error("[useWildduckQueries] getUsersList error:", err);
+      return undefined as any;
     }
   }, [api, filters, devMode]);
 
@@ -321,7 +323,8 @@ const useWildduckMessage = (
       messageId,
     );
     if (!response.success || !response.data) {
-      throw new Error(response.error || "Failed to fetch message");
+      console.error("[useWildduckQueries] getMessage error:", response.error || "Failed to fetch message");
+      return undefined as any;
     }
     const msg = response.data;
     const result: WildduckMessage = {
@@ -432,7 +435,8 @@ const useWildduckUserFilters = (
         const mockData = WildduckMockData.getUserFiltersQuery();
         return mockData.filters as WildduckFilterListItem[];
       }
-      throw err;
+      console.error("[useWildduckQueries] getUserFilters error:", err);
+      return [];
     }
   }, [api, wildduckUserAuth, devMode]);
 
@@ -482,7 +486,8 @@ const useWildduckUserSettings = (
         const mockData = WildduckMockData.getUserSettingsQuery();
         return mockData.settings as WildduckUserSettings;
       }
-      throw err;
+      console.error("[useWildduckQueries] getUserSettings error:", err);
+      return {};
     }
   }, [api, wildduckUserAuth, devMode]);
 
@@ -599,7 +604,8 @@ const useWildduckAuthStatus = (
       if (devMode) {
         return WildduckMockData.getAuthStatusQuery() as WildduckAuthStatusResponse;
       }
-      throw err;
+      console.error("[useWildduckQueries] getAuthStatus error:", err);
+      return undefined as any;
     }
   }, [api, token, config.apiToken, devMode]);
 
