@@ -69,10 +69,6 @@ export const useWildduckForwardMessage = (
         );
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] forwardMessage failed, returning mock data:",
-            err,
-          );
           return { success: true };
         }
         throw err;

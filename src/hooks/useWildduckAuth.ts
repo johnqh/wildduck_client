@@ -125,11 +125,6 @@ const useWildduckAuth = (
       params: Omit<AuthenticateRequest, "sess" | "ip">,
     ): Promise<AuthenticationResponse> => {
       try {
-        const mutationId = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
-        console.log(
-          `🔵 [${mutationId}] authenticateMutation.mutationFn called with username: ${params.username}`,
-        );
-
         const requestBody = createAuthenticateRequest(
           params.username,
           params.signature,
@@ -146,17 +141,7 @@ const useWildduckAuth = (
           },
         );
 
-        console.log(
-          `🌐 [${mutationId}] Making POST to /authenticate with isDev: ${devMode}`,
-        );
-        console.log(
-          `📦 [${mutationId}] Request body:`,
-          JSON.stringify({ ...requestBody, isDev: devMode }, null, 2),
-        );
-
         const result = await api.authenticate(requestBody, { isDev: devMode });
-
-        console.log(`✅ [${mutationId}] POST completed successfully`);
 
         // Store token if authentication was successful
         if (result.success && result.token) {
@@ -265,11 +250,7 @@ const useWildduckAuth = (
       } catch {
         return { authenticated: false };
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to check auth status";
-      console.error("[useWildduckAuth] getAuthStatus error:", errorMessage);
-
+    } catch {
       return { authenticated: false };
     }
   }, [api, storage]);

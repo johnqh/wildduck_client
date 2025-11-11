@@ -81,10 +81,6 @@ const useWildduckFilters = (
         return filterList;
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] Get filters failed, returning mock data:",
-            err,
-          );
           const mockData = WildduckMockData.getFilters();
           const mockFilters = mockData.data
             .filters as unknown as WildduckFilterListItem[];
@@ -118,10 +114,6 @@ const useWildduckFilters = (
         return response as WildduckFilterListItem;
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] Get filter failed, returning mock data:",
-            err,
-          );
           const mockData = WildduckMockData.getFilter(filterId);
           return mockData.data.filter as unknown as WildduckFilterListItem;
         }
@@ -151,10 +143,6 @@ const useWildduckFilters = (
         return response as { success: boolean; id: string };
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] Create filter failed, returning mock success:",
-            err,
-          );
           return WildduckMockData.getCreateFilter();
         }
 
@@ -188,10 +176,6 @@ const useWildduckFilters = (
         return response as { success: boolean };
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] Update filter failed, returning mock success:",
-            err,
-          );
           return WildduckMockData.getUpdateFilter();
         }
 
@@ -220,10 +204,6 @@ const useWildduckFilters = (
         return response as { success: boolean };
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] Delete filter failed, returning mock success:",
-            err,
-          );
           return WildduckMockData.getDeleteFilter();
         }
 

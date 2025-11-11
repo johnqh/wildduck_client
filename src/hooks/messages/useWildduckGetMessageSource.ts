@@ -53,10 +53,6 @@ export const useWildduckGetMessageSource = (
         );
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] getMessageSource failed, returning mock data:",
-            err,
-          );
           return `From: mock@example.com\nTo: user@example.com\nSubject: Mock Message\nDate: ${new Date().toISOString()}\n\nMock message body`;
         }
         throw err;

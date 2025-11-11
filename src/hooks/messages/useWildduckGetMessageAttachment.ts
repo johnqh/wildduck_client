@@ -63,10 +63,6 @@ export const useWildduckGetMessageAttachment = (
         );
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] getMessageAttachment failed, returning mock data:",
-            err,
-          );
           return new Blob(["Mock attachment content"], {
             type: "text/plain",
           });

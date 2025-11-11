@@ -52,10 +52,6 @@ export const useWildduckCreateUser = (
         return await wildduckClient.createUser(params);
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] createUser failed, returning mock data:",
-            err,
-          );
           return {
             success: true,
             id: `mock-user-${Date.now()}`,

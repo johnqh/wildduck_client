@@ -66,10 +66,6 @@ export const useWildduckUploadMessage = (
         );
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] uploadMessage failed, returning mock data:",
-            err,
-          );
           return {
             success: true,
             message: { id: Date.now(), mailbox: mailboxId },

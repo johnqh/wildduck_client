@@ -78,12 +78,10 @@ export async function getSMTPRelay(
           },
         }),
       };
-    } catch (parseError) {
-      console.error("Failed to parse mtaRelay URL:", mtaRelay, parseError);
+    } catch {
       return { enabled: false };
     }
-  } catch (error) {
-    console.error("Failed to get SMTP relay settings:", error);
+  } catch {
     return { enabled: false };
   }
 }

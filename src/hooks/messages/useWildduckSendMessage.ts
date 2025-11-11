@@ -58,10 +58,6 @@ export const useWildduckSendMessage = (
         return await wildduckClient.submitMessage(wildduckUserAuth, params);
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] sendMessage failed, returning mock data:",
-            err,
-          );
           return {
             success: true,
             message: {

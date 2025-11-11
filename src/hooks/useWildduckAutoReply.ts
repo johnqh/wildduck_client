@@ -84,10 +84,6 @@ const useWildduckAutoReply = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get autoreply";
-        console.error(
-          "[useWildduckAutoReply] Failed to get autoreply:",
-          errorMessage,
-        );
         throw new Error(errorMessage);
       }
     },
@@ -122,10 +118,6 @@ const useWildduckAutoReply = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update autoreply";
-        console.error(
-          "[useWildduckAutoReply] Failed to update autoreply:",
-          errorMessage,
-        );
         throw new Error(errorMessage);
       }
     },
@@ -151,10 +143,6 @@ const useWildduckAutoReply = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete autoreply";
-        console.error(
-          "[useWildduckAutoReply] Failed to delete autoreply:",
-          errorMessage,
-        );
         throw new Error(errorMessage);
       }
     },

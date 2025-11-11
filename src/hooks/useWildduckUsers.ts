@@ -66,10 +66,6 @@ const useWildduckUsers = (
 
         // Return mock data in devMode when API fails
         if (devMode) {
-          console.warn(
-            "[DevMode] Get user failed, returning mock data:",
-            errorMessage,
-          );
           const mockData = WildduckMockData.getUser(wildduckUserAuth.userId);
           const mockUser = mockData.data.user as unknown as WildduckUser;
 
@@ -125,10 +121,6 @@ const useWildduckUsers = (
 
         // Return mock data in devMode when API fails
         if (devMode) {
-          console.warn(
-            "[DevMode] Get users failed, returning mock data:",
-            errorMessage,
-          );
           const mockData = WildduckMockData.getUsers();
           const mockResult = {
             users: mockData.data.users as unknown as WildduckUser[],

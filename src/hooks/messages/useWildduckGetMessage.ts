@@ -43,7 +43,6 @@ export const useWildduckGetMessage = (
       return await api.getMessage(wildduckUserAuth, mailboxId, messageId);
     } catch (err) {
       if (devMode) {
-        console.warn("[DevMode] getMessage failed, returning mock data:", err);
         return {
           success: true,
           data: WildduckMockData.getMessageQuery(

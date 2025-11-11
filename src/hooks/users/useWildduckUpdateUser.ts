@@ -58,10 +58,6 @@ export const useWildduckUpdateUser = (
         return await wildduckClient.updateUser(wildduckUserAuth, params);
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] updateUser failed, returning mock data:",
-            err,
-          );
           return { success: true };
         }
         throw err;

@@ -101,13 +101,6 @@ describe('Wildduck API Integration Tests', () => {
       backendUrl: INTEGRATION_CONFIG.endpoint,
       apiToken: INTEGRATION_CONFIG.apiToken,
     });
-
-    console.log('\n=== Integration Test Configuration ===');
-    console.log('Endpoint:', INTEGRATION_CONFIG.endpoint);
-    console.log('Email Domain:', INTEGRATION_CONFIG.emailDomain);
-    console.log('Test Wallet:', testWalletAddress);
-    console.log('Test Email:', testEmailAddress);
-    console.log('======================================\n');
   });
 
   describe('Authentication', () => {
@@ -133,10 +126,6 @@ describe('Wildduck API Integration Tests', () => {
       // Save for later tests
       testUserId = result.id;
       authToken = result.token;
-
-      console.log('✓ Authentication successful');
-      console.log('  User ID:', testUserId);
-      console.log('  Token:', authToken.substring(0, 20) + '...');
     });
 
     it('should fail authentication with invalid signature', async () => {
@@ -159,7 +148,6 @@ describe('Wildduck API Integration Tests', () => {
   describe('User Operations', () => {
     it('should get user information', async () => {
       if (!testUserId) {
-        console.warn('Skipping: No testUserId available');
         return;
       }
 
@@ -167,14 +155,10 @@ describe('Wildduck API Integration Tests', () => {
 
       expect(result.success).toBe(true);
       expect(result.id).toBe(testUserId);
-
-      console.log('✓ User info retrieved');
-      console.log('  Username:', result.username || result.address);
     });
 
     it('should update user settings', async () => {
       if (!testUserId) {
-        console.warn('Skipping: No testUserId available');
         return;
       }
 
@@ -183,13 +167,10 @@ describe('Wildduck API Integration Tests', () => {
       });
 
       expect(result.success).toBe(true);
-
-      console.log('✓ User updated successfully');
     });
 
     it('should get user limits', async () => {
       if (!testUserId) {
-        console.warn('Skipping: No testUserId available');
         return;
       }
 
@@ -200,8 +181,6 @@ describe('Wildduck API Integration Tests', () => {
       if (result.limits?.quota) {
         expect(result.limits.quota.allowed).toBeGreaterThan(0);
       }
-
-      console.log('✓ User limits retrieved');
     });
   });
 
@@ -210,7 +189,6 @@ describe('Wildduck API Integration Tests', () => {
 
     it('should list user mailboxes', async () => {
       if (!testUserId) {
-        console.warn('Skipping: No testUserId available');
         return;
       }
 
@@ -225,15 +203,10 @@ describe('Wildduck API Integration Tests', () => {
       const inbox = result.results.find((mb: any) => mb.path === 'INBOX');
       expect(inbox).toBeDefined();
       inboxId = (inbox as any).id;
-
-      console.log('✓ Mailboxes retrieved');
-      console.log('  Count:', result.results.length);
-      console.log('  INBOX ID:', inboxId);
     });
 
     it('should get specific mailbox', async () => {
       if (!testUserId || !inboxId) {
-        console.warn('Skipping: No testUserId or inboxId available');
         return;
       }
 
@@ -242,15 +215,10 @@ describe('Wildduck API Integration Tests', () => {
       expect(result.success).toBe(true);
       expect(result.id).toBe(inboxId);
       expect(result.path).toBe('INBOX');
-
-      console.log('✓ Mailbox retrieved');
-      console.log('  Messages:', result.total);
-      console.log('  Unseen:', result.unseen);
     });
 
     it('should create and delete a mailbox', async () => {
       if (!testUserId) {
-        console.warn('Skipping: No testUserId available');
         return;
       }
 
@@ -263,7 +231,6 @@ describe('Wildduck API Integration Tests', () => {
       expect(createResult.id).toBeDefined();
 
       const newMailboxId = createResult.id;
-      console.log('✓ Mailbox created:', newMailboxId);
 
       // Verify it exists
       const getResult = await api.getMailbox(testUserId, newMailboxId);
@@ -273,8 +240,6 @@ describe('Wildduck API Integration Tests', () => {
       // Delete mailbox
       const deleteResult = await api.deleteMailbox(testUserId, newMailboxId);
       expect(deleteResult.success).toBe(true);
-
-      console.log('✓ Mailbox deleted');
     });
   });
 
@@ -295,7 +260,6 @@ describe('Wildduck API Integration Tests', () => {
 
     it('should list messages in mailbox', async () => {
       if (!testUserId || !inboxId) {
-        console.warn('Skipping: No testUserId or inboxId available');
         return;
       }
 
@@ -304,14 +268,10 @@ describe('Wildduck API Integration Tests', () => {
       expect(result.success).toBe(true);
       expect(result.results).toBeDefined();
       expect(Array.isArray(result.results)).toBe(true);
-
-      console.log('✓ Messages listed');
-      console.log('  Count:', result.results.length);
     });
 
     it('should upload and delete a message', async () => {
       if (!testUserId || !inboxId) {
-        console.warn('Skipping: No testUserId or inboxId available');
         return;
       }
 
@@ -338,7 +298,6 @@ describe('Wildduck API Integration Tests', () => {
       expect(uploadResult.message.id).toBeDefined();
 
       testMessageId = uploadResult.message.id;
-      console.log('✓ Message uploaded:', testMessageId);
 
       // Get the message
       const getMessage = await api.getMessageFromMailbox(
@@ -350,8 +309,6 @@ describe('Wildduck API Integration Tests', () => {
       expect(getMessage.success).toBe(true);
       expect(getMessage.subject).toBe('Integration Test Message');
 
-      console.log('✓ Message retrieved');
-
       // Delete the message
       const deleteResult = await api.deleteMessage(
         testUserId,
@@ -360,12 +317,10 @@ describe('Wildduck API Integration Tests', () => {
       );
 
       expect(deleteResult.success).toBe(true);
-      console.log('✓ Message deleted');
     });
 
     it('should submit a message for delivery', async () => {
       if (!testUserId) {
-        console.warn('Skipping: No testUserId available');
         return;
       }
 
@@ -387,16 +342,12 @@ describe('Wildduck API Integration Tests', () => {
       expect(result.success).toBe(true);
       expect(result.message).toBeDefined();
       expect(result.message.id).toBeDefined();
-
-      console.log('✓ Message submitted for delivery');
-      console.log('  Queue ID:', result.message.id);
     });
   });
 
   describe('Autoreply Operations', () => {
     it('should get autoreply status', async () => {
       if (!testUserId) {
-        console.warn('Skipping: No testUserId available');
         return;
       }
 
@@ -405,14 +356,10 @@ describe('Wildduck API Integration Tests', () => {
       expect(result.success).toBe(true);
       // Status might be true or false depending on server state
       expect(typeof result.status).toBe('boolean');
-
-      console.log('✓ Autoreply status retrieved');
-      console.log('  Enabled:', result.status);
     });
 
     it('should enable and disable autoreply', async () => {
       if (!testUserId) {
-        console.warn('Skipping: No testUserId available');
         return;
       }
 
@@ -424,7 +371,6 @@ describe('Wildduck API Integration Tests', () => {
       });
 
       expect(enableResult.success).toBe(true);
-      console.log('✓ Autoreply enabled');
 
       // Verify it's enabled
       const getResult = await api.getAutoreply(testUserId);
@@ -437,11 +383,9 @@ describe('Wildduck API Integration Tests', () => {
       });
 
       expect(disableResult.success).toBe(true);
-      console.log('✓ Autoreply disabled');
     });
   });
 
   afterAll(async () => {
-    console.log('\n=== Integration Tests Completed ===\n');
   });
 });

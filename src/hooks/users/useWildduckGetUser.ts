@@ -38,7 +38,6 @@ export const useWildduckGetUser = (
       return await api.getUser(wildduckUserAuth);
     } catch (err) {
       if (devMode) {
-        console.warn("[DevMode] getUser failed, returning mock data:", err);
         return {
           success: true,
           id: wildduckUserAuth.userId,

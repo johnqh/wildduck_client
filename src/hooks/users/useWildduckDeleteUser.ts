@@ -52,10 +52,6 @@ export const useWildduckDeleteUser = (
         return await wildduckClient.deleteUser(wildduckUserAuth);
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] deleteUser failed, returning mock data:",
-            err,
-          );
           return { success: true };
         }
         throw err;

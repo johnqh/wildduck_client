@@ -69,10 +69,6 @@ export const useWildduckUpdateMessage = (
         );
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] updateMessage failed, returning mock data:",
-            err,
-          );
           return { success: true };
         }
         throw err;

@@ -121,10 +121,6 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get mailboxes";
-        console.error(
-          "[useWildduckMailboxes] Failed to get mailboxes:",
-          errorMessage,
-        );
         throw new Error(errorMessage);
       }
     },
@@ -164,10 +160,6 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get mailbox";
-        console.error(
-          "[useWildduckMailboxes] Failed to get mailbox:",
-          errorMessage,
-        );
         throw new Error(errorMessage);
       }
     },
@@ -198,8 +190,7 @@ const useWildduckMailboxes = (
           specialUse: false,
           showHidden: false,
           sizes: false,
-        }).catch((error) => {
-          console.error("[useWildduckMailboxes] Auto-fetch failed:", error);
+        }).catch(() => {
           // Reset flag on error so it can be retried
           hasFetchedRef.current = false;
         });
@@ -229,10 +220,6 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to create mailbox";
-        console.error(
-          "[useWildduckMailboxes] Failed to create mailbox:",
-          errorMessage,
-        );
         throw new Error(errorMessage);
       }
     },
@@ -272,10 +259,6 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update mailbox";
-        console.error(
-          "[useWildduckMailboxes] Failed to update mailbox:",
-          errorMessage,
-        );
         throw new Error(errorMessage);
       }
     },
@@ -309,10 +292,6 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete mailbox";
-        console.error(
-          "[useWildduckMailboxes] Failed to delete mailbox:",
-          errorMessage,
-        );
         throw new Error(errorMessage);
       }
     },

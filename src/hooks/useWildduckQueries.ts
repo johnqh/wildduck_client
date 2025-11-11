@@ -68,10 +68,6 @@ const useWildduckHealth = (
       return data as WildduckHealthResponse;
     } catch (err) {
       if (devMode) {
-        console.warn(
-          "[DevMode] Health check failed, returning mock data:",
-          err,
-        );
         return WildduckMockData.getHealthQuery();
       }
       throw err;
@@ -120,10 +116,6 @@ const useWildduckUsersList = (
       return data as WildduckUserListResponse;
     } catch (err) {
       if (devMode) {
-        console.warn(
-          "[DevMode] Get users list failed, returning mock data:",
-          err,
-        );
         return WildduckMockData.getUsersListQuery() as unknown as WildduckUserListResponse;
       }
       throw err;
@@ -437,10 +429,6 @@ const useWildduckUserFilters = (
       );
     } catch (err) {
       if (devMode) {
-        console.warn(
-          "[DevMode] Get user filters failed, returning mock data:",
-          err,
-        );
         const mockData = WildduckMockData.getUserFiltersQuery();
         return mockData.filters as WildduckFilterListItem[];
       }
@@ -491,10 +479,6 @@ const useWildduckUserSettings = (
       return (data as Record<string, unknown>) || {};
     } catch (err) {
       if (devMode) {
-        console.warn(
-          "[DevMode] Get user settings failed, returning mock data:",
-          err,
-        );
         const mockData = WildduckMockData.getUserSettingsQuery();
         return mockData.settings as WildduckUserSettings;
       }
@@ -613,10 +597,6 @@ const useWildduckAuthStatus = (
       return response;
     } catch (err) {
       if (devMode) {
-        console.warn(
-          "[DevMode] Auth status check failed, returning mock data:",
-          err,
-        );
         return WildduckMockData.getAuthStatusQuery() as WildduckAuthStatusResponse;
       }
       throw err;

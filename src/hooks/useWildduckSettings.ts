@@ -58,10 +58,6 @@ const useWildduckSettings = (
       return settingsData;
     } catch (err) {
       if (devMode) {
-        console.warn(
-          "[DevMode] Get settings failed, returning mock data:",
-          err,
-        );
         const mockData = WildduckMockData.getSettings();
         const mockSettings = mockData.data.settings.reduce(
           (acc: WildduckSettings, setting: any) => {
@@ -98,10 +94,6 @@ const useWildduckSettings = (
         return response;
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] Update setting failed, returning mock success:",
-            err,
-          );
           setSettings((prev) => ({ ...prev, [key]: value }));
           return WildduckMockData.getUpdateSetting();
         }
@@ -134,10 +126,6 @@ const useWildduckSettings = (
         return response;
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] Delete setting failed, returning mock success:",
-            err,
-          );
           setSettings((prev) => {
             const { [key]: _removed, ...rest } = prev;
             return rest;

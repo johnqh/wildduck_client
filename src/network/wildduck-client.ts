@@ -166,50 +166,45 @@ class WildduckClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
-    try {
-      const requestOptions: any = {
-        method: options.method || "GET",
-        headers: {
-          ...this.headers,
-          ...options.headers,
-        },
-      };
+    const requestOptions: any = {
+      method: options.method || "GET",
+      headers: {
+        ...this.headers,
+        ...options.headers,
+      },
+    };
 
-      // If wildduckUserAuth is provided, use its accessToken
-      if (options.wildduckUserAuth?.accessToken) {
-        requestOptions.headers["Authorization"] =
-          `Bearer ${options.wildduckUserAuth.accessToken}`;
-      }
-
-      // Only add body if it exists and method supports it
-      if (
-        options.body &&
-        (options.method === "POST" ||
-          options.method === "PUT" ||
-          options.method === "DELETE")
-      ) {
-        if (
-          typeof options.body === "object" &&
-          !(options.body instanceof FormData) &&
-          !(options.body instanceof Blob)
-        ) {
-          requestOptions.body = JSON.stringify(options.body);
-        } else {
-          requestOptions.body = options.body;
-        }
-      }
-
-      const response = await this.networkClient.request<T>(url, requestOptions);
-
-      if (response.data === undefined) {
-        throw new Error("No data received from server");
-      }
-
-      return response.data as T;
-    } catch (error) {
-      console.error("❌ API Request failed:", error);
-      throw error;
+    // If wildduckUserAuth is provided, use its accessToken
+    if (options.wildduckUserAuth?.accessToken) {
+      requestOptions.headers["Authorization"] =
+        `Bearer ${options.wildduckUserAuth.accessToken}`;
     }
+
+    // Only add body if it exists and method supports it
+    if (
+      options.body &&
+      (options.method === "POST" ||
+        options.method === "PUT" ||
+        options.method === "DELETE")
+    ) {
+      if (
+        typeof options.body === "object" &&
+        !(options.body instanceof FormData) &&
+        !(options.body instanceof Blob)
+      ) {
+        requestOptions.body = JSON.stringify(options.body);
+      } else {
+        requestOptions.body = options.body;
+      }
+    }
+
+    const response = await this.networkClient.request<T>(url, requestOptions);
+
+    if (response.data === undefined) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data as T;
   }
 
   // Pre-authenticate user to check if username exists
@@ -273,18 +268,8 @@ class WildduckClient {
           // Set the user token for this API client instance
           this.setUserToken(response.token);
         }
-      } catch (e) {
-        console.warn("Failed to store user ID/token in session storage:", e);
-      }
-    } else {
-      console.error(
-        "❌ Wildduck authentication failed or returned no user ID:",
-        response,
-      );
-      if (response.success && !response.id) {
-        console.error(
-          "📝 Authentication succeeded but no user ID returned - this suggests user doesn't exist in Wildduck database",
-        );
+      } catch {
+        // Failed to store in session storage
       }
     }
 
@@ -323,8 +308,8 @@ class WildduckClient {
           // Set the user token for this API client instance
           this.setUserToken(response.token);
         }
-      } catch (e) {
-        console.warn("Failed to store user ID/token in session storage:", e);
+      } catch {
+        // Failed to store in session storage
       }
     }
 
@@ -1435,29 +1420,15 @@ const emailToUserId = (emailAddress: string): string => {
           // Valid MongoDB ObjectId format
           return stored;
         } else {
-          console.warn(
-            "⚠️ Found stored value but not a valid ObjectId:",
-            stored,
-          );
+          // Found stored value but not a valid ObjectId
         }
       }
     }
-  } catch (e) {
-    console.warn("Failed to retrieve user ID from session storage:", e);
+  } catch {
+    // Failed to retrieve user ID from session storage
   }
 
   // Fallback: No stored user ID found
-  console.error(`❌ No stored user ID found for ${username}`);
-  console.error(
-    "📝 This usually means authentication failed or the user doesn't exist in Wildduck",
-  );
-  console.error(
-    "📝 Check the authentication response and ensure the user was created in Wildduck",
-  );
-  console.error(
-    "📝 Expected: 24-character hexadecimal string (MongoDB ObjectId)",
-  );
-
   // Instead of returning a fake user ID, throw an error to surface the real issue
   throw new Error(
     `No Wildduck user ID found for ${username}. Authentication may have failed or user doesn't exist in database.`,

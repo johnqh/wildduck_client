@@ -64,10 +64,6 @@ export const useWildduckSubmitDraft = (
         );
       } catch (err) {
         if (devMode) {
-          console.warn(
-            "[DevMode] submitDraft failed, returning mock data:",
-            err,
-          );
           return { success: true };
         }
         throw err;

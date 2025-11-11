@@ -127,10 +127,6 @@ const useWildduckAddresses = (
 
         // Return mock data in devMode when API fails
         if (devMode) {
-          console.warn(
-            "[DevMode] Get user addresses failed, returning mock data:",
-            errorMessage,
-          );
           const mockData = WildduckMockData.getUserAddresses();
           const mockAddresses = mockData.data.addresses as WildduckAddress[];
           setAddresses(mockAddresses);
@@ -165,10 +161,6 @@ const useWildduckAddresses = (
 
       // Return mock data in devMode when API fails
       if (devMode) {
-        console.warn(
-          "[DevMode] Get forwarded addresses failed, returning mock data:",
-          errorMessage,
-        );
         const mockData = WildduckMockData.getForwardedAddresses();
         return mockData.data.addresses as ForwardedAddress[];
       }
@@ -191,10 +183,6 @@ const useWildduckAddresses = (
 
       // Return mock data in devMode when API fails
       if (devMode) {
-        console.warn(
-          "[DevMode] Resolve address failed, returning mock success:",
-          errorMessage,
-        );
         return WildduckMockData.getResolveAddress(address);
       }
 
@@ -225,10 +213,6 @@ const useWildduckAddresses = (
 
         // Return mock data in devMode when API fails
         if (devMode) {
-          console.warn(
-            "[DevMode] Create address failed, returning mock success:",
-            errorMessage,
-          );
           return WildduckMockData.getCreateAddress();
         }
 
@@ -272,10 +256,6 @@ const useWildduckAddresses = (
 
         // Return mock data in devMode when API fails
         if (devMode) {
-          console.warn(
-            "[DevMode] Update address failed, returning mock success:",
-            errorMessage,
-          );
           return WildduckMockData.getUpdateAddress();
         }
 
@@ -313,10 +293,6 @@ const useWildduckAddresses = (
 
         // Return mock data in devMode when API fails
         if (devMode) {
-          console.warn(
-            "[DevMode] Delete address failed, returning mock success:",
-            errorMessage,
-          );
           return WildduckMockData.getDeleteAddress();
         }
 
@@ -359,10 +335,6 @@ const useWildduckAddresses = (
 
         // Return mock data in devMode when API fails
         if (devMode) {
-          console.warn(
-            "[DevMode] Create forwarded address failed, returning mock success:",
-            errorMessage,
-          );
           return WildduckMockData.getCreateForwardedAddress();
         }
 
@@ -396,10 +368,6 @@ const useWildduckAddresses = (
 
         // Return mock data in devMode when API fails
         if (devMode) {
-          console.warn(
-            "[DevMode] Delete forwarded address failed, returning mock success:",
-            errorMessage,
-          );
           return WildduckMockData.getDeleteForwardedAddress();
         }
 

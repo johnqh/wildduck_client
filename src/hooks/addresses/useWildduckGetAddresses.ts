@@ -38,10 +38,6 @@ export const useWildduckGetAddresses = (
       return await api.getAddresses(wildduckUserAuth);
     } catch (err) {
       if (devMode) {
-        console.warn(
-          "[DevMode] getAddresses failed, returning mock data:",
-          err,
-        );
         return {
           success: true,
           results: [],
