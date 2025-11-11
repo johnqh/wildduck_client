@@ -83,6 +83,12 @@ const useWildduckAddresses = (
 ): UseWildduckAddressesReturn => {
   const queryClient = useQueryClient();
 
+  // DEBUG: Log render
+  console.log('🔍 [useWildduckAddresses] RENDER', {
+    backendUrl: config.backendUrl,
+    devMode,
+  });
+
   // Local state
   const [addresses, setAddresses] = useState<WildduckAddress[]>([]);
 
@@ -97,6 +103,7 @@ const useWildduckAddresses = (
   // Get user addresses function (imperative)
   const getUserAddresses = useCallback(
     async (userId: string): Promise<WildduckAddress[]> => {
+      console.log('🔍 [useWildduckAddresses] getUserAddresses CALLED', { userId });
       try {
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();

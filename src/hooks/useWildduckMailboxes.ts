@@ -74,6 +74,13 @@ const useWildduckMailboxes = (
   // Get userId from authData (single source of truth)
   const userId = authData?.id || null;
 
+  // DEBUG: Log render
+  console.log('🔍 [useWildduckMailboxes] RENDER', {
+    userId,
+    backendUrl: config.backendUrl,
+    hasFetched: hasFetchedRef.current,
+  });
+
   // Helper to build headers
   const buildHeaders = useCallback((): Record<string, string> => {
     return {
@@ -93,6 +100,7 @@ const useWildduckMailboxes = (
         sizes?: Optional<boolean>;
       } = {},
     ): Promise<WildduckMailbox[]> => {
+      console.log('🔍 [useWildduckMailboxes] getMailboxes CALLED', { userId, options });
       try {
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
@@ -192,13 +200,24 @@ const useWildduckMailboxes = (
 
   // Auto-fetch mailboxes when user is authenticated (only once per userId)
   useEffect(() => {
+    console.log('🔍 [useWildduckMailboxes] EFFECT triggered', {
+      userId,
+      hasFetched: hasFetchedRef.current,
+    });
+
     if (userId && !hasFetchedRef.current) {
       const cached = queryClient.getQueryData<WildduckMailbox[]>([
         "wildduck-mailboxes",
         userId,
       ]);
 
+      console.log('🔍 [useWildduckMailboxes] Cache check', {
+        hasCached: !!cached,
+        cachedCount: cached?.length || 0,
+      });
+
       if (!cached || cached.length === 0) {
+        console.log('🔍 [useWildduckMailboxes] Starting auto-fetch');
         hasFetchedRef.current = true;
         getMailboxes(userId, {
           counters: true,
