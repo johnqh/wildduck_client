@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
-import type { Optional } from "@sudobility/types";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type { WildduckConfig } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
 
@@ -48,8 +47,13 @@ interface UseWildduckHealthReturn {
 
 /**
  * Hook for Wildduck health monitoring and status operations
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param devMode - Development mode flag
  */
 const useWildduckHealth = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckHealthReturn => {
@@ -91,7 +95,13 @@ const useWildduckHealth = (
         headers["X-Access-Token"] = config.apiToken;
       }
 
-      const response = await axios.get(`${apiUrl}/health`, { headers });
+      const response = await networkClient.request<WildduckHealthStatus>(
+        `${apiUrl}/health`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       const healthData = response.data as WildduckHealthStatus;
       setHealthStatus(healthData);

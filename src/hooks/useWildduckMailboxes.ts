@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
-import axios from "axios";
-import type { Optional } from "@sudobility/types";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
   CreateMailboxRequest,
   GetMailboxesRequest,
@@ -58,11 +57,13 @@ interface UseWildduckMailboxesReturn {
  * Automatically fetches mailboxes when user is authenticated
  * Queries are cached and automatically refetched, mutations invalidate related queries
  *
+ * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
  * @param authData - Authentication data from useWildduckAuth (single source of truth)
  * @param devMode - Development mode flag
  */
 const useWildduckMailboxes = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   authData: Optional<WildduckAuthResponse>,
   _devMode: boolean = false,
@@ -113,7 +114,13 @@ const useWildduckMailboxes = (
         const query = queryParams.toString();
         const endpoint = `/users/${userId}/mailboxes${query ? `?${query}` : ""}`;
 
-        const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
+        const response = await networkClient.request<WildduckMailboxResponse>(
+          `${apiUrl}${endpoint}`,
+          {
+            method: "GET",
+            headers,
+          },
+        );
         const mailboxData = response.data as WildduckMailboxResponse;
         const mailboxList = mailboxData.results || [];
 
@@ -143,7 +150,13 @@ const useWildduckMailboxes = (
 
         const endpoint = `/users/${userId}/mailboxes/${mailboxId}`;
 
-        const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
+        const response = await networkClient.request<WildduckMailboxResponse>(
+          `${apiUrl}${endpoint}`,
+          {
+            method: "GET",
+            headers,
+          },
+        );
         const mailboxData = response.data as WildduckMailboxResponse;
 
         // The API returns a response with a single mailbox in results array
@@ -216,15 +229,18 @@ const useWildduckMailboxes = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.post(
-          `${apiUrl}/users/${userId}/mailboxes`,
-          {
+        const response = await networkClient.request<{
+          success: boolean;
+          id: string;
+        }>(`${apiUrl}/users/${userId}/mailboxes`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
             path: params.path,
             hidden: params.hidden,
             retention: params.retention,
-          },
-          { headers },
-        );
+          }),
+        });
 
         return response.data as { success: boolean; id: string };
       } catch (err) {
@@ -262,10 +278,13 @@ const useWildduckMailboxes = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.put(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/mailboxes/${mailboxId}`,
-          params,
-          { headers },
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(params),
+          },
         );
 
         return response.data as { success: boolean };
@@ -302,9 +321,12 @@ const useWildduckMailboxes = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.delete(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/mailboxes/${mailboxId}`,
-          { headers },
+          {
+            method: "DELETE",
+            headers,
+          },
         );
 
         return response.data as { success: boolean };

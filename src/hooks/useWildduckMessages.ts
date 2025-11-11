@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import type {
+  NetworkClient,
   Optional,
   WildduckConfig,
   WildduckMessage,
@@ -105,8 +105,13 @@ interface UseWildduckMessagesReturn {
 /**
  * Hook for Wildduck message operations using React Query
  * Mutations automatically invalidate related message queries
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param _devMode - Development mode flag (unused)
  */
 const useWildduckMessages = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   _devMode: boolean = false,
 ): UseWildduckMessagesReturn => {
@@ -159,7 +164,10 @@ const useWildduckMessages = (
         const query = queryParams.toString();
         const endpoint = `/users/${userId}/mailboxes/${mailboxId}/messages${query ? `?${query}` : ""}`;
 
-        const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
+        const response = await networkClient.request<WildduckMessagesResponse>(
+          `${apiUrl}${endpoint}`,
+          { method: "GET", headers },
+        );
         const messageData = response.data as WildduckMessagesResponse;
         const messageList = messageData.results || [];
 
@@ -183,7 +191,7 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [config, buildHeaders, queryClient],
+    [networkClient, config, buildHeaders, queryClient],
   );
 
   // Get single message function (imperative)
@@ -197,9 +205,9 @@ const useWildduckMessages = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.get(
+        const response = await networkClient.request<WildduckMessageResponse>(
           `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-          { headers },
+          { method: "GET", headers },
         );
 
         const messageData = response.data as WildduckMessageResponse;
@@ -217,7 +225,7 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [config, buildHeaders, queryClient],
+    [networkClient, config, buildHeaders, queryClient],
   );
 
   // Search messages function (imperative)
@@ -231,9 +239,13 @@ const useWildduckMessages = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.get(
+        const response = await networkClient.request<{
+          results?: WildduckMessage[];
+          total?: number;
+          page?: number;
+        }>(
           `${apiUrl}/users/${userId}/search?q=${encodeURIComponent(query)}&limit=${options.limit || 50}&page=${options.page || 1}`,
-          { headers },
+          { method: "GET", headers },
         );
 
         const searchResponse = response.data as {
@@ -256,7 +268,7 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [config, buildHeaders],
+    [networkClient, config, buildHeaders],
   );
 
   // Send message mutation
@@ -276,11 +288,14 @@ const useWildduckMessages = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.post(
-          `${apiUrl}/users/${userId}/submit`,
-          params,
-          { headers },
-        );
+        const response = await networkClient.request<{
+          success: boolean;
+          id: string;
+        }>(`${apiUrl}/users/${userId}/submit`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(params),
+        });
 
         return response.data as { success: boolean; id: string };
       } catch (err) {
@@ -318,10 +333,9 @@ const useWildduckMessages = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.put(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-          params,
-          { headers },
+          { method: "PUT", headers, body: JSON.stringify(params) },
         );
 
         return response.data as { success: boolean };
@@ -366,9 +380,9 @@ const useWildduckMessages = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.delete(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-          { headers },
+          { method: "DELETE", headers },
         );
 
         return response.data as { success: boolean };
@@ -415,10 +429,13 @@ const useWildduckMessages = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.put(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-          { mailbox: targetMailbox },
-          { headers },
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify({ mailbox: targetMailbox }),
+          },
         );
 
         return response.data as { success: boolean };

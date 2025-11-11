@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { type WildduckConfig } from "@sudobility/types";
-import axios from "axios";
-import type { WildduckUserAuth } from "@sudobility/types";
+import type {
+  NetworkClient,
+  WildduckConfig,
+  WildduckUserAuth,
+} from "@sudobility/types";
 
 export interface UseWildduckSearchMessagesParams {
   userAuth?: WildduckUserAuth;
@@ -15,11 +17,13 @@ export interface UseWildduckSearchMessagesParams {
  * React hook for searching messages
  * Requires user authentication
  *
+ * @param networkClient - Network client for API calls
  * @param config - Wildduck API configuration
  * @param params - Query parameters including userAuth, query string, and pagination options
  * @returns React Query result with search results
  */
 export const useWildduckSearchMessages = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   params: UseWildduckSearchMessagesParams = {},
 ) => {
@@ -53,9 +57,13 @@ export const useWildduckSearchMessages = (
           headers["X-Access-Token"] = config.apiToken;
         }
 
-        const response = await axios.get(
+        const response = await networkClient.request<{
+          results?: unknown[];
+          total?: number;
+          page?: number;
+        }>(
           `${apiUrl}/users/${userAuth.userId}/search?q=${encodeURIComponent(query)}&limit=${limit}&page=${page}`,
-          { headers },
+          { method: "GET", headers },
         );
 
         const searchResponse = response.data as {

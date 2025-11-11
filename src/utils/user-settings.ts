@@ -1,17 +1,35 @@
-import type { UserInfo, WildduckConfig } from "@sudobility/types";
-import { createWildduckClient } from "./client";
+import type {
+  NetworkClient,
+  UserInfo,
+  WildduckConfig,
+} from "@sudobility/types";
 
 /**
  * Get user information
  * GET /users/:user
  */
 export async function getUserInfo(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
 ): Promise<UserInfo> {
-  const client = createWildduckClient(config);
-  const response = await client.get<UserInfo>(`/users/${userId}`);
-  return response.data;
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<UserInfo>(
+    `${apiUrl}/users/${userId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+    },
+  );
+  return response?.data as UserInfo;
 }
 
 /**
@@ -19,19 +37,35 @@ export async function getUserInfo(
  * PUT /users/:user
  */
 export async function updateUserName(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   name: string,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildduckClient(config);
-  const response = await client.put<any>(`/users/${userId}`, {
-    name,
-    sess,
-    ip,
-  });
-  return response.data;
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<{ success: boolean }>(
+    `${apiUrl}/users/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+      body: JSON.stringify({
+        name,
+        sess,
+        ip,
+      }),
+    },
+  );
+  return response?.data as { success: boolean };
 }
 
 /**
@@ -39,6 +73,7 @@ export async function updateUserName(
  * PUT /users/:user
  */
 export async function updateUserSettings(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   settings: {
@@ -64,7 +99,22 @@ export async function updateUserSettings(
     ip?: string;
   },
 ): Promise<{ success: boolean }> {
-  const client = createWildduckClient(config);
-  const response = await client.put<any>(`/users/${userId}`, settings);
-  return response.data;
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<{ success: boolean }>(
+    `${apiUrl}/users/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+      body: JSON.stringify(settings),
+    },
+  );
+  return response?.data as { success: boolean };
 }

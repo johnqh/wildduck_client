@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import type { StorageService } from "@sudobility/di";
-import type { Optional } from "@sudobility/types";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
   WildduckAuthResponse as AuthenticationResponse,
   WildduckPreAuthResponse as PreAuthResponse,
@@ -87,11 +86,13 @@ interface UseWildduckAuthReturn {
  * Hook for Wildduck authentication operations using React Query
  * All mutations are automatically deduplicated and cached by React Query
  *
+ * @param networkClient - Network client for API calls
  * @param config - WildDuck configuration
  * @param storage - Storage service for persisting auth tokens
  * @param devMode - Enable development mode (passed as isDev parameter to authenticate)
  */
 const useWildduckAuth = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   storage: StorageService,
   devMode: boolean = false,
@@ -143,24 +144,23 @@ const useWildduckAuth = (
           isDev: devMode,
         };
 
-        console.log(
-          `🌐 [${mutationId}] Making axios POST to ${apiUrl}/authenticate`,
-        );
+        console.log(`🌐 [${mutationId}] Making POST to ${apiUrl}/authenticate`);
         console.log(
           `📦 [${mutationId}] Request body:`,
           JSON.stringify(requestBody, null, 2),
         );
-        const response = await axios.post(
+        const response = await networkClient.request<AuthenticationResponse>(
           `${apiUrl}/authenticate`,
-          requestBody,
           {
+            method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
+            body: JSON.stringify(requestBody),
           },
         );
 
-        console.log(`✅ [${mutationId}] axios POST completed successfully`);
+        console.log(`✅ [${mutationId}] POST completed successfully`);
         const result = response.data as AuthenticationResponse;
 
         // Store token if authentication was successful
@@ -202,11 +202,16 @@ const useWildduckAuth = (
           ip: "127.0.0.1",
         });
 
-        const response = await axios.post(`${apiUrl}/preauth`, requestBody, {
-          headers: {
-            "Content-Type": "application/json",
+        const response = await networkClient.request<PreAuthResponse>(
+          `${apiUrl}/preauth`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
           },
-        });
+        );
 
         return response.data as PreAuthResponse;
       } catch (err: unknown) {
@@ -243,9 +248,13 @@ const useWildduckAuth = (
           }
         }
 
-        const response = await axios.delete(`${apiUrl}/authenticate`, {
-          headers,
-        });
+        const response = await networkClient.request<{ success: boolean }>(
+          `${apiUrl}/authenticate`,
+          {
+            method: "DELETE",
+            headers,
+          },
+        );
 
         const result = response.data as { success: boolean };
 
@@ -301,7 +310,13 @@ const useWildduckAuth = (
           headers["X-Access-Token"] = token;
         }
 
-        const response = await axios.get(`${apiUrl}/users/me`, { headers });
+        const response = await networkClient.request<any>(
+          `${apiUrl}/users/me`,
+          {
+            method: "GET",
+            headers,
+          },
+        );
 
         return { authenticated: true, user: response.data };
       } catch {

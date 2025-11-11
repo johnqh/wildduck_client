@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
+  NetworkClient,
   Optional,
   WildduckAddress,
   WildduckConfig,
@@ -71,8 +71,13 @@ interface UseWildduckAddressesReturn {
 /**
  * Hook for Wildduck address management operations using React Query
  * Mutations automatically invalidate related address queries
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param devMode - Development mode flag
  */
 const useWildduckAddresses = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckAddressesReturn => {
@@ -105,12 +110,10 @@ const useWildduckAddresses = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.get(
-          `${apiUrl}/users/${userId}/addresses`,
-          {
-            headers,
-          },
-        );
+        const response = await networkClient.request<{
+          success: boolean;
+          results: Array<{ id: string; address: string; main: boolean }>;
+        }>(`${apiUrl}/users/${userId}/addresses`, { method: "GET", headers });
 
         const addressData = response.data as {
           success: boolean;
@@ -160,6 +163,7 @@ const useWildduckAddresses = (
       }
     },
     [
+      networkClient,
       config.cloudflareWorkerUrl,
       config.backendUrl,
       buildHeaders,
@@ -174,9 +178,9 @@ const useWildduckAddresses = (
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers = buildHeaders();
 
-      const response = await axios.get(`${apiUrl}/addresses/forwarded`, {
-        headers,
-      });
+      const response = await networkClient.request<{
+        results?: ForwardedAddress[];
+      }>(`${apiUrl}/addresses/forwarded`, { method: "GET", headers });
 
       return (response.data as { results?: ForwardedAddress[] }).results || [];
     } catch (err) {
@@ -207,10 +211,13 @@ const useWildduckAddresses = (
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
       const headers = buildHeaders();
 
-      const response = await axios.get(
-        `${apiUrl}/addresses/resolve/${encodeURIComponent(address)}`,
-        { headers },
-      );
+      const response = await networkClient.request<{
+        success: boolean;
+        user?: string;
+      }>(`${apiUrl}/addresses/resolve/${encodeURIComponent(address)}`, {
+        method: "GET",
+        headers,
+      });
 
       return response.data as { success: boolean; user?: string };
     } catch (err) {
@@ -247,11 +254,14 @@ const useWildduckAddresses = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.post(
-          `${apiUrl}/users/${userId}/addresses`,
-          params,
-          { headers },
-        );
+        const response = await networkClient.request<{
+          success: boolean;
+          id: string;
+        }>(`${apiUrl}/users/${userId}/addresses`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(params),
+        });
 
         return response.data as { success: boolean; id: string };
       } catch (err) {
@@ -297,10 +307,9 @@ const useWildduckAddresses = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.put(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/addresses/${addressId}`,
-          params,
-          { headers },
+          { method: "PUT", headers, body: JSON.stringify(params) },
         );
 
         return response.data as { success: boolean };
@@ -345,9 +354,9 @@ const useWildduckAddresses = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.delete(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/addresses/${addressId}`,
-          { headers },
+          { method: "DELETE", headers },
         );
 
         return response.data as { success: boolean };
@@ -392,11 +401,14 @@ const useWildduckAddresses = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.post(
-          `${apiUrl}/addresses/forwarded`,
-          { address, target },
-          { headers },
-        );
+        const response = await networkClient.request<{
+          success: boolean;
+          id: string;
+        }>(`${apiUrl}/addresses/forwarded`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ address, target }),
+        });
 
         return response.data as { success: boolean; id: string };
       } catch (err) {
@@ -436,9 +448,9 @@ const useWildduckAddresses = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.delete(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/addresses/forwarded/${addressId}`,
-          { headers },
+          { method: "DELETE", headers },
         );
 
         return response.data as { success: boolean };

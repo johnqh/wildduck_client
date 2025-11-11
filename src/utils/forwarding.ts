@@ -1,17 +1,36 @@
-import type { ForwardingTarget, WildduckConfig } from "@sudobility/types";
-import { createWildduckClient } from "./client";
+import type {
+  ForwardingTarget,
+  NetworkClient,
+  WildduckConfig,
+} from "@sudobility/types";
 
 /**
  * Get current forwarding targets for a user
  * GET /users/:user
  */
 export async function getForwardingTargets(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
 ): Promise<ForwardingTarget[]> {
-  const client = createWildduckClient(config);
-  const response = await client.get<any>(`/users/${userId}`);
-  return response.data.targets || [];
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<any>(
+    `${apiUrl}/users/${userId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+    },
+  );
+  const data = response?.data as any;
+  return data.targets || [];
 }
 
 /**
@@ -19,19 +38,35 @@ export async function getForwardingTargets(
  * PUT /users/:user
  */
 export async function updateForwardingTargets(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   targets: ForwardingTarget[],
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildduckClient(config);
-  const response = await client.put<any>(`/users/${userId}`, {
-    targets,
-    sess,
-    ip,
-  });
-  return response.data;
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<{ success: boolean }>(
+    `${apiUrl}/users/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+      body: JSON.stringify({
+        targets,
+        sess,
+        ip,
+      }),
+    },
+  );
+  return response?.data as { success: boolean };
 }
 
 /**
@@ -39,13 +74,18 @@ export async function updateForwardingTargets(
  * GET /users/:user -> PUT /users/:user
  */
 export async function addForwardingTarget(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   target: ForwardingTarget,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const currentTargets = await getForwardingTargets(config, userId);
+  const currentTargets = await getForwardingTargets(
+    networkClient,
+    config,
+    userId,
+  );
 
   // Avoid duplicates
   if (currentTargets.includes(target)) {
@@ -53,7 +93,14 @@ export async function addForwardingTarget(
   }
 
   const updatedTargets = [...currentTargets, target];
-  return updateForwardingTargets(config, userId, updatedTargets, sess, ip);
+  return updateForwardingTargets(
+    networkClient,
+    config,
+    userId,
+    updatedTargets,
+    sess,
+    ip,
+  );
 }
 
 /**
@@ -61,13 +108,25 @@ export async function addForwardingTarget(
  * GET /users/:user -> PUT /users/:user
  */
 export async function removeForwardingTarget(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   target: ForwardingTarget,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const currentTargets = await getForwardingTargets(config, userId);
+  const currentTargets = await getForwardingTargets(
+    networkClient,
+    config,
+    userId,
+  );
   const updatedTargets = currentTargets.filter((t) => t !== target);
-  return updateForwardingTargets(config, userId, updatedTargets, sess, ip);
+  return updateForwardingTargets(
+    networkClient,
+    config,
+    userId,
+    updatedTargets,
+    sess,
+    ip,
+  );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import axios from "axios";
 import type {
+  NetworkClient,
   Optional,
   WildduckConfig,
   WildduckCreateFilterRequest,
@@ -37,8 +37,13 @@ interface UseWildduckFiltersReturn {
 
 /**
  * Hook for Wildduck filter management operations
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param devMode - Development mode flag
  */
 const useWildduckFilters = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckFiltersReturn => {
@@ -70,9 +75,9 @@ const useWildduckFilters = (
           headers["X-Access-Token"] = config.apiToken;
         }
 
-        const response = await axios.get(`${apiUrl}/users/${userId}/filters`, {
-          headers,
-        });
+        const response = await networkClient.request<{
+          results?: WildduckFilterListItem[];
+        }>(`${apiUrl}/users/${userId}/filters`, { method: "GET", headers });
 
         const filterList =
           (response.data as { results?: WildduckFilterListItem[] }).results ||
@@ -101,7 +106,13 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
+    [
+      networkClient,
+      config.cloudflareWorkerUrl,
+      config.backendUrl,
+      config.apiToken,
+      devMode,
+    ],
   );
 
   const getFilter = useCallback(
@@ -127,9 +138,9 @@ const useWildduckFilters = (
           headers["X-Access-Token"] = config.apiToken;
         }
 
-        const response = await axios.get(
+        const response = await networkClient.request<WildduckFilterListItem>(
           `${apiUrl}/users/${userId}/filters/${filterId}`,
-          { headers },
+          { method: "GET", headers },
         );
 
         return response.data as WildduckFilterListItem;
@@ -151,7 +162,13 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
+    [
+      networkClient,
+      config.cloudflareWorkerUrl,
+      config.backendUrl,
+      config.apiToken,
+      devMode,
+    ],
   );
 
   const createFilter = useCallback(
@@ -177,11 +194,14 @@ const useWildduckFilters = (
           headers["X-Access-Token"] = config.apiToken;
         }
 
-        const response = await axios.post(
-          `${apiUrl}/users/${userId}/filters`,
-          params,
-          { headers },
-        );
+        const response = await networkClient.request<{
+          success: boolean;
+          id: string;
+        }>(`${apiUrl}/users/${userId}/filters`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(params),
+        });
 
         return response.data as { success: boolean; id: string };
       } catch (err) {
@@ -201,7 +221,13 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
+    [
+      networkClient,
+      config.cloudflareWorkerUrl,
+      config.backendUrl,
+      config.apiToken,
+      devMode,
+    ],
   );
 
   const updateFilter = useCallback(
@@ -228,10 +254,9 @@ const useWildduckFilters = (
           headers["X-Access-Token"] = config.apiToken;
         }
 
-        const response = await axios.put(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/filters/${filterId}`,
-          params,
-          { headers },
+          { method: "PUT", headers, body: JSON.stringify(params) },
         );
 
         return response.data as { success: boolean };
@@ -252,7 +277,13 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
+    [
+      networkClient,
+      config.cloudflareWorkerUrl,
+      config.backendUrl,
+      config.apiToken,
+      devMode,
+    ],
   );
 
   const deleteFilter = useCallback(
@@ -275,9 +306,9 @@ const useWildduckFilters = (
           headers["X-Access-Token"] = config.apiToken;
         }
 
-        const response = await axios.delete(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/filters/${filterId}`,
-          { headers },
+          { method: "DELETE", headers },
         );
 
         return response.data as { success: boolean };
@@ -298,7 +329,13 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
+    [
+      networkClient,
+      config.cloudflareWorkerUrl,
+      config.backendUrl,
+      config.apiToken,
+      devMode,
+    ],
   );
 
   const refresh = useCallback(

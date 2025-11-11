@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
-import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Optional, WildduckConfig, WildduckUser } from "@sudobility/types";
+import type {
+  NetworkClient,
+  Optional,
+  WildduckConfig,
+  WildduckUser,
+} from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
 
 interface UseWildduckUsersReturn {
@@ -18,8 +22,13 @@ interface UseWildduckUsersReturn {
 /**
  * Hook for Wildduck user management operations using React Query
  * Query results are cached for faster subsequent access
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param devMode - Development mode flag
  */
 const useWildduckUsers = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckUsersReturn => {
@@ -54,9 +63,13 @@ const useWildduckUsers = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.get(`${apiUrl}/users/${userId}`, {
-          headers,
-        });
+        const response = await networkClient.request<WildduckUser>(
+          `${apiUrl}/users/${userId}`,
+          {
+            method: "GET",
+            headers,
+          },
+        );
         const userData = response.data as WildduckUser;
 
         // Update cache
@@ -114,7 +127,11 @@ const useWildduckUsers = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.get(`${apiUrl}/users?${params}`, {
+        const response = await networkClient.request<{
+          results?: WildduckUser[];
+          total?: number;
+        }>(`${apiUrl}/users?${params}`, {
+          method: "GET",
           headers,
         });
 

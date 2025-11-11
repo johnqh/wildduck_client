@@ -4,9 +4,9 @@ import type {
   FilterAction,
   FilterQuery,
   FilterResponse,
+  NetworkClient,
   WildduckConfig,
 } from "@sudobility/types";
-import { createWildduckClient } from "./client";
 
 /**
  * Parameters for creating/updating a filter
@@ -25,12 +25,28 @@ export interface FilterParams {
  * GET /users/:user/filters
  */
 export async function getFilters(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
 ): Promise<EmailFilter[]> {
-  const client = createWildduckClient(config);
-  const response = await client.get<any>(`/users/${userId}/filters`);
-  return response.data.results || [];
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<any>(
+    `${apiUrl}/users/${userId}/filters`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+    },
+  );
+  const data = response?.data as any;
+  return data.results || [];
 }
 
 /**
@@ -38,16 +54,29 @@ export async function getFilters(
  * GET /users/:user/filters/:filter
  */
 export async function getFilter(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   filterId: string,
 ): Promise<Optional<EmailFilter>> {
-  const client = createWildduckClient(config);
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
   try {
-    const response = await client.get<any>(
-      `/users/${userId}/filters/${filterId}`,
+    const response = await networkClient.request<any>(
+      `${apiUrl}/users/${userId}/filters/${filterId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(config.cloudflareWorkerUrl
+            ? {
+                Authorization: `Bearer ${config.apiToken}`,
+                "X-App-Source": "0xmail-box",
+              }
+            : { "X-Access-Token": config.apiToken }),
+        },
+      },
     );
-    return response.data;
+    return response?.data as EmailFilter;
   } catch {
     return null;
   }
@@ -58,13 +87,29 @@ export async function getFilter(
  * POST /users/:user/filters
  */
 export async function createFilter(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   params: FilterParams,
 ): Promise<FilterResponse> {
-  const client = createWildduckClient(config);
-  const response = await client.post<any>(`/users/${userId}/filters`, params);
-  return response.data;
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<FilterResponse>(
+    `${apiUrl}/users/${userId}/filters`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+      body: JSON.stringify(params),
+    },
+  );
+  return response?.data as FilterResponse;
 }
 
 /**
@@ -72,17 +117,30 @@ export async function createFilter(
  * PUT /users/:user/filters/:filter
  */
 export async function updateFilter(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   filterId: string,
   params: Partial<FilterParams>,
 ): Promise<{ success: boolean }> {
-  const client = createWildduckClient(config);
-  const response = await client.put<any>(
-    `/users/${userId}/filters/${filterId}`,
-    params,
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<{ success: boolean }>(
+    `${apiUrl}/users/${userId}/filters/${filterId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+      body: JSON.stringify(params),
+    },
   );
-  return response.data;
+  return response?.data as { success: boolean };
 }
 
 /**
@@ -90,20 +148,31 @@ export async function updateFilter(
  * DELETE /users/:user/filters/:filter
  */
 export async function deleteFilter(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   filterId: string,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildduckClient(config);
-  const response = await client.delete<any>(
-    `/users/${userId}/filters/${filterId}`,
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<{ success: boolean }>(
+    `${apiUrl}/users/${userId}/filters/${filterId}`,
     {
-      data: { sess, ip },
-    } as any,
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+      body: JSON.stringify({ sess, ip }),
+    },
   );
-  return response.data;
+  return response?.data as { success: boolean };
 }
 
 /**
@@ -111,6 +180,7 @@ export async function deleteFilter(
  * PUT /users/:user/filters/:filter
  */
 export async function enableFilter(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   filterId: string,
@@ -120,7 +190,7 @@ export async function enableFilter(
   const params: any = { disabled: false };
   if (sess) params.sess = sess;
   if (ip) params.ip = ip;
-  return updateFilter(config, userId, filterId, params);
+  return updateFilter(networkClient, config, userId, filterId, params);
 }
 
 /**
@@ -128,6 +198,7 @@ export async function enableFilter(
  * PUT /users/:user/filters/:filter
  */
 export async function disableFilter(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   filterId: string,
@@ -137,5 +208,5 @@ export async function disableFilter(
   const params: any = { disabled: true };
   if (sess) params.sess = sess;
   if (ip) params.ip = ip;
-  return updateFilter(config, userId, filterId, params);
+  return updateFilter(networkClient, config, userId, filterId, params);
 }

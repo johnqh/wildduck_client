@@ -13,6 +13,7 @@ import {
 import { queryKeys } from "./query-keys";
 import { STALE_TIMES } from "./query-config";
 import type {
+  NetworkClient,
   WildduckAddress,
   WildduckConfig,
   WildduckFilterListItem,
@@ -23,7 +24,6 @@ import type {
   WildduckUser,
   WildduckUserListResponse,
 } from "@sudobility/types";
-import axios from "axios";
 import { WildduckMockData } from "./mocks";
 
 interface WildduckUserSettings {
@@ -43,8 +43,14 @@ interface WildduckAuthStatusResponse {
 
 /**
  * Hook to get Wildduck server health status
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param devMode - Development mode flag
+ * @param options - React Query options
  */
 const useWildduckHealth = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   devMode: boolean = false,
   options?: UseQueryOptions<WildduckHealthResponse>,
@@ -64,7 +70,10 @@ const useWildduckHealth = (
     }
 
     try {
-      const response = await axios.get(`${apiUrl}/health`, { headers });
+      const response = await networkClient.request<WildduckHealthResponse>(
+        `${apiUrl}/health`,
+        { method: "GET", headers },
+      );
       return response.data as WildduckHealthResponse;
     } catch (err) {
       if (devMode) {
@@ -76,7 +85,13 @@ const useWildduckHealth = (
       }
       throw err;
     }
-  }, [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode]);
+  }, [
+    networkClient,
+    config.cloudflareWorkerUrl,
+    config.backendUrl,
+    config.apiToken,
+    devMode,
+  ]);
 
   const query = useQuery({
     queryKey: queryKeys.wildduck.health(),
@@ -95,8 +110,15 @@ const useWildduckHealth = (
 
 /**
  * Hook to get users list with optional filters
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param devMode - Development mode flag
+ * @param filters - Optional filters for the query
+ * @param options - React Query options
  */
 const useWildduckUsersList = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   devMode: boolean = false,
   filters?: Record<string, unknown>,
@@ -125,9 +147,10 @@ const useWildduckUsersList = (
       });
     }
     try {
-      const response = await axios.get(`${apiUrl}/users?${params}`, {
-        headers,
-      });
+      const response = await networkClient.request<WildduckUserListResponse>(
+        `${apiUrl}/users?${params}`,
+        { method: "GET", headers },
+      );
       return response.data as WildduckUserListResponse;
     } catch (err) {
       if (devMode) {
@@ -140,6 +163,7 @@ const useWildduckUsersList = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,
@@ -164,8 +188,15 @@ const useWildduckUsersList = (
 
 /**
  * Hook to get a specific user by ID
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param userId - User ID to fetch
+ * @param devMode - Development mode flag
+ * @param options - React Query options
  */
 const useWildduckUser = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
@@ -186,9 +217,12 @@ const useWildduckUser = (
     }
 
     try {
-      const response = await axios.get(`${apiUrl}/users/${userId}`, {
-        headers,
-      });
+      const response = await networkClient.request<{
+        success: boolean;
+        id: string;
+        username: string;
+        address?: string;
+      }>(`${apiUrl}/users/${userId}`, { method: "GET", headers });
       const userData = response.data as {
         success: boolean;
         id: string;
@@ -219,6 +253,7 @@ const useWildduckUser = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,
@@ -244,8 +279,15 @@ const useWildduckUser = (
 
 /**
  * Hook to get user addresses
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param userId - User ID to fetch addresses for
+ * @param devMode - Development mode flag
+ * @param options - React Query options
  */
 const useWildduckUserAddresses = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
@@ -266,9 +308,10 @@ const useWildduckUserAddresses = (
     }
 
     try {
-      const response = await axios.get(`${apiUrl}/users/${userId}/addresses`, {
-        headers,
-      });
+      const response = await networkClient.request<{
+        success: boolean;
+        results: Array<{ id: string; address: string; main: boolean }>;
+      }>(`${apiUrl}/users/${userId}/addresses`, { method: "GET", headers });
       const addressData = response.data as {
         success: boolean;
         results: Array<{ id: string; address: string; main: boolean }>;
@@ -293,6 +336,7 @@ const useWildduckUserAddresses = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,
@@ -318,8 +362,17 @@ const useWildduckUserAddresses = (
 
 /**
  * Hook to get user messages with optional filters
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param userId - User ID
+ * @param mailboxId - Mailbox ID
+ * @param devMode - Development mode flag
+ * @param filters - Optional filters
+ * @param options - React Query options
  */
 const useWildduckUserMessages = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   mailboxId: string,
@@ -342,10 +395,15 @@ const useWildduckUserMessages = (
     }
 
     try {
-      const response = await axios.get(
-        `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages`,
-        { headers },
-      );
+      const response = await networkClient.request<{
+        success: boolean;
+        results: any[];
+        total: number;
+        page: number;
+      }>(`${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages`, {
+        method: "GET",
+        headers,
+      });
       const messagesData = response.data as {
         success: boolean;
         results: any[];
@@ -400,6 +458,7 @@ const useWildduckUserMessages = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,
@@ -426,8 +485,17 @@ const useWildduckUserMessages = (
 
 /**
  * Hook to get a specific message
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param userId - User ID
+ * @param mailboxId - Mailbox ID
+ * @param messageId - Message ID
+ * @param devMode - Development mode flag
+ * @param options - React Query options
  */
 const useWildduckMessage = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   mailboxId: string,
@@ -450,9 +518,9 @@ const useWildduckMessage = (
     }
 
     try {
-      const response = await axios.get(
+      const response = await networkClient.request<any>(
         `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-        { headers },
+        { method: "GET", headers },
       );
       const messageData = response.data as any;
       return {
@@ -501,6 +569,7 @@ const useWildduckMessage = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,
@@ -528,9 +597,15 @@ const useWildduckMessage = (
 
 /**
  * Hook to get user filters
- * Note: getUserFilters method not yet implemented in WildduckAPI
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param userId - User ID
+ * @param devMode - Development mode flag
+ * @param options - React Query options
  */
 const useWildduckUserFilters = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
@@ -551,9 +626,10 @@ const useWildduckUserFilters = (
     }
 
     try {
-      const response = await axios.get(`${apiUrl}/users/${userId}/filters`, {
-        headers,
-      });
+      const response = await networkClient.request<{ results?: any[] }>(
+        `${apiUrl}/users/${userId}/filters`,
+        { method: "GET", headers },
+      );
       const data = response.data as { results?: any[] };
       return (
         data.results?.map((filter) => ({
@@ -577,6 +653,7 @@ const useWildduckUserFilters = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,
@@ -602,9 +679,15 @@ const useWildduckUserFilters = (
 
 /**
  * Hook to get user settings
- * Note: getUserSettings method not yet implemented in WildduckAPI
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param userId - User ID
+ * @param devMode - Development mode flag
+ * @param options - React Query options
  */
 const useWildduckUserSettings = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
@@ -625,9 +708,10 @@ const useWildduckUserSettings = (
     }
 
     try {
-      const response = await axios.get(`${apiUrl}/users/${userId}/settings`, {
-        headers,
-      });
+      const response = await networkClient.request<Record<string, unknown>>(
+        `${apiUrl}/users/${userId}/settings`,
+        { method: "GET", headers },
+      );
       const data = response.data as Record<string, unknown>;
       return data || {};
     } catch (err) {
@@ -642,6 +726,7 @@ const useWildduckUserSettings = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,
@@ -667,8 +752,16 @@ const useWildduckUserSettings = (
 
 /**
  * Hook to get user mailboxes
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param userId - User ID
+ * @param devMode - Development mode flag
+ * @param options - Mailbox query options
+ * @param queryOptions - React Query options
  */
 const useWildduckUserMailboxes = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   devMode: boolean = false,
@@ -704,7 +797,10 @@ const useWildduckUserMailboxes = (
     const endpoint = `${apiUrl}/users/${userId}/mailboxes${queryString ? `?${queryString}` : ""}`;
 
     try {
-      const response = await axios.get(endpoint, { headers });
+      const response = await networkClient.request<WildduckMailboxResponse>(
+        endpoint,
+        { method: "GET", headers },
+      );
       return response.data as WildduckMailboxResponse;
     } catch (err) {
       if (devMode) {
@@ -721,6 +817,7 @@ const useWildduckUserMailboxes = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,
@@ -747,8 +844,15 @@ const useWildduckUserMailboxes = (
 
 /**
  * Hook to check authentication status
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param token - Optional authentication token
+ * @param devMode - Development mode flag
+ * @param queryOptions - React Query options
  */
 const useWildduckAuthStatus = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   token?: string,
   devMode: boolean = false,
@@ -769,7 +873,12 @@ const useWildduckAuthStatus = (
     }
 
     try {
-      const httpResponse = await axios.get(`${apiUrl}/users/me`, { headers });
+      const httpResponse = await networkClient.request<{
+        success: boolean;
+        id?: string;
+        username?: string;
+        address?: string;
+      }>(`${apiUrl}/users/me`, { method: "GET", headers });
       const data = httpResponse.data as {
         success: boolean;
         id?: string;
@@ -805,6 +914,7 @@ const useWildduckAuthStatus = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     token,
@@ -830,8 +940,18 @@ const useWildduckAuthStatus = (
 
 /**
  * Hook to search messages
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param userId - User ID
+ * @param mailboxId - Mailbox ID
+ * @param query - Search query string
+ * @param devMode - Development mode flag
+ * @param searchOptions - Optional search options
+ * @param queryOptions - React Query options
  */
 const useWildduckSearchMessages = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   mailboxId: string,
@@ -865,9 +985,9 @@ const useWildduckSearchMessages = (
     }
 
     try {
-      const response = await axios.get(
+      const response = await networkClient.request<WildduckMessagesResponse>(
         `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages?${params}`,
-        { headers },
+        { method: "GET", headers },
       );
       return response.data as WildduckMessagesResponse;
     } catch (err) {
@@ -881,6 +1001,7 @@ const useWildduckSearchMessages = (
       throw err;
     }
   }, [
+    networkClient,
     config.cloudflareWorkerUrl,
     config.backendUrl,
     config.apiToken,

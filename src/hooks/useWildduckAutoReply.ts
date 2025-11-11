@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
-import axios from "axios";
-import type { Optional } from "@sudobility/types";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
   WildduckAuthResponse,
   WildduckAutoreplyRequest,
@@ -40,11 +39,13 @@ interface UseWildduckAutoReplyReturn {
  * Automatically fetches autoreply when user is authenticated
  * Queries are cached and automatically refetched, mutations invalidate related queries
  *
+ * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
  * @param authData - Authentication data from useWildduckAuth (single source of truth)
  * @param _devMode - Development mode flag (unused, kept for compatibility)
  */
 const useWildduckAutoReply = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   authData: Optional<WildduckAuthResponse>,
   _devMode: boolean = false,
@@ -80,7 +81,13 @@ const useWildduckAutoReply = (
 
         const endpoint = `/users/${userId}/autoreply`;
 
-        const response = await axios.get(`${apiUrl}${endpoint}`, { headers });
+        const response = await networkClient.request<WildduckAutoreplyResponse>(
+          `${apiUrl}${endpoint}`,
+          {
+            method: "GET",
+            headers,
+          },
+        );
         const autoreplyData = response.data as WildduckAutoreplyResponse;
 
         // Update cache
@@ -125,10 +132,13 @@ const useWildduckAutoReply = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.put(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/autoreply`,
-          params,
-          { headers },
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(params),
+          },
         );
 
         return response.data as { success: boolean };
@@ -159,9 +169,12 @@ const useWildduckAutoReply = (
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
 
-        const response = await axios.delete(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/users/${userId}/autoreply`,
-          { headers },
+          {
+            method: "DELETE",
+            headers,
+          },
         );
 
         return response.data as { success: boolean };

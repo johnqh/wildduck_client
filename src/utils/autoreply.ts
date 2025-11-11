@@ -1,5 +1,8 @@
-import type { AutoReplySettings, WildduckConfig } from "@sudobility/types";
-import { createWildduckClient } from "./client";
+import type {
+  AutoReplySettings,
+  NetworkClient,
+  WildduckConfig,
+} from "@sudobility/types";
 
 /**
  * Parameters for updating auto-reply
@@ -21,12 +24,27 @@ export interface UpdateAutoReplyParams {
  * GET /users/:user/autoreply
  */
 export async function getAutoReply(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
 ): Promise<AutoReplySettings> {
-  const client = createWildduckClient(config);
-  const response = await client.get<any>(`/users/${userId}/autoreply`);
-  return response.data;
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<AutoReplySettings>(
+    `${apiUrl}/users/${userId}/autoreply`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+    },
+  );
+  return response?.data as AutoReplySettings;
 }
 
 /**
@@ -41,13 +59,29 @@ export async function getAutoReply(
  * @param end - ISO 8601 datetime to end auto-reply
  */
 export async function updateAutoReply(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   params: UpdateAutoReplyParams,
 ): Promise<{ success: boolean }> {
-  const client = createWildduckClient(config);
-  const response = await client.put<any>(`/users/${userId}/autoreply`, params);
-  return response.data;
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<{ success: boolean }>(
+    `${apiUrl}/users/${userId}/autoreply`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+      body: JSON.stringify(params),
+    },
+  );
+  return response?.data as { success: boolean };
 }
 
 /**
@@ -55,6 +89,7 @@ export async function updateAutoReply(
  * PUT /users/:user/autoreply
  */
 export async function enableAutoReply(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   message: {
@@ -77,7 +112,7 @@ export async function enableAutoReply(
   };
   if (sess) params.sess = sess;
   if (ip) params.ip = ip;
-  return updateAutoReply(config, userId, params);
+  return updateAutoReply(networkClient, config, userId, params);
 }
 
 /**
@@ -85,6 +120,7 @@ export async function enableAutoReply(
  * PUT /users/:user/autoreply
  */
 export async function disableAutoReply(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   sess?: string,
@@ -93,7 +129,7 @@ export async function disableAutoReply(
   const params: any = { status: false };
   if (sess) params.sess = sess;
   if (ip) params.ip = ip;
-  return updateAutoReply(config, userId, params);
+  return updateAutoReply(networkClient, config, userId, params);
 }
 
 /**
@@ -101,14 +137,28 @@ export async function disableAutoReply(
  * DELETE /users/:user/autoreply
  */
 export async function deleteAutoReply(
+  networkClient: NetworkClient,
   config: WildduckConfig,
   userId: string,
   sess?: string,
   ip?: string,
 ): Promise<{ success: boolean }> {
-  const client = createWildduckClient(config);
-  const response = await client.delete<any>(`/users/${userId}/autoreply`, {
-    data: { sess, ip },
-  } as any);
-  return response.data;
+  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const response = await networkClient.request<{ success: boolean }>(
+    `${apiUrl}/users/${userId}/autoreply`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...(config.cloudflareWorkerUrl
+          ? {
+              Authorization: `Bearer ${config.apiToken}`,
+              "X-App-Source": "0xmail-box",
+            }
+          : { "X-Access-Token": config.apiToken }),
+      },
+      body: JSON.stringify({ sess, ip }),
+    },
+  );
+  return response?.data as { success: boolean };
 }

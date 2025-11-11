@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import axios from "axios";
-import type { Optional } from "@sudobility/types";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type { WildduckConfig } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
 
@@ -21,8 +20,13 @@ interface UseWildduckSettingsReturn {
 
 /**
  * Hook for Wildduck settings management operations
+ *
+ * @param networkClient - Network client for API calls
+ * @param config - Wildduck configuration
+ * @param devMode - Development mode flag
  */
 const useWildduckSettings = (
+  networkClient: NetworkClient,
   config: WildduckConfig,
   devMode: boolean = false,
 ): UseWildduckSettingsReturn => {
@@ -53,7 +57,12 @@ const useWildduckSettings = (
         headers["X-Access-Token"] = config.apiToken;
       }
 
-      const response = await axios.get(`${apiUrl}/settings`, { headers });
+      const response = await networkClient.request<
+        { results?: WildduckSettings } | WildduckSettings
+      >(`${apiUrl}/settings`, {
+        method: "GET",
+        headers,
+      });
 
       const settingsData =
         (response.data as { results?: WildduckSettings } | WildduckSettings)
@@ -108,10 +117,13 @@ const useWildduckSettings = (
           headers["X-Access-Token"] = config.apiToken;
         }
 
-        const response = await axios.put(
+        const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/settings/${key}`,
-          { value },
-          { headers },
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify({ value }),
+          },
         );
 
         // Update local settings
@@ -159,9 +171,13 @@ const useWildduckSettings = (
           headers["X-Access-Token"] = config.apiToken;
         }
 
-        const response = await axios.delete(`${apiUrl}/settings/${key}`, {
-          headers,
-        });
+        const response = await networkClient.request<{ success: boolean }>(
+          `${apiUrl}/settings/${key}`,
+          {
+            method: "DELETE",
+            headers,
+          },
+        );
 
         // Remove from local settings
         setSettings((prev) => {
