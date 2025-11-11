@@ -87,21 +87,12 @@ const useWildduckAddresses = (
   const [addresses, setAddresses] = useState<WildduckAddress[]>([]);
 
   // Helper to build headers
-  const buildHeaders = (): Record<string, string> => {
-    const headers: Record<string, string> = {
+  const buildHeaders = useCallback((): Record<string, string> => {
+    return {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
-
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
-    }
-
-    return headers;
-  };
+  }, []);
 
   // Get user addresses function (imperative)
   const getUserAddresses = useCallback(

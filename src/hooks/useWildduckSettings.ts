@@ -34,6 +34,14 @@ const useWildduckSettings = (
   const [error, setError] = useState<Optional<string>>(null);
   const [settings, setSettings] = useState<WildduckSettings>({});
 
+  // Helper to build headers
+  const buildHeaders = useCallback((): Record<string, string> => {
+    return {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -45,17 +53,7 @@ const useWildduckSettings = (
     try {
       // Use config URLs and headers
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      };
-
-      if (config.cloudflareWorkerUrl) {
-        headers["Authorization"] = `Bearer ${config.apiToken}`;
-        headers["X-App-Source"] = "0xmail-box";
-      } else {
-        headers["X-Access-Token"] = config.apiToken;
-      }
+      const headers = buildHeaders();
 
       const response = await networkClient.request<
         { results?: WildduckSettings } | WildduckSettings
@@ -95,7 +93,7 @@ const useWildduckSettings = (
     } finally {
       setIsLoading(false);
     }
-  }, [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode]);
+  }, [buildHeaders, config.cloudflareWorkerUrl, config.backendUrl, devMode]);
 
   const updateSetting = useCallback(
     async (key: string, value: any): Promise<{ success: boolean }> => {
@@ -105,17 +103,7 @@ const useWildduckSettings = (
       try {
         // Use config URLs and headers
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        };
-
-        if (config.cloudflareWorkerUrl) {
-          headers["Authorization"] = `Bearer ${config.apiToken}`;
-          headers["X-App-Source"] = "0xmail-box";
-        } else {
-          headers["X-Access-Token"] = config.apiToken;
-        }
+        const headers = buildHeaders();
 
         const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/settings/${key}`,
@@ -148,7 +136,7 @@ const useWildduckSettings = (
         setIsLoading(false);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
+    [buildHeaders, config.cloudflareWorkerUrl, config.backendUrl, devMode],
   );
 
   const deleteSetting = useCallback(
@@ -159,17 +147,7 @@ const useWildduckSettings = (
       try {
         // Use config URLs and headers
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        };
-
-        if (config.cloudflareWorkerUrl) {
-          headers["Authorization"] = `Bearer ${config.apiToken}`;
-          headers["X-App-Source"] = "0xmail-box";
-        } else {
-          headers["X-Access-Token"] = config.apiToken;
-        }
+        const headers = buildHeaders();
 
         const response = await networkClient.request<{ success: boolean }>(
           `${apiUrl}/settings/${key}`,
@@ -207,7 +185,7 @@ const useWildduckSettings = (
         setIsLoading(false);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode],
+    [buildHeaders, config.cloudflareWorkerUrl, config.backendUrl, devMode],
   );
 
   const refresh = useCallback(async (): Promise<void> => {

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
   CreateMailboxRequest,
@@ -69,26 +69,18 @@ const useWildduckMailboxes = (
   _devMode: boolean = false,
 ): UseWildduckMailboxesReturn => {
   const queryClient = useQueryClient();
+  const hasFetchedRef = useRef(false);
 
   // Get userId from authData (single source of truth)
   const userId = authData?.id || null;
 
   // Helper to build headers
-  const buildHeaders = (): Record<string, string> => {
-    const headers: Record<string, string> = {
+  const buildHeaders = useCallback((): Record<string, string> => {
+    return {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
-
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
-    }
-
-    return headers;
-  };
+  }, []);
 
   // Get mailboxes query (not auto-fetched, only when explicitly called)
   const getMailboxes = useCallback(
@@ -198,19 +190,29 @@ const useWildduckMailboxes = (
       ]) || []
     : [];
 
-  // Auto-fetch mailboxes when user is authenticated
+  // Auto-fetch mailboxes when user is authenticated (only once per userId)
   useEffect(() => {
-    if (userId && cachedMailboxes.length === 0) {
-      getMailboxes(userId, {
-        counters: true,
-        specialUse: false,
-        showHidden: false,
-        sizes: false,
-      }).catch((error) => {
-        console.error("[useWildduckMailboxes] Auto-fetch failed:", error);
-      });
+    if (userId && !hasFetchedRef.current) {
+      const cached = queryClient.getQueryData<WildduckMailbox[]>([
+        "wildduck-mailboxes",
+        userId,
+      ]);
+
+      if (!cached || cached.length === 0) {
+        hasFetchedRef.current = true;
+        getMailboxes(userId, {
+          counters: true,
+          specialUse: false,
+          showHidden: false,
+          sizes: false,
+        }).catch((error) => {
+          console.error("[useWildduckMailboxes] Auto-fetch failed:", error);
+          // Reset flag on error so it can be retried
+          hasFetchedRef.current = false;
+        });
+      }
     }
-  }, [userId]);
+  }, [userId, getMailboxes, queryClient]);
 
   // Create mailbox mutation
   const createMutation = useMutation({

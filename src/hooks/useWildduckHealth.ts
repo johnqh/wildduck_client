@@ -66,6 +66,14 @@ const useWildduckHealth = (
   const [monitoringInterval, setMonitoringInterval] =
     useState<NodeJS.Timeout | null>(null);
 
+  // Helper to build headers
+  const buildHeaders = useCallback((): Record<string, string> => {
+    return {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -83,17 +91,7 @@ const useWildduckHealth = (
     try {
       // Use config URLs and headers
       const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      };
-
-      if (config.cloudflareWorkerUrl) {
-        headers["Authorization"] = `Bearer ${config.apiToken}`;
-        headers["X-App-Source"] = "0xmail-box";
-      } else {
-        headers["X-Access-Token"] = config.apiToken;
-      }
+      const headers = buildHeaders();
 
       const response = await networkClient.request<WildduckHealthStatus>(
         `${apiUrl}/health`,
@@ -137,7 +135,7 @@ const useWildduckHealth = (
     } finally {
       setIsLoading(false);
     }
-  }, [config.cloudflareWorkerUrl, config.backendUrl, config.apiToken, devMode]);
+  }, [buildHeaders, config.cloudflareWorkerUrl, config.backendUrl, devMode]);
 
   const startMonitoring = useCallback(
     (intervalMs: number = 30000) => {

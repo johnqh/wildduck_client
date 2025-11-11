@@ -129,20 +129,11 @@ const useWildduckMessages = (
 
   // Helper to build headers - memoized to prevent unnecessary re-renders
   const buildHeaders = useCallback((): Record<string, string> => {
-    const headers: Record<string, string> = {
+    return {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
-
-    if (config.cloudflareWorkerUrl) {
-      headers["Authorization"] = `Bearer ${config.apiToken}`;
-      headers["X-App-Source"] = "0xmail-box";
-    } else {
-      headers["X-Access-Token"] = config.apiToken;
-    }
-
-    return headers;
-  }, [config]);
+  }, []);
 
   // Get messages function (imperative)
   const getMessages = useCallback(
