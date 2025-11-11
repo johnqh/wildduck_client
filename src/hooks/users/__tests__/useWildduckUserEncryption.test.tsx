@@ -6,7 +6,7 @@ import { useWildduckUserEncryption } from "../useWildduckUserEncryption";
 import type { WildduckAPI } from "../../../network/wildduck-client";
 import type { WildduckUserResponse } from "@sudobility/types";
 
-const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+const TEST_USER_AUTH = { username: "testuser", userId: "user123", accessToken: "test-token" };
 
 describe("useUserEncryption", () => {
   let queryClient: QueryClient;

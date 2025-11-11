@@ -5,10 +5,10 @@ import type {
   CreateMailboxRequest,
   GetMailboxesRequest,
   UpdateMailboxRequest,
-  WildduckAuthResponse,
   WildduckConfig,
   WildduckMailbox,
   WildduckMailboxResponse,
+  WildduckUserAuth,
 } from "@sudobility/types";
 
 interface UseWildduckMailboxesReturn {
@@ -59,27 +59,20 @@ interface UseWildduckMailboxesReturn {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
- * @param authData - Authentication data from useWildduckAuth (single source of truth)
+ * @param wildduckUserAuth - WildDuck user authentication data (single source of truth)
  * @param devMode - Development mode flag
  */
 const useWildduckMailboxes = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  authData: Optional<WildduckAuthResponse>,
+  wildduckUserAuth: Optional<WildduckUserAuth>,
   _devMode: boolean = false,
 ): UseWildduckMailboxesReturn => {
   const queryClient = useQueryClient();
   const hasFetchedRef = useRef(false);
 
-  // Get userId from authData (single source of truth)
-  const userId = authData?.id || null;
-
-  // DEBUG: Log render
-  console.log('🔍 [useWildduckMailboxes] RENDER', {
-    userId,
-    backendUrl: config.backendUrl,
-    hasFetched: hasFetchedRef.current,
-  });
+  // Get userId from wildduckUserAuth (single source of truth)
+  const userId = wildduckUserAuth?.userId || null;
 
   // Helper to build headers
   const buildHeaders = useCallback((): Record<string, string> => {
@@ -100,7 +93,6 @@ const useWildduckMailboxes = (
         sizes?: Optional<boolean>;
       } = {},
     ): Promise<WildduckMailbox[]> => {
-      console.log('🔍 [useWildduckMailboxes] getMailboxes CALLED', { userId, options });
       try {
         const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const headers = buildHeaders();
@@ -200,24 +192,13 @@ const useWildduckMailboxes = (
 
   // Auto-fetch mailboxes when user is authenticated (only once per userId)
   useEffect(() => {
-    console.log('🔍 [useWildduckMailboxes] EFFECT triggered', {
-      userId,
-      hasFetched: hasFetchedRef.current,
-    });
-
     if (userId && !hasFetchedRef.current) {
       const cached = queryClient.getQueryData<WildduckMailbox[]>([
         "wildduck-mailboxes",
         userId,
       ]);
 
-      console.log('🔍 [useWildduckMailboxes] Cache check', {
-        hasCached: !!cached,
-        cachedCount: cached?.length || 0,
-      });
-
       if (!cached || cached.length === 0) {
-        console.log('🔍 [useWildduckMailboxes] Starting auto-fetch');
         hasFetchedRef.current = true;
         getMailboxes(userId, {
           counters: true,

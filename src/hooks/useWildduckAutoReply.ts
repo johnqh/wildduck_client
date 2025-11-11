@@ -2,10 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
-  WildduckAuthResponse,
   WildduckAutoreplyRequest,
   WildduckAutoreplyResponse,
   WildduckConfig,
+  WildduckUserAuth,
 } from "@sudobility/types";
 
 interface UseWildduckAutoReplyReturn {
@@ -41,19 +41,19 @@ interface UseWildduckAutoReplyReturn {
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
- * @param authData - Authentication data from useWildduckAuth (single source of truth)
+ * @param wildduckUserAuth - WildDuck user authentication data (single source of truth)
  * @param _devMode - Development mode flag (unused, kept for compatibility)
  */
 const useWildduckAutoReply = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  authData: Optional<WildduckAuthResponse>,
+  wildduckUserAuth: Optional<WildduckUserAuth>,
   _devMode: boolean = false,
 ): UseWildduckAutoReplyReturn => {
   const queryClient = useQueryClient();
 
-  // Get userId from authData (single source of truth)
-  const userId = authData?.id || null;
+  // Get userId from wildduckUserAuth (single source of truth)
+  const userId = wildduckUserAuth?.userId || null;
 
   // Helper to build headers
   const buildHeaders = useCallback((): Record<string, string> => {

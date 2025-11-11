@@ -3,7 +3,7 @@ import { WildduckAPI } from '../wildduck-client';
 import { WildduckConfig } from '@sudobility/types';
 import { NetworkClient } from '@sudobility/di';
 
-const TEST_USER_AUTH = { userId: 'user123', accessToken: 'test-token' };
+const TEST_USER_AUTH = { username: 'testuser', userId: 'user123', accessToken: 'test-token' };
 
 describe('WildduckAPI', () => {
   let api: WildduckAPI;
@@ -122,7 +122,7 @@ describe('WildduckAPI', () => {
 
   describe('user operations', () => {
     const validUserId = '507f1f77bcf86cd799439011'; // Valid MongoDB ObjectId
-    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
+    const validUserAuth = { username: 'testuser', userId: validUserId, accessToken: 'test-token' };
 
     it('should get user info successfully', async () => {
       const mockUserData = {
@@ -169,7 +169,7 @@ describe('WildduckAPI', () => {
 
   describe('error handling', () => {
     const validUserId = '507f1f77bcf86cd799439011';
-    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
+    const validUserAuth = { username: 'testuser', userId: validUserId, accessToken: 'test-token' };
 
     it('should handle network errors gracefully', async () => {
       mockNetworkClient.request = vi.fn().mockRejectedValue(
@@ -191,14 +191,14 @@ describe('WildduckAPI', () => {
     });
 
     it('should handle invalid user ID format', async () => {
-      await expect(api.getUser({ userId: 'invalid-user-id', accessToken: 'test-token' }))
+      await expect(api.getUser({ username: 'testuser', userId: 'invalid-user-id', accessToken: 'test-token' }))
         .rejects.toThrow('Invalid user ID format');
     });
   });
 
   describe('edge cases', () => {
     const validUserId = '507f1f77bcf86cd799439011';
-    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
+    const validUserAuth = { username: 'testuser', userId: validUserId, accessToken: 'test-token' };
 
     it('should handle empty responses', async () => {
       mockNetworkClient.request = vi.fn().mockResolvedValue({
@@ -220,7 +220,7 @@ describe('WildduckAPI', () => {
 
   describe('User Management', () => {
     const validUserId = '507f1f77bcf86cd799439011';
-    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
+    const validUserAuth = { username: 'testuser', userId: validUserId, accessToken: 'test-token' };
 
     describe('createUser', () => {
       it('should create a new user successfully', async () => {
@@ -319,7 +319,7 @@ describe('WildduckAPI', () => {
       });
 
       it('should validate user ID format before delete', async () => {
-        await expect(api.deleteUser({ userId: 'invalid-id', accessToken: 'test-token' }))
+        await expect(api.deleteUser({ username: 'testuser', userId: 'invalid-id', accessToken: 'test-token' }))
           .rejects.toThrow('Invalid user ID format');
       });
     });
@@ -327,7 +327,7 @@ describe('WildduckAPI', () => {
 
   describe('Mailbox Management', () => {
     const validUserId = '507f1f77bcf86cd799439011';
-    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
+    const validUserAuth = { username: 'testuser', userId: validUserId, accessToken: 'test-token' };
     const validMailboxId = '507f1f77bcf86cd799439022';
 
     describe('getMailbox', () => {
@@ -417,7 +417,7 @@ describe('WildduckAPI', () => {
 
   describe('Message Management', () => {
     const validUserId = '507f1f77bcf86cd799439011';
-    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
+    const validUserAuth = { username: 'testuser', userId: validUserId, accessToken: 'test-token' };
     const validMailboxId = '507f1f77bcf86cd799439022';
     const messageId = 12345;
 
@@ -672,7 +672,7 @@ describe('WildduckAPI', () => {
 
   describe('Autoreply Management', () => {
     const validUserId = '507f1f77bcf86cd799439011';
-    const validUserAuth = { userId: validUserId, accessToken: 'test-token' };
+    const validUserAuth = { username: 'testuser', userId: validUserId, accessToken: 'test-token' };
 
     describe('getAutoreply', () => {
       it('should get autoreply settings', async () => {

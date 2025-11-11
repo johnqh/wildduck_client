@@ -6,7 +6,7 @@ import { useWildduckUser2FA } from "../useWildduckUser2FA";
 import type { WildduckAPI } from "../../../network/wildduck-client";
 import type { WildduckUserResponse } from "@sudobility/types";
 
-const TEST_USER_AUTH = { userId: "user123", accessToken: "test-token" };
+const TEST_USER_AUTH = { username: "testuser", userId: "user123", accessToken: "test-token" };
 
 describe("useUser2FA", () => {
   let queryClient: QueryClient;
