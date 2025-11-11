@@ -1,7 +1,9 @@
+import { WildduckAPI } from "../network/wildduck-client";
 import type {
   AutoReplySettings,
   NetworkClient,
   WildduckConfig,
+  WildduckUserAuth,
 } from "@sudobility/types";
 
 /**
@@ -26,25 +28,10 @@ export interface UpdateAutoReplyParams {
 export async function getAutoReply(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<AutoReplySettings> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<AutoReplySettings>(
-    `${apiUrl}/users/${userId}/autoreply`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-    },
-  );
-  return response?.data as AutoReplySettings;
+  const api = new WildduckAPI(networkClient, config);
+  return api.getAutoreply(wildduckUserAuth) as Promise<AutoReplySettings>;
 }
 
 /**
@@ -61,27 +48,11 @@ export async function getAutoReply(
 export async function updateAutoReply(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   params: UpdateAutoReplyParams,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}/autoreply`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify(params),
-    },
-  );
-  return response?.data as { success: boolean };
+  const api = new WildduckAPI(networkClient, config);
+  return api.updateAutoreply(wildduckUserAuth, params as any);
 }
 
 /**
@@ -91,7 +62,7 @@ export async function updateAutoReply(
 export async function enableAutoReply(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   message: {
     subject: string;
     text: string;
@@ -102,17 +73,13 @@ export async function enableAutoReply(
     start?: string;
     end?: string;
   },
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const params: any = {
+  const params: UpdateAutoReplyParams = {
     status: true,
     ...message,
     ...schedule,
   };
-  if (sess) params.sess = sess;
-  if (ip) params.ip = ip;
-  return updateAutoReply(networkClient, config, userId, params);
+  return updateAutoReply(networkClient, config, wildduckUserAuth, params);
 }
 
 /**
@@ -122,14 +89,11 @@ export async function enableAutoReply(
 export async function disableAutoReply(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
-  sess?: string,
-  ip?: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<{ success: boolean }> {
-  const params: any = { status: false };
-  if (sess) params.sess = sess;
-  if (ip) params.ip = ip;
-  return updateAutoReply(networkClient, config, userId, params);
+  return updateAutoReply(networkClient, config, wildduckUserAuth, {
+    status: false,
+  });
 }
 
 /**
@@ -139,26 +103,8 @@ export async function disableAutoReply(
 export async function deleteAutoReply(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
-  sess?: string,
-  ip?: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}/autoreply`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify({ sess, ip }),
-    },
-  );
-  return response?.data as { success: boolean };
+  const api = new WildduckAPI(networkClient, config);
+  return api.deleteAutoreply(wildduckUserAuth);
 }

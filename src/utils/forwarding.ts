@@ -1,7 +1,9 @@
+import { WildduckAPI } from "../network/wildduck-client";
 import type {
   ForwardingTarget,
   NetworkClient,
   WildduckConfig,
+  WildduckUserAuth,
 } from "@sudobility/types";
 
 /**
@@ -11,25 +13,10 @@ import type {
 export async function getForwardingTargets(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<ForwardingTarget[]> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<any>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-    },
-  );
-  const data = response?.data as any;
+  const api = new WildduckAPI(networkClient, config);
+  const data = await api.getForwardingTargets(wildduckUserAuth);
   return data.targets || [];
 }
 
@@ -40,33 +27,11 @@ export async function getForwardingTargets(
 export async function updateForwardingTargets(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   targets: ForwardingTarget[],
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify({
-        targets,
-        sess,
-        ip,
-      }),
-    },
-  );
-  return response?.data as { success: boolean };
+  const api = new WildduckAPI(networkClient, config);
+  return api.updateUserSettings(wildduckUserAuth, { targets });
 }
 
 /**
@@ -76,31 +41,11 @@ export async function updateForwardingTargets(
 export async function addForwardingTarget(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   target: ForwardingTarget,
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const currentTargets = await getForwardingTargets(
-    networkClient,
-    config,
-    userId,
-  );
-
-  // Avoid duplicates
-  if (currentTargets.includes(target)) {
-    return { success: true };
-  }
-
-  const updatedTargets = [...currentTargets, target];
-  return updateForwardingTargets(
-    networkClient,
-    config,
-    userId,
-    updatedTargets,
-    sess,
-    ip,
-  );
+  const api = new WildduckAPI(networkClient, config);
+  return api.addForwardingTarget(wildduckUserAuth, target);
 }
 
 /**
@@ -110,23 +55,9 @@ export async function addForwardingTarget(
 export async function removeForwardingTarget(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   target: ForwardingTarget,
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const currentTargets = await getForwardingTargets(
-    networkClient,
-    config,
-    userId,
-  );
-  const updatedTargets = currentTargets.filter((t) => t !== target);
-  return updateForwardingTargets(
-    networkClient,
-    config,
-    userId,
-    updatedTargets,
-    sess,
-    ip,
-  );
+  const api = new WildduckAPI(networkClient, config);
+  return api.removeForwardingTarget(wildduckUserAuth, target);
 }

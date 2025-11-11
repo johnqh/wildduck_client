@@ -926,6 +926,192 @@ class WildduckAPI {
       },
     );
   }
+
+  // ============================================================================
+  // Filter Management Methods
+  // ============================================================================
+
+  // Get user filters
+  async getFilters(wildduckUserAuth: WildduckUserAuth): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/filters`, {
+      method: "GET",
+      wildduckUserAuth,
+    });
+  }
+
+  // Create filter
+  async createFilter(
+    wildduckUserAuth: WildduckUserAuth,
+    filter: any,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/filters`, {
+      method: "POST",
+      body: filter,
+      wildduckUserAuth,
+    });
+  }
+
+  // Update filter
+  async updateFilter(
+    wildduckUserAuth: WildduckUserAuth,
+    filterId: string,
+    filter: any,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/filters/${filterId}`, {
+      method: "PUT",
+      body: filter,
+      wildduckUserAuth,
+    });
+  }
+
+  // Delete filter
+  async deleteFilter(
+    wildduckUserAuth: WildduckUserAuth,
+    filterId: string,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/filters/${filterId}`, {
+      method: "DELETE",
+      wildduckUserAuth,
+    });
+  }
+
+  // ============================================================================
+  // Spam Settings Methods
+  // ============================================================================
+
+  // Get spam settings
+  async getSpamSettings(wildduckUserAuth: WildduckUserAuth): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}`, {
+      method: "GET",
+      wildduckUserAuth,
+    });
+  }
+
+  // Update spam level
+  async updateSpamLevel(
+    wildduckUserAuth: WildduckUserAuth,
+    spamLevel: number,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}`, {
+      method: "PUT",
+      body: { spamLevel },
+      wildduckUserAuth,
+    });
+  }
+
+  // Add to whitelist
+  async addToWhitelist(
+    wildduckUserAuth: WildduckUserAuth,
+    address: string,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/fromwhitelist`, {
+      method: "POST",
+      body: { address },
+      wildduckUserAuth,
+    });
+  }
+
+  // Remove from whitelist
+  async removeFromWhitelist(
+    wildduckUserAuth: WildduckUserAuth,
+    address: string,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(
+      `/users/${validatedUserId}/fromwhitelist/${encodeURIComponent(address)}`,
+      {
+        method: "DELETE",
+        wildduckUserAuth,
+      },
+    );
+  }
+
+  // ============================================================================
+  // Forwarding Methods
+  // ============================================================================
+
+  // Get forwarding targets
+  async getForwardingTargets(wildduckUserAuth: WildduckUserAuth): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}`, {
+      method: "GET",
+      wildduckUserAuth,
+    });
+  }
+
+  // Add forwarding target
+  async addForwardingTarget(
+    wildduckUserAuth: WildduckUserAuth,
+    target: string,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/targets`, {
+      method: "POST",
+      body: { target },
+      wildduckUserAuth,
+    });
+  }
+
+  // Remove forwarding target
+  async removeForwardingTarget(
+    wildduckUserAuth: WildduckUserAuth,
+    target: string,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(
+      `/users/${validatedUserId}/targets/${encodeURIComponent(target)}`,
+      {
+        method: "DELETE",
+        wildduckUserAuth,
+      },
+    );
+  }
+
+  // ============================================================================
+  // User Settings Methods
+  // ============================================================================
+
+  // Get user settings
+  async getUserSettings(wildduckUserAuth: WildduckUserAuth): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}`, {
+      method: "GET",
+      wildduckUserAuth,
+    });
+  }
+
+  // Update user settings (generic)
+  async updateUserSettings(
+    wildduckUserAuth: WildduckUserAuth,
+    settings: any,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}`, {
+      method: "PUT",
+      body: settings,
+      wildduckUserAuth,
+    });
+  }
 }
 
 // Factory function to create Wildduck API client with dependencies

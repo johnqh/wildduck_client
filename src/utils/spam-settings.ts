@@ -1,7 +1,9 @@
+import { WildduckAPI } from "../network/wildduck-client";
 import type {
   NetworkClient,
   SpamSettings,
   WildduckConfig,
+  WildduckUserAuth,
 } from "@sudobility/types";
 
 /**
@@ -11,25 +13,10 @@ import type {
 export async function getSpamSettings(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<SpamSettings> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<any>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-    },
-  );
-  const data = response?.data as any;
+  const api = new WildduckAPI(networkClient, config);
+  const data = await api.getSpamSettings(wildduckUserAuth);
   return {
     success: data.success,
     spamLevel: data.spamLevel,
@@ -45,33 +32,11 @@ export async function getSpamSettings(
 export async function updateSpamLevel(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   spamLevel: number,
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify({
-        spamLevel,
-        sess,
-        ip,
-      }),
-    },
-  );
-  return response?.data as { success: boolean };
+  const api = new WildduckAPI(networkClient, config);
+  return api.updateSpamLevel(wildduckUserAuth, spamLevel);
 }
 
 /**
@@ -82,33 +47,11 @@ export async function updateSpamLevel(
 export async function updateFromWhitelist(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   fromWhitelist: string[],
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify({
-        fromWhitelist,
-        sess,
-        ip,
-      }),
-    },
-  );
-  return response?.data as { success: boolean };
+  const api = new WildduckAPI(networkClient, config);
+  return api.updateUserSettings(wildduckUserAuth, { fromWhitelist });
 }
 
 /**
@@ -118,28 +61,11 @@ export async function updateFromWhitelist(
 export async function addToFromWhitelist(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   emailOrDomain: string,
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const settings = await getSpamSettings(networkClient, config, userId);
-  const currentWhitelist = settings.fromWhitelist || [];
-
-  // Avoid duplicates
-  if (currentWhitelist.includes(emailOrDomain)) {
-    return { success: true };
-  }
-
-  const updatedWhitelist = [...currentWhitelist, emailOrDomain];
-  return updateFromWhitelist(
-    networkClient,
-    config,
-    userId,
-    updatedWhitelist,
-    sess,
-    ip,
-  );
+  const api = new WildduckAPI(networkClient, config);
+  return api.addToWhitelist(wildduckUserAuth, emailOrDomain);
 }
 
 /**
@@ -149,24 +75,11 @@ export async function addToFromWhitelist(
 export async function removeFromWhitelist(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   emailOrDomain: string,
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const settings = await getSpamSettings(networkClient, config, userId);
-  const currentWhitelist = settings.fromWhitelist || [];
-  const updatedWhitelist = currentWhitelist.filter(
-    (item) => item !== emailOrDomain,
-  );
-  return updateFromWhitelist(
-    networkClient,
-    config,
-    userId,
-    updatedWhitelist,
-    sess,
-    ip,
-  );
+  const api = new WildduckAPI(networkClient, config);
+  return api.removeFromWhitelist(wildduckUserAuth, emailOrDomain);
 }
 
 /**
@@ -176,34 +89,12 @@ export async function removeFromWhitelist(
 export async function updateSpamSettings(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   settings: {
     spamLevel?: number;
     fromWhitelist?: string[];
   },
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify({
-        ...settings,
-        sess,
-        ip,
-      }),
-    },
-  );
-  return response?.data as { success: boolean };
+  const api = new WildduckAPI(networkClient, config);
+  return api.updateUserSettings(wildduckUserAuth, settings);
 }

@@ -1,8 +1,10 @@
+import { WildduckAPI } from "../network/wildduck-client";
 import type {
   AdvancedSettings,
   NetworkClient,
   SMTPRelay,
   WildduckConfig,
+  WildduckUserAuth,
 } from "@sudobility/types";
 
 /**
@@ -12,25 +14,10 @@ import type {
 export async function getAdvancedSettings(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<AdvancedSettings> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<any>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-    },
-  );
-  const data = response?.data as any;
+  const api = new WildduckAPI(networkClient, config);
+  const data = await api.getUserSettings(wildduckUserAuth);
   return {
     success: data.success,
     uploadSentMessages: data.uploadSentMessages,
@@ -45,33 +32,11 @@ export async function getAdvancedSettings(
 export async function updateUploadSentMessages(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   uploadSentMessages: boolean,
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify({
-        uploadSentMessages,
-        sess,
-        ip,
-      }),
-    },
-  );
-  return response?.data as { success: boolean };
+  const api = new WildduckAPI(networkClient, config);
+  return api.updateUserSettings(wildduckUserAuth, { uploadSentMessages });
 }
 
 /**
@@ -84,26 +49,11 @@ export async function updateUploadSentMessages(
 export async function getSMTPRelay(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<SMTPRelay> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const api = new WildduckAPI(networkClient, config);
   try {
-    const response = await networkClient.request<any>(
-      `${apiUrl}/users/${userId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...(config.cloudflareWorkerUrl
-            ? {
-                Authorization: `Bearer ${config.apiToken}`,
-                "X-App-Source": "0xmail-box",
-              }
-            : { "X-Access-Token": config.apiToken }),
-        },
-      },
-    );
-    const data = response?.data as any;
+    const data = await api.getUserSettings(wildduckUserAuth);
     const mtaRelay = data.mtaRelay;
 
     if (!mtaRelay) {
@@ -155,7 +105,7 @@ export async function getSMTPRelay(
 export async function updateSMTPRelay(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   settings: {
     enabled: boolean;
     host?: string;
@@ -166,10 +116,8 @@ export async function updateSMTPRelay(
       pass: string;
     };
   },
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+  const api = new WildduckAPI(networkClient, config);
 
   let mtaRelay: string | undefined = undefined;
 
@@ -191,27 +139,7 @@ export async function updateSMTPRelay(
     mtaRelay = "";
   }
 
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify({
-        mtaRelay,
-        sess,
-        ip,
-      }),
-    },
-  );
-  return response?.data as { success: boolean };
+  return api.updateUserSettings(wildduckUserAuth, { mtaRelay });
 }
 
 /**
@@ -221,7 +149,7 @@ export async function updateSMTPRelay(
 export async function enableSMTPRelay(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
+  wildduckUserAuth: WildduckUserAuth,
   relay: {
     host: string;
     port: number;
@@ -231,20 +159,11 @@ export async function enableSMTPRelay(
       pass: string;
     };
   },
-  sess?: string,
-  ip?: string,
 ): Promise<{ success: boolean }> {
-  return updateSMTPRelay(
-    networkClient,
-    config,
-    userId,
-    {
-      enabled: true,
-      ...relay,
-    },
-    sess,
-    ip,
-  );
+  return updateSMTPRelay(networkClient, config, wildduckUserAuth, {
+    enabled: true,
+    ...relay,
+  });
 }
 
 /**
@@ -254,20 +173,11 @@ export async function enableSMTPRelay(
 export async function disableSMTPRelay(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
-  sess?: string,
-  ip?: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<{ success: boolean }> {
-  return updateSMTPRelay(
-    networkClient,
-    config,
-    userId,
-    {
-      enabled: false,
-    },
-    sess,
-    ip,
-  );
+  return updateSMTPRelay(networkClient, config, wildduckUserAuth, {
+    enabled: false,
+  });
 }
 
 /**
@@ -279,30 +189,8 @@ export async function disableSMTPRelay(
 export async function deleteSMTPRelay(
   networkClient: NetworkClient,
   config: WildduckConfig,
-  userId: string,
-  sess?: string,
-  ip?: string,
+  wildduckUserAuth: WildduckUserAuth,
 ): Promise<{ success: boolean }> {
-  const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-  const response = await networkClient.request<{ success: boolean }>(
-    `${apiUrl}/users/${userId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(config.cloudflareWorkerUrl
-          ? {
-              Authorization: `Bearer ${config.apiToken}`,
-              "X-App-Source": "0xmail-box",
-            }
-          : { "X-Access-Token": config.apiToken }),
-      },
-      body: JSON.stringify({
-        mtaRelay: "",
-        sess,
-        ip,
-      }),
-    },
-  );
-  return response?.data as { success: boolean };
+  const api = new WildduckAPI(networkClient, config);
+  return api.updateUserSettings(wildduckUserAuth, { mtaRelay: "" });
 }
