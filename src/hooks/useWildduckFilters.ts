@@ -214,7 +214,8 @@ const useWildduckFilters = (
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete filter";
         setError(errorMessage);
-        throw err;
+        console.error(errorMessage);
+        return { success: false };
       } finally {
         setIsLoading(false);
       }

@@ -164,7 +164,8 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get mailbox";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return undefined as any;
       }
     },
     [api, wildduckUserAuth, queryClient],
@@ -215,7 +216,8 @@ const useWildduckMailboxes = (
     }): Promise<{ success: boolean; id: string }> => {
       try {
         if (!wildduckUserAuth) {
-          throw new Error("User not authenticated");
+          console.error("User not authenticated");
+          return { success: false, id: "" };
         }
 
         await api.createMailbox(wildduckUserAuth, params);
@@ -224,7 +226,8 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to create mailbox";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return { success: false, id: "" };
       }
     },
     onSuccess: async () => {
@@ -250,7 +253,8 @@ const useWildduckMailboxes = (
     }): Promise<{ success: boolean }> => {
       try {
         if (!wildduckUserAuth) {
-          throw new Error("User not authenticated");
+          console.error("User not authenticated");
+          return { success: false };
         }
 
         const response = await api.updateMailbox(
@@ -263,7 +267,8 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update mailbox";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return { success: false };
       }
     },
     onSuccess: async () => {
@@ -287,7 +292,8 @@ const useWildduckMailboxes = (
     }): Promise<{ success: boolean }> => {
       try {
         if (!wildduckUserAuth) {
-          throw new Error("User not authenticated");
+          console.error("User not authenticated");
+          return { success: false };
         }
 
         const response = await api.deleteMailbox(wildduckUserAuth, mailboxId);
@@ -296,7 +302,8 @@ const useWildduckMailboxes = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete mailbox";
-        throw new Error(errorMessage);
+        console.error(errorMessage);
+        return { success: false };
       }
     },
     onSuccess: async () => {
@@ -310,7 +317,8 @@ const useWildduckMailboxes = (
   // Refresh function (refetch with counters)
   const refresh = useCallback(async (): Promise<void> => {
     if (!wildduckUserAuth) {
-      throw new Error("Cannot refresh: user not authenticated");
+      console.error("Cannot refresh: user not authenticated");
+      return;
     }
     await getMailboxes(wildduckUserAuth, { counters: true });
   }, [wildduckUserAuth, getMailboxes]);
