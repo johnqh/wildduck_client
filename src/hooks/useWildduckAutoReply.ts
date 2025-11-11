@@ -7,6 +7,7 @@ import type {
   WildduckConfig,
   WildduckUserAuth,
 } from "@sudobility/types";
+import { WildduckClient } from "../network/wildduck-client";
 
 interface UseWildduckAutoReplyReturn {
   // Query state
@@ -55,31 +56,23 @@ const useWildduckAutoReply = (
   // Get userId from wildduckUserAuth (single source of truth)
   const userId = wildduckUserAuth?.userId || null;
 
-  // Helper to build headers
-  const buildHeaders = useCallback((): Record<string, string> => {
-    return {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-  }, []);
+  // Create API instance
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
 
   // Get autoreply
   const getAutoreply = useCallback(
     async (userId: string): Promise<WildduckAutoreplyResponse> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const wildduckUserAuth: WildduckUserAuth = {
+          userId,
+          username: "",
+          accessToken: "",
+        };
 
-        const endpoint = `/users/${userId}/autoreply`;
-
-        const response = await networkClient.request<WildduckAutoreplyResponse>(
-          `${apiUrl}${endpoint}`,
-          {
-            method: "GET",
-            headers,
-          },
-        );
-        const autoreplyData = response.data as WildduckAutoreplyResponse;
+        const autoreplyData = await api.getAutoreply(wildduckUserAuth);
 
         // Update cache
         queryClient.setQueryData(["wildduck-autoreply", userId], autoreplyData);
@@ -95,7 +88,7 @@ const useWildduckAutoReply = (
         throw new Error(errorMessage);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+    [api, queryClient],
   );
 
   // Get cached autoreply from query cache (used for reading state)
@@ -120,19 +113,15 @@ const useWildduckAutoReply = (
       params: WildduckAutoreplyRequest;
     }): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const wildduckUserAuth: WildduckUserAuth = {
+          userId,
+          username: "",
+          accessToken: "",
+        };
 
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/autoreply`,
-          {
-            method: "PUT",
-            headers,
-            body: JSON.stringify(params),
-          },
-        );
+        const response = await api.updateAutoreply(wildduckUserAuth, params);
 
-        return response.data as { success: boolean };
+        return response;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update autoreply";
@@ -157,18 +146,15 @@ const useWildduckAutoReply = (
     ],
     mutationFn: async (userId: string): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const wildduckUserAuth: WildduckUserAuth = {
+          userId,
+          username: "",
+          accessToken: "",
+        };
 
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/autoreply`,
-          {
-            method: "DELETE",
-            headers,
-          },
-        );
+        const response = await api.deleteAutoreply(wildduckUserAuth);
 
-        return response.data as { success: boolean };
+        return response;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete autoreply";

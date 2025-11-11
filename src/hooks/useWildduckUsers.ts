@@ -5,8 +5,10 @@ import type {
   Optional,
   WildduckConfig,
   WildduckUser,
+  WildduckUserAuth,
 } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
+import { WildduckClient } from "../network/wildduck-client";
 
 interface UseWildduckUsersReturn {
   isLoading: boolean;
@@ -36,13 +38,21 @@ const useWildduckUsers = (
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Optional<string>>(null);
 
-  // Helper to build headers
-  const buildHeaders = useCallback((): Record<string, string> => {
-    return {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-  }, []);
+  // Create API instance
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
+
+  // Helper to create WildduckUserAuth from userId
+  const createUserAuth = useCallback(
+    (userId: string): WildduckUserAuth => ({
+      userId,
+      username: "",
+      accessToken: "",
+    }),
+    [],
+  );
 
   // Get user function (imperative)
   const getUser = useCallback(
@@ -51,22 +61,13 @@ const useWildduckUsers = (
       setError(null);
 
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<WildduckUser>(
-          `${apiUrl}/users/${userId}`,
-          {
-            method: "GET",
-            headers,
-          },
-        );
-        const userData = response.data as WildduckUser;
+        const wildduckUserAuth = createUserAuth(userId);
+        const userData = await api.getUser(wildduckUserAuth);
 
         // Update cache
         queryClient.setQueryData(["wildduck-user", userId], userData);
 
-        return userData;
+        return userData as unknown as WildduckUser;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get user";
@@ -92,13 +93,7 @@ const useWildduckUsers = (
         setIsLoading(false);
       }
     },
-    [
-      config.cloudflareWorkerUrl,
-      config.backendUrl,
-      buildHeaders,
-      queryClient,
-      devMode,
-    ],
+    [api, createUserAuth, queryClient, devMode],
   );
 
   // Get users function (imperative)
@@ -111,22 +106,12 @@ const useWildduckUsers = (
       setError(null);
 
       try {
-        const params = new URLSearchParams();
-        if (query) params.set("query", query);
-        params.set("limit", limit.toString());
+        const filters: Record<string, unknown> = { limit };
+        if (query) filters.query = query;
 
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const response = await api.getUsersList(filters);
 
-        const response = await networkClient.request<{
-          results?: WildduckUser[];
-          total?: number;
-        }>(`${apiUrl}/users?${params}`, {
-          method: "GET",
-          headers,
-        });
-
-        const usersData = response.data as {
+        const usersData = response as {
           results?: WildduckUser[];
           total?: number;
         };
@@ -170,13 +155,7 @@ const useWildduckUsers = (
         setIsLoading(false);
       }
     },
-    [
-      config.cloudflareWorkerUrl,
-      config.backendUrl,
-      buildHeaders,
-      queryClient,
-      devMode,
-    ],
+    [api, queryClient, devMode],
   );
 
   const clearError = useCallback(() => setError(null), []);

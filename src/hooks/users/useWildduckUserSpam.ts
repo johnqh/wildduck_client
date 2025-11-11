@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WildduckAPI } from "../../network/wildduck-client";
+import type { WildduckClient } from "../../network/wildduck-client";
 import type { WildduckUserAuth, WildduckUserResponse } from "@sudobility/types";
 
 interface SpamSettingsInternal {
@@ -19,7 +19,7 @@ export interface UpdateSpamParams {
  * Controls spam detection sensitivity and whitelisted senders
  */
 export const useWildduckUserSpam = (
-  api: WildduckAPI,
+  api: WildduckClient,
   wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();

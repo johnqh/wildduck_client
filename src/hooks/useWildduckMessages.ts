@@ -5,10 +5,11 @@ import type {
   WildduckConfig,
   WildduckMessage,
   WildduckMessageResponse,
-  WildduckMessagesResponse,
   WildduckUpdateMessageRequest,
+  WildduckUserAuth,
 } from "@sudobility/types";
 import { useCallback, useMemo, useState } from "react";
+import { WildduckClient } from "../network/wildduck-client";
 
 interface GetMessagesOptions {
   limit?: number;
@@ -45,17 +46,17 @@ interface UseWildduckMessagesReturn {
 
   // Query functions
   getMessages: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     options?: GetMessagesOptions,
   ) => Promise<WildduckMessage[]>;
   getMessage: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: string,
   ) => Promise<WildduckMessageResponse>;
   searchMessages: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     query: string,
     options?: GetMessagesOptions,
   ) => Promise<WildduckMessage[]>;
@@ -63,7 +64,7 @@ interface UseWildduckMessagesReturn {
 
   // Send mutation
   sendMessage: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     params: SendMessageParams,
   ) => Promise<{ success: boolean; id: string }>;
   isSending: boolean;
@@ -71,7 +72,7 @@ interface UseWildduckMessagesReturn {
 
   // Update mutation
   updateMessage: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: string,
     params: WildduckUpdateMessageRequest,
@@ -81,7 +82,7 @@ interface UseWildduckMessagesReturn {
 
   // Delete mutation
   deleteMessage: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: string,
   ) => Promise<{ success: boolean }>;
@@ -90,7 +91,7 @@ interface UseWildduckMessagesReturn {
 
   // Move mutation
   moveMessage: (
-    userId: string,
+    wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: string,
     targetMailbox: string,
@@ -117,59 +118,52 @@ const useWildduckMessages = (
 ): UseWildduckMessagesReturn => {
   const queryClient = useQueryClient();
 
+  // Create API instance
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
+
   // Local state for messages and pagination
   const [messages, setMessages] = useState<WildduckMessage[]>([]);
   const [totalMessages, setTotalMessages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastFetchParams, setLastFetchParams] = useState<{
-    userId: string;
+    wildduckUserAuth: WildduckUserAuth;
     mailboxId: string;
     options?: GetMessagesOptions;
   } | null>(null);
 
-  // Helper to build headers - memoized to prevent unnecessary re-renders
-  const buildHeaders = useCallback((): Record<string, string> => {
-    return {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-  }, []);
-
   // Get messages function (imperative)
   const getMessages = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       options: GetMessagesOptions = {},
     ): Promise<WildduckMessage[]> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const getMessagesOptions: any = {};
+        if (options.limit !== undefined)
+          getMessagesOptions.limit = options.limit;
+        if (options.page !== undefined) getMessagesOptions.page = options.page;
+        if (options.order !== undefined)
+          getMessagesOptions.order = options.order;
 
-        const queryParams = new URLSearchParams();
-        if (options.limit)
-          queryParams.append("limit", options.limit.toString());
-        if (options.page) queryParams.append("page", options.page.toString());
-        if (options.order) queryParams.append("order", options.order);
-
-        const query = queryParams.toString();
-        const endpoint = `/users/${userId}/mailboxes/${mailboxId}/messages${query ? `?${query}` : ""}`;
-
-        const response = await networkClient.request<WildduckMessagesResponse>(
-          `${apiUrl}${endpoint}`,
-          { method: "GET", headers },
+        const response = await api.getMessages(
+          wildduckUserAuth,
+          mailboxId,
+          getMessagesOptions,
         );
-        const messageData = response.data as WildduckMessagesResponse;
-        const messageList = messageData.results || [];
+        const messageList = response.results || [];
 
         setMessages(messageList);
-        setTotalMessages(messageData.total || 0);
-        setCurrentPage(messageData.page || 1);
-        setLastFetchParams({ userId, mailboxId, options });
+        setTotalMessages(response.total || 0);
+        setCurrentPage(response.page || 1);
+        setLastFetchParams({ wildduckUserAuth, mailboxId, options });
 
         // Update cache
         queryClient.setQueryData(
-          ["wildduck-messages", userId, mailboxId],
+          ["wildduck-messages", wildduckUserAuth.userId, mailboxId],
           messageList,
         );
 
@@ -182,30 +176,26 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [networkClient, config, buildHeaders, queryClient],
+    [api, queryClient],
   );
 
   // Get single message function (imperative)
   const getMessage = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: string,
     ): Promise<WildduckMessageResponse> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<WildduckMessageResponse>(
-          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-          { method: "GET", headers },
+        const messageData = await api.getMessage(
+          wildduckUserAuth,
+          mailboxId,
+          messageId,
         );
-
-        const messageData = response.data as WildduckMessageResponse;
 
         // Update cache
         queryClient.setQueryData(
-          ["wildduck-message", userId, mailboxId, messageId],
+          ["wildduck-message", wildduckUserAuth.userId, mailboxId, messageId],
           messageData,
         );
 
@@ -216,39 +206,27 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [networkClient, config, buildHeaders, queryClient],
+    [api, queryClient],
   );
 
   // Search messages function (imperative)
   const searchMessages = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       query: string,
       options: GetMessagesOptions = {},
     ): Promise<WildduckMessage[]> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const response = await api.searchMessages(wildduckUserAuth, query, {
+          limit: options.limit || 50,
+          page: options.page || 1,
+        });
 
-        const response = await networkClient.request<{
-          results?: WildduckMessage[];
-          total?: number;
-          page?: number;
-        }>(
-          `${apiUrl}/users/${userId}/search?q=${encodeURIComponent(query)}&limit=${options.limit || 50}&page=${options.page || 1}`,
-          { method: "GET", headers },
-        );
-
-        const searchResponse = response.data as {
-          results?: WildduckMessage[];
-          total?: number;
-          page?: number;
-        };
-        const messageList = searchResponse.results || [];
+        const messageList = (response.results as WildduckMessage[]) || [];
 
         setMessages(messageList);
-        setTotalMessages(searchResponse.total || 0);
-        setCurrentPage(searchResponse.page || 1);
+        setTotalMessages(response.total || 0);
+        setCurrentPage(response.page || 1);
 
         return messageList;
       } catch (err) {
@@ -259,7 +237,7 @@ const useWildduckMessages = (
         throw new Error(errorMessage);
       }
     },
-    [networkClient, config, buildHeaders],
+    [api],
   );
 
   // Send message mutation
@@ -269,26 +247,31 @@ const useWildduckMessages = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
+      wildduckUserAuth,
       params,
     }: {
-      userId: string;
+      wildduckUserAuth: WildduckUserAuth;
       params: SendMessageParams;
     }): Promise<{ success: boolean; id: string }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        // Convert SendMessageParams to WildduckSubmitMessageRequest
+        const submitRequest: any = {
+          from: params.from ? { address: params.from } : undefined,
+          to: params.to,
+          cc: params.cc,
+          bcc: params.bcc,
+          subject: params.subject,
+          text: params.text,
+          html: params.html,
+          attachments: params.attachments,
+        };
 
-        const response = await networkClient.request<{
-          success: boolean;
-          id: string;
-        }>(`${apiUrl}/users/${userId}/submit`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(params),
-        });
+        const response = await api.submitMessage(
+          wildduckUserAuth,
+          submitRequest,
+        );
 
-        return response.data as { success: boolean; id: string };
+        return { success: response.success, id: response.message.id };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to send message";
@@ -298,7 +281,7 @@ const useWildduckMessages = (
     onSuccess: (_, variables) => {
       // Invalidate messages queries to refetch
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userId],
+        queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
     },
   });
@@ -310,26 +293,25 @@ const useWildduckMessages = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
+      wildduckUserAuth,
       mailboxId,
       messageId,
       params,
     }: {
-      userId: string;
+      wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: string;
       params: WildduckUpdateMessageRequest;
     }): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-          { method: "PUT", headers, body: JSON.stringify(params) },
+        const response = await api.updateMessage(
+          wildduckUserAuth,
+          mailboxId,
+          Number(messageId),
+          params,
         );
 
-        return response.data as { success: boolean };
+        return { success: response.success };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update message";
@@ -341,13 +323,17 @@ const useWildduckMessages = (
       queryClient.invalidateQueries({
         queryKey: [
           "wildduck-message",
-          variables.userId,
+          variables.wildduckUserAuth.userId,
           variables.mailboxId,
           variables.messageId,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userId, variables.mailboxId],
+        queryKey: [
+          "wildduck-messages",
+          variables.wildduckUserAuth.userId,
+          variables.mailboxId,
+        ],
       });
     },
   });
@@ -359,24 +345,22 @@ const useWildduckMessages = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
+      wildduckUserAuth,
       mailboxId,
       messageId,
     }: {
-      userId: string;
+      wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: string;
     }): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-          { method: "DELETE", headers },
+        const response = await api.deleteMessage(
+          wildduckUserAuth,
+          mailboxId,
+          Number(messageId),
         );
 
-        return response.data as { success: boolean };
+        return { success: response.success };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete message";
@@ -388,13 +372,17 @@ const useWildduckMessages = (
       queryClient.invalidateQueries({
         queryKey: [
           "wildduck-message",
-          variables.userId,
+          variables.wildduckUserAuth.userId,
           variables.mailboxId,
           variables.messageId,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userId, variables.mailboxId],
+        queryKey: [
+          "wildduck-messages",
+          variables.wildduckUserAuth.userId,
+          variables.mailboxId,
+        ],
       });
     },
   });
@@ -406,30 +394,25 @@ const useWildduckMessages = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
+      wildduckUserAuth,
       mailboxId,
       messageId,
       targetMailbox,
     }: {
-      userId: string;
+      wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: string;
       targetMailbox: string;
     }): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}/messages/${messageId}`,
-          {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({ mailbox: targetMailbox }),
-          },
+        const response = await api.updateMessage(
+          wildduckUserAuth,
+          mailboxId,
+          Number(messageId),
+          { mailbox: targetMailbox },
         );
 
-        return response.data as { success: boolean };
+        return { success: response.success };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to move message";
@@ -441,16 +424,16 @@ const useWildduckMessages = (
       queryClient.invalidateQueries({
         queryKey: [
           "wildduck-message",
-          variables.userId,
+          variables.wildduckUserAuth.userId,
           variables.mailboxId,
           variables.messageId,
         ],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-messages", variables.userId],
+        queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-mailboxes", variables.userId],
+        queryKey: ["wildduck-mailboxes", variables.wildduckUserAuth.userId],
       });
     },
   });
@@ -459,7 +442,7 @@ const useWildduckMessages = (
   const refresh = useCallback(async (): Promise<void> => {
     if (lastFetchParams) {
       await getMessages(
-        lastFetchParams.userId,
+        lastFetchParams.wildduckUserAuth,
         lastFetchParams.mailboxId,
         lastFetchParams.options,
       );
@@ -480,35 +463,49 @@ const useWildduckMessages = (
     null;
 
   const sendMessage = useCallback(
-    async (userId: string, params: SendMessageParams) =>
-      sendMutation.mutateAsync({ userId, params }),
+    async (wildduckUserAuth: WildduckUserAuth, params: SendMessageParams) =>
+      sendMutation.mutateAsync({ wildduckUserAuth, params }),
     [sendMutation],
   );
 
   const updateMessage = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: string,
       params: WildduckUpdateMessageRequest,
-    ) => updateMutation.mutateAsync({ userId, mailboxId, messageId, params }),
+    ) =>
+      updateMutation.mutateAsync({
+        wildduckUserAuth,
+        mailboxId,
+        messageId,
+        params,
+      }),
     [updateMutation],
   );
 
   const deleteMessage = useCallback(
-    async (userId: string, mailboxId: string, messageId: string) =>
-      deleteMutation.mutateAsync({ userId, mailboxId, messageId }),
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+      mailboxId: string,
+      messageId: string,
+    ) => deleteMutation.mutateAsync({ wildduckUserAuth, mailboxId, messageId }),
     [deleteMutation],
   );
 
   const moveMessage = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
       messageId: string,
       targetMailbox: string,
     ) =>
-      moveMutation.mutateAsync({ userId, mailboxId, messageId, targetMailbox }),
+      moveMutation.mutateAsync({
+        wildduckUserAuth,
+        mailboxId,
+        messageId,
+        targetMailbox,
+      }),
     [moveMutation],
   );
 

@@ -7,8 +7,10 @@ import type {
   WildduckConfig,
   WildduckCreateAddressRequest,
   WildduckUpdateAddressRequest,
+  WildduckUserAuth,
 } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
+import { WildduckClient } from "../network/wildduck-client";
 
 interface ForwardedAddress {
   id: string;
@@ -86,32 +88,31 @@ const useWildduckAddresses = (
   // Local state
   const [addresses, setAddresses] = useState<WildduckAddress[]>([]);
 
-  // Helper to build headers
-  const buildHeaders = useCallback((): Record<string, string> => {
-    return {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-  }, []);
+  // Create API instance
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
+
+  // Helper to create WildduckUserAuth from userId
+  const createUserAuth = useCallback(
+    (userId: string): WildduckUserAuth => ({
+      userId,
+      username: "", // Not needed for API calls
+      accessToken: "", // Will be handled by API if needed
+    }),
+    [],
+  );
 
   // Get user addresses function (imperative)
   const getUserAddresses = useCallback(
     async (userId: string): Promise<WildduckAddress[]> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const wildduckUserAuth = createUserAuth(userId);
+        const response = await api.getAddresses(wildduckUserAuth);
 
-        const response = await networkClient.request<{
-          success: boolean;
-          results: Array<{ id: string; address: string; main: boolean }>;
-        }>(`${apiUrl}/users/${userId}/addresses`, { method: "GET", headers });
-
-        const addressData = response.data as {
-          success: boolean;
-          results: Array<{ id: string; address: string; main: boolean }>;
-        };
         const addressList =
-          addressData.results?.map((addr) => ({
+          response.results?.map((addr) => ({
             id: addr.id,
             address: addr.address,
             name: addr.address,
@@ -153,27 +154,15 @@ const useWildduckAddresses = (
         throw new Error(errorMessage);
       }
     },
-    [
-      networkClient,
-      config.cloudflareWorkerUrl,
-      config.backendUrl,
-      buildHeaders,
-      devMode,
-      queryClient,
-    ],
+    [api, createUserAuth, devMode, queryClient],
   );
 
   // Get forwarded addresses function (imperative)
   const getForwardedAddresses = async (): Promise<ForwardedAddress[]> => {
     try {
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers = buildHeaders();
+      const response = await api.getForwardedAddresses();
 
-      const response = await networkClient.request<{
-        results?: ForwardedAddress[];
-      }>(`${apiUrl}/addresses/forwarded`, { method: "GET", headers });
-
-      return (response.data as { results?: ForwardedAddress[] }).results || [];
+      return (response as { results?: ForwardedAddress[] }).results || [];
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -199,18 +188,9 @@ const useWildduckAddresses = (
     address: string,
   ): Promise<{ success: boolean; user?: string }> => {
     try {
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers = buildHeaders();
+      const response = await api.resolveAddress(address);
 
-      const response = await networkClient.request<{
-        success: boolean;
-        user?: string;
-      }>(`${apiUrl}/addresses/resolve/${encodeURIComponent(address)}`, {
-        method: "GET",
-        headers,
-      });
-
-      return response.data as { success: boolean; user?: string };
+      return response as { success: boolean; user?: string };
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to resolve address";
@@ -235,26 +215,16 @@ const useWildduckAddresses = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
+      wildduckUserAuth,
       params,
     }: {
-      userId: string;
+      wildduckUserAuth: WildduckUserAuth;
       params: WildduckCreateAddressRequest;
     }): Promise<{ success: boolean; id: string }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const response = await api.createAddress(wildduckUserAuth, params);
 
-        const response = await networkClient.request<{
-          success: boolean;
-          id: string;
-        }>(`${apiUrl}/users/${userId}/addresses`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(params),
-        });
-
-        return response.data as { success: boolean; id: string };
+        return response as { success: boolean; id: string };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to create address";
@@ -274,7 +244,7 @@ const useWildduckAddresses = (
     onSuccess: (_, variables) => {
       // Invalidate addresses query to refetch
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-addresses", variables.userId],
+        queryKey: ["wildduck-addresses", variables.wildduckUserAuth.userId],
       });
     },
   });
@@ -286,24 +256,22 @@ const useWildduckAddresses = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
+      wildduckUserAuth,
       addressId,
       params,
     }: {
-      userId: string;
+      wildduckUserAuth: WildduckUserAuth;
       addressId: string;
       params: WildduckUpdateAddressRequest;
     }): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/addresses/${addressId}`,
-          { method: "PUT", headers, body: JSON.stringify(params) },
+        const response = await api.updateAddress(
+          wildduckUserAuth,
+          addressId,
+          params,
         );
 
-        return response.data as { success: boolean };
+        return response;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update address";
@@ -323,7 +291,7 @@ const useWildduckAddresses = (
     onSuccess: (_, variables) => {
       // Invalidate addresses query to refetch
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-addresses", variables.userId],
+        queryKey: ["wildduck-addresses", variables.wildduckUserAuth.userId],
       });
     },
   });
@@ -335,22 +303,16 @@ const useWildduckAddresses = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
+      wildduckUserAuth,
       addressId,
     }: {
-      userId: string;
+      wildduckUserAuth: WildduckUserAuth;
       addressId: string;
     }): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const response = await api.deleteAddress(wildduckUserAuth, addressId);
 
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/addresses/${addressId}`,
-          { method: "DELETE", headers },
-        );
-
-        return response.data as { success: boolean };
+        return response;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete address";
@@ -370,7 +332,7 @@ const useWildduckAddresses = (
     onSuccess: (_, variables) => {
       // Invalidate addresses query to refetch
       queryClient.invalidateQueries({
-        queryKey: ["wildduck-addresses", variables.userId],
+        queryKey: ["wildduck-addresses", variables.wildduckUserAuth.userId],
       });
     },
   });
@@ -389,19 +351,12 @@ const useWildduckAddresses = (
       target: string;
     }): Promise<{ success: boolean; id: string }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{
-          success: boolean;
-          id: string;
-        }>(`${apiUrl}/addresses/forwarded`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ address, target }),
+        const response = await api.createForwardedAddressSystem({
+          address,
+          target,
         });
 
-        return response.data as { success: boolean; id: string };
+        return response;
       } catch (err) {
         const errorMessage =
           err instanceof Error
@@ -436,15 +391,9 @@ const useWildduckAddresses = (
     ],
     mutationFn: async (addressId: string): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const response = await api.deleteForwardedAddressSystem(addressId);
 
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/addresses/forwarded/${addressId}`,
-          { method: "DELETE", headers },
-        );
-
-        return response.data as { success: boolean };
+        return response;
       } catch (err) {
         const errorMessage =
           err instanceof Error

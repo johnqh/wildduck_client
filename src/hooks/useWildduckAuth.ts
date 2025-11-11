@@ -13,6 +13,7 @@ import {
   createAuthenticateRequest,
   createPreAuthRequest,
 } from "@sudobility/types";
+import { WildduckClient } from "../network/wildduck-client";
 
 // Type aliases for legacy compatibility
 type AuthenticateRequest = WildduckAuthenticateRequest;
@@ -99,6 +100,11 @@ const useWildduckAuth = (
 ): UseWildduckAuthReturn => {
   const queryClient = useQueryClient();
 
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
+
   // Subscribe to singleton authData changes
   const [authData, setAuthData] = useState<Optional<AuthenticationResponse>>(
     () => authDataStore.getAuthData(),
@@ -124,44 +130,33 @@ const useWildduckAuth = (
           `🔵 [${mutationId}] authenticateMutation.mutationFn called with username: ${params.username}`,
         );
 
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const requestBody = {
-          ...createAuthenticateRequest(
-            params.username,
-            params.signature,
-            params.message,
-            {
-              ...(params.signer && { signer: params.signer }),
-              ...(params.scope && { scope: params.scope }),
-              ...(params.protocol && { protocol: params.protocol }),
-              ...(params.token !== undefined && { token: params.token }),
-              ...(params.appId && { appId: params.appId }),
-              ...(params.referralCode && { referralCode: params.referralCode }),
-              sess: "api-session",
-              ip: "127.0.0.1",
-            },
-          ),
-          isDev: devMode,
-        };
-
-        console.log(`🌐 [${mutationId}] Making POST to ${apiUrl}/authenticate`);
-        console.log(
-          `📦 [${mutationId}] Request body:`,
-          JSON.stringify(requestBody, null, 2),
-        );
-        const response = await networkClient.request<AuthenticationResponse>(
-          `${apiUrl}/authenticate`,
+        const requestBody = createAuthenticateRequest(
+          params.username,
+          params.signature,
+          params.message,
           {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestBody),
+            ...(params.signer && { signer: params.signer }),
+            ...(params.scope && { scope: params.scope }),
+            ...(params.protocol && { protocol: params.protocol }),
+            ...(params.token !== undefined && { token: params.token }),
+            ...(params.appId && { appId: params.appId }),
+            ...(params.referralCode && { referralCode: params.referralCode }),
+            sess: "api-session",
+            ip: "127.0.0.1",
           },
         );
 
+        console.log(
+          `🌐 [${mutationId}] Making POST to /authenticate with isDev: ${devMode}`,
+        );
+        console.log(
+          `📦 [${mutationId}] Request body:`,
+          JSON.stringify({ ...requestBody, isDev: devMode }, null, 2),
+        );
+
+        const result = await api.authenticate(requestBody, { isDev: devMode });
+
         console.log(`✅ [${mutationId}] POST completed successfully`);
-        const result = response.data as AuthenticationResponse;
 
         // Store token if authentication was successful
         if (result.success && result.token) {
@@ -195,25 +190,15 @@ const useWildduckAuth = (
       params: Omit<PreAuthRequest, "sess" | "ip">,
     ): Promise<PreAuthResponse> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const requestBody = createPreAuthRequest(params.username, {
           ...(params.scope && { scope: params.scope }),
           sess: "api-session",
           ip: "127.0.0.1",
         });
 
-        const response = await networkClient.request<PreAuthResponse>(
-          `${apiUrl}/preauth`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestBody),
-          },
-        );
+        const result = await api.preAuth(requestBody);
 
-        return response.data as PreAuthResponse;
+        return result;
       } catch (err: unknown) {
         const errorMessage =
           (err as any)?.response?.data?.error ||
@@ -232,31 +217,12 @@ const useWildduckAuth = (
     ],
     mutationFn: async (token?: string): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
         const authToken = token || (await storage.getItem("wildduck_token"));
-
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-
-        if (authToken) {
-          if (config.cloudflareWorkerUrl) {
-            headers["Authorization"] = `Bearer ${authToken}`;
-            headers["X-App-Source"] = "0xmail-box";
-          } else {
-            headers["X-Access-Token"] = authToken;
-          }
+        if (!authToken) {
+          throw new Error("No authentication token available for logout");
         }
 
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/authenticate`,
-          {
-            method: "DELETE",
-            headers,
-          },
-        );
-
-        const result = response.data as { success: boolean };
+        const result = await api.logout(authToken);
 
         // Clear stored token on successful logout
         if (result.success) {
@@ -292,33 +258,10 @@ const useWildduckAuth = (
         return { authenticated: false };
       }
 
-      // Use cloudflare worker URL if available, otherwise use backend URL
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-
       // Validate token by making a test request
       try {
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        };
-
-        // Set authentication headers based on configuration
-        if (config.cloudflareWorkerUrl) {
-          headers["Authorization"] = `Bearer ${token}`;
-          headers["X-App-Source"] = "0xmail-box";
-        } else {
-          headers["X-Access-Token"] = token;
-        }
-
-        const response = await networkClient.request<any>(
-          `${apiUrl}/users/me`,
-          {
-            method: "GET",
-            headers,
-          },
-        );
-
-        return { authenticated: true, user: response.data };
+        const data = await api.checkAuthStatus(token);
+        return { authenticated: data.success, user: data };
       } catch {
         return { authenticated: false };
       }
@@ -329,7 +272,7 @@ const useWildduckAuth = (
 
       return { authenticated: false };
     }
-  }, [storage, config.cloudflareWorkerUrl, config.backendUrl]);
+  }, [api, storage]);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =

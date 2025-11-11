@@ -1,6 +1,6 @@
 import type { Optional } from "@sudobility/types";
 import { useCallback, useMemo } from "react";
-import { WildduckAPI } from "../../network/wildduck-client";
+import { WildduckClient } from "../../network/wildduck-client";
 import { type NetworkClient } from "@sudobility/types";
 import { type WildduckConfig } from "@sudobility/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -36,7 +36,7 @@ export const useWildduckDeleteUser = (
   const queryClient = useQueryClient();
 
   const wildduckClient = useMemo(
-    () => new WildduckAPI(networkClient, config),
+    () => new WildduckClient(networkClient, config),
     [networkClient, config],
   );
 

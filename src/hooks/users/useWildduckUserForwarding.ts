@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
-import type { WildduckAPI } from "../../network/wildduck-client";
+import type { WildduckClient } from "../../network/wildduck-client";
 import type { WildduckUserAuth, WildduckUserResponse } from "@sudobility/types";
 
 export interface ForwardingSettings {
@@ -19,7 +19,7 @@ export interface UpdateForwardingParams {
  * Handles forwarding targets and MTA relay configuration
  */
 export const useWildduckUserForwarding = (
-  api: WildduckAPI,
+  api: WildduckClient,
   wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
-import type { WildduckAPI } from "../../network/wildduck-client";
+import type { WildduckClient } from "../../network/wildduck-client";
 import type {
   WildduckLimits,
   WildduckUserAuth,
@@ -25,7 +25,7 @@ export interface UpdateWildduckLimitsParams {
  * Handles various limits: sending, forwarding, IMAP/POP3 quotas, connection limits
  */
 export const useWildduckUserLimits = (
-  api: WildduckAPI,
+  api: WildduckClient,
   wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();

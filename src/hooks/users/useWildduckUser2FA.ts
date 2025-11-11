@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WildduckAPI } from "../../network/wildduck-client";
+import type { WildduckClient } from "../../network/wildduck-client";
 import type { WildduckUserAuth, WildduckUserResponse } from "@sudobility/types";
 
 export interface TwoFASettings {
@@ -20,7 +20,7 @@ export interface DisableTwoFAParams {
  * supports querying 2FA status and disabling all 2FA methods.
  */
 export const useWildduckUser2FA = (
-  api: WildduckAPI,
+  api: WildduckClient,
   wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();

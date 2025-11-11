@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { WildduckClient } from "../../network/wildduck-client";
 import type {
   NetworkClient,
   WildduckConfig,
@@ -10,7 +12,6 @@ export interface UseWildduckSearchMessagesParams {
   query?: string;
   limit?: number;
   page?: number;
-  devMode?: boolean;
 }
 
 /**
@@ -27,13 +28,12 @@ export const useWildduckSearchMessages = (
   config: WildduckConfig,
   params: UseWildduckSearchMessagesParams = {},
 ) => {
-  const {
-    wildduckUserAuth,
-    query,
-    limit = 50,
-    page = 1,
-    devMode = false,
-  } = params;
+  const { wildduckUserAuth, query, limit = 50, page = 1 } = params;
+
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
 
   return useQuery({
     queryKey: [
@@ -47,48 +47,12 @@ export const useWildduckSearchMessages = (
       if (!wildduckUserAuth) throw new Error("wildduckUserAuth is required");
       if (!query) throw new Error("query is required");
 
-      try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
+      const response = await api.searchMessages(wildduckUserAuth, query, {
+        limit,
+        page,
+      });
 
-        // Build headers
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        };
-
-        if (config.cloudflareWorkerUrl) {
-          headers["Authorization"] = `Bearer ${config.apiToken}`;
-          headers["X-App-Source"] = "0xmail-box";
-        } else {
-          headers["X-Access-Token"] = config.apiToken;
-        }
-
-        const response = await networkClient.request<{
-          results?: unknown[];
-          total?: number;
-          page?: number;
-        }>(
-          `${apiUrl}/users/${wildduckUserAuth.userId}/search?q=${encodeURIComponent(query)}&limit=${limit}&page=${page}`,
-          { method: "GET", headers },
-        );
-
-        const searchResponse = response.data as {
-          results?: unknown[];
-          total?: number;
-          page?: number;
-        };
-
-        return searchResponse.results || [];
-      } catch (err) {
-        if (devMode) {
-          console.warn(
-            "[DevMode] searchMessages failed, returning mock data:",
-            err,
-          );
-          return [];
-        }
-        throw err;
-      }
+      return response.results || [];
     },
     enabled: !!wildduckUserAuth && !!query,
   });

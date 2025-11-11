@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WildduckAPI } from "../../network/wildduck-client";
+import type { WildduckClient } from "../../network/wildduck-client";
 import type { WildduckUserAuth, WildduckUserResponse } from "@sudobility/types";
 
 export interface UserQuotaInfo {
@@ -24,7 +24,7 @@ export interface RecalculateQuotaResult {
  * Provides query for current quota usage and mutations for updating/recalculating quota
  */
 export const useWildduckUserQuota = (
-  api: WildduckAPI,
+  api: WildduckClient,
   wildduckUserAuth?: WildduckUserAuth,
 ) => {
   const queryClient = useQueryClient();

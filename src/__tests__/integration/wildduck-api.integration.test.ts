@@ -87,7 +87,7 @@ describe('Wildduck API Integration Tests', () => {
     return;
   }
 
-  let api: WildduckAPI;
+  let api: WildduckClient;
   let networkClient: NetworkClient;
   let testUserId: string;
   let authToken: string;

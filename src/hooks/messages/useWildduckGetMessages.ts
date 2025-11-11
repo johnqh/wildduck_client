@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { WildduckAPI } from "../../network/wildduck-client";
+import { WildduckClient } from "../../network/wildduck-client";
 import { type NetworkClient } from "@sudobility/types";
 import {
   type GetMessagesRequest,
@@ -32,7 +32,7 @@ export const useWildduckGetMessages = (
   const { wildduckUserAuth, mailboxId, options } = params;
 
   const api = useMemo(
-    () => new WildduckAPI(networkClient, config),
+    () => new WildduckClient(networkClient, config),
     [networkClient, config],
   );
 

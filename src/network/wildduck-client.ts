@@ -110,7 +110,7 @@ const createApiConfig = (config: WildduckConfig) => ({
 // Removed: Legacy API_CONFIG - consumers must provide their own WildduckConfig
 
 // Wildduck API client
-class WildduckAPI {
+class WildduckClient {
   private baseUrl: string;
   private headers: Record<string, string>;
   private networkClient: NetworkClient;
@@ -162,6 +162,7 @@ class WildduckAPI {
       body?: Optional<Record<string, unknown> | string | FormData | Blob>;
       headers?: Optional<Record<string, string>>;
       wildduckUserAuth?: Optional<WildduckUserAuth>;
+      useSystemToken?: boolean;
     } = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
@@ -179,6 +180,16 @@ class WildduckAPI {
       if (options.wildduckUserAuth?.accessToken) {
         requestOptions.headers["Authorization"] =
           `Bearer ${options.wildduckUserAuth.accessToken}`;
+      }
+      // Otherwise, if useSystemToken is true and we have a system token, use it
+      else if (options.useSystemToken && this.config.API_TOKEN) {
+        if (this.config.USE_CLOUDFLARE) {
+          requestOptions.headers["Authorization"] =
+            `Bearer ${this.config.API_TOKEN}`;
+          requestOptions.headers["X-App-Source"] = "0xmail-box";
+        } else {
+          requestOptions.headers["X-Access-Token"] = this.config.API_TOKEN;
+        }
       }
 
       // Only add body if it exists and method supports it
@@ -234,8 +245,9 @@ class WildduckAPI {
   // Authenticate user with Wildduck using blockchain signature
   async authenticate(
     request: WildduckAuthenticateRequest,
+    options?: { isDev?: boolean },
   ): Promise<WildduckAuthResponse> {
-    const requestBody: WildduckAuthenticateRequest = {
+    const requestBody: any = {
       username: request.username,
       ...(request.signature && { signature: request.signature }), // Signature that was created by signing the message
       ...(request.message && { message: request.message }), // SIWE/SIWS message that was signed
@@ -249,6 +261,11 @@ class WildduckAPI {
       ip: request.ip || "127.0.0.1", // IP address for logging
       ...(request.appId && { appId: request.appId }),
     };
+
+    // Add isDev flag if provided
+    if (options?.isDev !== undefined) {
+      requestBody.isDev = options.isDev;
+    }
 
     const response = await this.request<WildduckAuthResponse>("/authenticate", {
       method: "POST",
@@ -406,6 +423,33 @@ class WildduckAPI {
     return this.request<WildduckMessagesResponse>(endpoint, {
       wildduckUserAuth,
     });
+  }
+
+  // Search messages across all mailboxes
+  async searchMessages(
+    wildduckUserAuth: WildduckUserAuth,
+    query: string,
+    options?: {
+      limit?: number;
+      page?: number;
+    },
+  ): Promise<{ results?: unknown[]; total?: number; page?: number }> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    const queryParams = createURLSearchParams();
+    queryParams.append("q", query);
+    if (options?.limit) queryParams.append("limit", options.limit.toString());
+    if (options?.page) queryParams.append("page", options.page.toString());
+
+    const queryString = queryParams.toString();
+    const endpoint = `/users/${validatedUserId}/search?${queryString}`;
+
+    return this.request<{ results?: unknown[]; total?: number; page?: number }>(
+      endpoint,
+      {
+        wildduckUserAuth,
+      },
+    );
   }
 
   // Get a specific message by ID
@@ -1047,18 +1091,327 @@ class WildduckAPI {
       wildduckUserAuth,
     });
   }
+
+  // ============================================================================
+  // Authentication Status Methods
+  // ============================================================================
+
+  /**
+   * Check authentication status of a token
+   * @param token - Token to check (uses as Bearer token)
+   * @returns Authentication status with user info if valid
+   */
+  async checkAuthStatus(token: string): Promise<{
+    success: boolean;
+    id?: string;
+    username?: string;
+    address?: string;
+  }> {
+    // Create a temporary WildduckUserAuth-like object just for the token
+    const tempAuth: WildduckUserAuth = {
+      userId: "",
+      username: "",
+      accessToken: token,
+    };
+
+    return this.request<{
+      success: boolean;
+      id?: string;
+      username?: string;
+      address?: string;
+    }>("/users/me", {
+      method: "GET",
+      wildduckUserAuth: tempAuth,
+    });
+  }
+
+  /**
+   * Logout/delete authentication token
+   * @param token - Token to logout
+   * @returns Success response
+   */
+  async logout(token: string): Promise<{ success: boolean }> {
+    const tempAuth: WildduckUserAuth = {
+      userId: "",
+      username: "",
+      accessToken: token,
+    };
+
+    return this.request<{ success: boolean }>("/authenticate", {
+      method: "DELETE",
+      wildduckUserAuth: tempAuth,
+    });
+  }
+
+  // ============================================================================
+  // System-Level Operations (using system token)
+  // ============================================================================
+
+  /**
+   * Get server health status
+   * @returns Health status
+   */
+  async getHealth(): Promise<any> {
+    return this.request("/health", {
+      method: "GET",
+      useSystemToken: true,
+    });
+  }
+
+  /**
+   * Get users list with optional filters
+   * @param filters - Optional filters
+   * @returns Users list
+   */
+  async getUsersList(filters?: Record<string, unknown>): Promise<any> {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          params.set(key, String(value));
+        }
+      });
+    }
+    const queryString = params.toString();
+    const endpoint = `/users${queryString ? `?${queryString}` : ""}`;
+
+    return this.request(endpoint, {
+      method: "GET",
+      useSystemToken: true,
+    });
+  }
+
+  /**
+   * Get system settings
+   * @returns System settings
+   */
+  async getSettings(): Promise<any> {
+    return this.request("/settings", {
+      method: "GET",
+      useSystemToken: true,
+    });
+  }
+
+  /**
+   * Update a system setting
+   * @param key - Setting key
+   * @param value - Setting value
+   * @returns Success response
+   */
+  async updateSetting(key: string, value: any): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/settings/${key}`, {
+      method: "PUT",
+      body: { value },
+      useSystemToken: true,
+    });
+  }
+
+  /**
+   * Delete a system setting
+   * @param key - Setting key
+   * @returns Success response
+   */
+  async deleteSetting(key: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/settings/${key}`, {
+      method: "DELETE",
+      useSystemToken: true,
+    });
+  }
+
+  /**
+   * Get a specific filter by ID
+   * @param wildduckUserAuth - User authentication
+   * @param filterId - Filter ID
+   * @returns Filter details
+   */
+  async getFilter(
+    wildduckUserAuth: WildduckUserAuth,
+    filterId: string,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/filters/${filterId}`, {
+      method: "GET",
+      wildduckUserAuth,
+    });
+  }
+
+  /**
+   * Get forwarded addresses (system-level)
+   * @returns Forwarded addresses
+   */
+  async getForwardedAddresses(): Promise<any> {
+    return this.request("/addresses/forwarded", {
+      method: "GET",
+      useSystemToken: true,
+    });
+  }
+
+  /**
+   * Create forwarded address (system-level)
+   * @param params - Forwarded address parameters
+   * @returns Created forwarded address
+   */
+  async createForwardedAddressSystem(params: {
+    address: string;
+    target: string;
+  }): Promise<{ success: boolean; id: string }> {
+    return this.request<{ success: boolean; id: string }>(
+      "/addresses/forwarded",
+      {
+        method: "POST",
+        body: params,
+        useSystemToken: true,
+      },
+    );
+  }
+
+  /**
+   * Delete forwarded address (system-level)
+   * @param addressId - Address ID
+   * @returns Success response
+   */
+  async deleteForwardedAddressSystem(
+    addressId: string,
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(
+      `/addresses/forwarded/${addressId}`,
+      {
+        method: "DELETE",
+        useSystemToken: true,
+      },
+    );
+  }
+
+  /**
+   * Resolve an address
+   * @param address - Address to resolve
+   * @returns Resolved address information
+   */
+  async resolveAddress(address: string): Promise<any> {
+    return this.request(`/addresses/resolve/${encodeURIComponent(address)}`, {
+      method: "GET",
+      useSystemToken: true,
+    });
+  }
+
+  /**
+   * Create address for user
+   * @param wildduckUserAuth - User authentication
+   * @param params - Address creation parameters
+   * @returns Created address
+   */
+  async createAddress(
+    wildduckUserAuth: WildduckUserAuth,
+    params: any,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/addresses`, {
+      method: "POST",
+      body: params,
+      wildduckUserAuth,
+    });
+  }
+
+  /**
+   * Update address
+   * @param wildduckUserAuth - User authentication
+   * @param addressId - Address ID
+   * @param params - Update parameters
+   * @returns Success response
+   */
+  async updateAddress(
+    wildduckUserAuth: WildduckUserAuth,
+    addressId: string,
+    params: any,
+  ): Promise<{ success: boolean }> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request<{ success: boolean }>(
+      `/users/${validatedUserId}/addresses/${addressId}`,
+      {
+        method: "PUT",
+        body: params,
+        wildduckUserAuth,
+      },
+    );
+  }
+
+  /**
+   * Delete address
+   * @param wildduckUserAuth - User authentication
+   * @param addressId - Address ID
+   * @returns Success response
+   */
+  async deleteAddress(
+    wildduckUserAuth: WildduckUserAuth,
+    addressId: string,
+  ): Promise<{ success: boolean }> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request<{ success: boolean }>(
+      `/users/${validatedUserId}/addresses/${addressId}`,
+      {
+        method: "DELETE",
+        wildduckUserAuth,
+      },
+    );
+  }
+
+  /**
+   * Register forwarded address
+   * @param wildduckUserAuth - User authentication
+   * @param params - Registration parameters
+   * @returns Registration result
+   */
+  async registerForwardedAddress(
+    wildduckUserAuth: WildduckUserAuth,
+    params: any,
+  ): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/addresses/forwarded`, {
+      method: "POST",
+      body: params,
+      wildduckUserAuth,
+    });
+  }
+
+  /**
+   * Delete forwarded address
+   * @param wildduckUserAuth - User authentication
+   * @param addressId - Address ID
+   * @returns Success response
+   */
+  async deleteForwardedAddress(
+    wildduckUserAuth: WildduckUserAuth,
+    addressId: string,
+  ): Promise<{ success: boolean }> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request<{ success: boolean }>(
+      `/users/${validatedUserId}/addresses/forwarded/${addressId}`,
+      {
+        method: "DELETE",
+        wildduckUserAuth,
+      },
+    );
+  }
 }
 
 // Factory function to create Wildduck API client with dependencies
-const createWildduckAPI = (
+const createWildduckClient = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-): WildduckAPI => {
-  return new WildduckAPI(networkClient, config);
+): WildduckClient => {
+  return new WildduckClient(networkClient, config);
 };
 
-// Export the main WildduckAPI class
-export { WildduckAPI };
+// Export the main WildduckClient class
+export { WildduckClient };
+// Legacy export for backward compatibility
+export { WildduckClient as WildduckAPI };
 
 // Helper function to validate MongoDB ObjectId format
 const isValidObjectId = (id: string): boolean => {
@@ -1146,4 +1499,10 @@ const validateUserId = (userId: string): string => {
   return userId;
 };
 
-export { createWildduckAPI, emailToUserId, validateUserId, isValidObjectId };
+export {
+  createWildduckClient,
+  createWildduckClient as createWildduckAPI,
+  emailToUserId,
+  validateUserId,
+  isValidObjectId,
+};

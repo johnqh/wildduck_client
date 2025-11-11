@@ -6,7 +6,7 @@ import { NetworkClient } from '@sudobility/di';
 const TEST_USER_AUTH = { username: 'testuser', userId: 'user123', accessToken: 'test-token' };
 
 describe('WildduckAPI', () => {
-  let api: WildduckAPI;
+  let api: WildduckClient;
   let mockNetworkClient: NetworkClient;
   let mockConfig: WildduckConfig;
 

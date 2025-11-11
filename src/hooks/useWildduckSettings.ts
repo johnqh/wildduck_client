@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { NetworkClient, Optional } from "@sudobility/types";
 import type { WildduckConfig } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
+import { WildduckClient } from "../network/wildduck-client";
 
 interface WildduckSettings {
   [key: string]: any;
@@ -34,13 +35,10 @@ const useWildduckSettings = (
   const [error, setError] = useState<Optional<string>>(null);
   const [settings, setSettings] = useState<WildduckSettings>({});
 
-  // Helper to build headers
-  const buildHeaders = useCallback((): Record<string, string> => {
-    return {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-  }, []);
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -51,20 +49,11 @@ const useWildduckSettings = (
     setError(null);
 
     try {
-      // Use config URLs and headers
-      const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-      const headers = buildHeaders();
-
-      const response = await networkClient.request<
-        { results?: WildduckSettings } | WildduckSettings
-      >(`${apiUrl}/settings`, {
-        method: "GET",
-        headers,
-      });
+      const response = await api.getSettings();
 
       const settingsData =
-        (response.data as { results?: WildduckSettings } | WildduckSettings)
-          .results || (response.data as WildduckSettings);
+        (response as { results?: WildduckSettings }).results ||
+        (response as WildduckSettings);
       setSettings(settingsData);
       return settingsData;
     } catch (err) {
@@ -93,7 +82,7 @@ const useWildduckSettings = (
     } finally {
       setIsLoading(false);
     }
-  }, [buildHeaders, config.cloudflareWorkerUrl, config.backendUrl, devMode]);
+  }, [api, devMode]);
 
   const updateSetting = useCallback(
     async (key: string, value: any): Promise<{ success: boolean }> => {
@@ -101,23 +90,12 @@ const useWildduckSettings = (
       setError(null);
 
       try {
-        // Use config URLs and headers
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/settings/${key}`,
-          {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({ value }),
-          },
-        );
+        const response = await api.updateSetting(key, value);
 
         // Update local settings
         setSettings((prev) => ({ ...prev, [key]: value }));
 
-        return response.data as { success: boolean };
+        return response;
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -136,7 +114,7 @@ const useWildduckSettings = (
         setIsLoading(false);
       }
     },
-    [buildHeaders, config.cloudflareWorkerUrl, config.backendUrl, devMode],
+    [api, devMode],
   );
 
   const deleteSetting = useCallback(
@@ -145,17 +123,7 @@ const useWildduckSettings = (
       setError(null);
 
       try {
-        // Use config URLs and headers
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/settings/${key}`,
-          {
-            method: "DELETE",
-            headers,
-          },
-        );
+        const response = await api.deleteSetting(key);
 
         // Remove from local settings
         setSettings((prev) => {
@@ -163,7 +131,7 @@ const useWildduckSettings = (
           return rest;
         });
 
-        return response.data as { success: boolean };
+        return response;
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -185,7 +153,7 @@ const useWildduckSettings = (
         setIsLoading(false);
       }
     },
-    [buildHeaders, config.cloudflareWorkerUrl, config.backendUrl, devMode],
+    [api, devMode],
   );
 
   const refresh = useCallback(async (): Promise<void> => {

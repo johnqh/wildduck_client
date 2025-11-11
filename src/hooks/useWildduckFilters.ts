@@ -6,8 +6,10 @@ import type {
   WildduckCreateFilterRequest,
   WildduckFilterListItem,
   WildduckUpdateFilterRequest,
+  WildduckUserAuth,
 } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
+import { WildduckClient } from "../network/wildduck-client";
 
 interface UseWildduckFiltersReturn {
   isLoading: boolean;
@@ -51,13 +53,21 @@ const useWildduckFilters = (
   const [error, setError] = useState<Optional<string>>(null);
   const [filters, setFilters] = useState<WildduckFilterListItem[]>([]);
 
-  // Helper to build headers
-  const buildHeaders = useCallback((): Record<string, string> => {
-    return {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-  }, []);
+  // Create API instance
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
+
+  // Helper to create WildduckUserAuth from userId
+  const createUserAuth = useCallback(
+    (userId: string): WildduckUserAuth => ({
+      userId,
+      username: "",
+      accessToken: "",
+    }),
+    [],
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -69,17 +79,11 @@ const useWildduckFilters = (
       setError(null);
 
       try {
-        // Use config URLs and headers
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{
-          results?: WildduckFilterListItem[];
-        }>(`${apiUrl}/users/${userId}/filters`, { method: "GET", headers });
+        const wildduckUserAuth = createUserAuth(userId);
+        const response = await api.getFilters(wildduckUserAuth);
 
         const filterList =
-          (response.data as { results?: WildduckFilterListItem[] }).results ||
-          [];
+          (response as { results?: WildduckFilterListItem[] }).results || [];
         setFilters(filterList);
         return filterList;
       } catch (err) {
@@ -104,34 +108,21 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [
-      networkClient,
-      buildHeaders,
-      config.cloudflareWorkerUrl,
-      config.backendUrl,
-      devMode,
-    ],
+    [api, createUserAuth, devMode],
   );
 
   const getFilter = useCallback(
     async (
-      userId: string,
+      wildduckUserAuth: WildduckUserAuth,
       filterId: string,
     ): Promise<WildduckFilterListItem> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        // Use config URLs and headers
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const response = await api.getFilter(wildduckUserAuth, filterId);
 
-        const response = await networkClient.request<WildduckFilterListItem>(
-          `${apiUrl}/users/${userId}/filters/${filterId}`,
-          { method: "GET", headers },
-        );
-
-        return response.data as WildduckFilterListItem;
+        return response as WildduckFilterListItem;
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -150,13 +141,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [
-      networkClient,
-      buildHeaders,
-      config.cloudflareWorkerUrl,
-      config.backendUrl,
-      devMode,
-    ],
+    [api, devMode],
   );
 
   const createFilter = useCallback(
@@ -168,20 +153,10 @@ const useWildduckFilters = (
       setError(null);
 
       try {
-        // Use config URLs and headers
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const wildduckUserAuth = createUserAuth(userId);
+        const response = await api.createFilter(wildduckUserAuth, params);
 
-        const response = await networkClient.request<{
-          success: boolean;
-          id: string;
-        }>(`${apiUrl}/users/${userId}/filters`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(params),
-        });
-
-        return response.data as { success: boolean; id: string };
+        return response as { success: boolean; id: string };
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -199,13 +174,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [
-      networkClient,
-      buildHeaders,
-      config.cloudflareWorkerUrl,
-      config.backendUrl,
-      devMode,
-    ],
+    [api, createUserAuth, devMode],
   );
 
   const updateFilter = useCallback(
@@ -218,16 +187,14 @@ const useWildduckFilters = (
       setError(null);
 
       try {
-        // Use config URLs and headers
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
-
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/filters/${filterId}`,
-          { method: "PUT", headers, body: JSON.stringify(params) },
+        const wildduckUserAuth = createUserAuth(userId);
+        const response = await api.updateFilter(
+          wildduckUserAuth,
+          filterId,
+          params,
         );
 
-        return response.data as { success: boolean };
+        return response as { success: boolean };
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -245,13 +212,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [
-      networkClient,
-      buildHeaders,
-      config.cloudflareWorkerUrl,
-      config.backendUrl,
-      devMode,
-    ],
+    [api, createUserAuth, devMode],
   );
 
   const deleteFilter = useCallback(
@@ -260,16 +221,10 @@ const useWildduckFilters = (
       setError(null);
 
       try {
-        // Use config URLs and headers
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        const wildduckUserAuth = createUserAuth(userId);
+        const response = await api.deleteFilter(wildduckUserAuth, filterId);
 
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/filters/${filterId}`,
-          { method: "DELETE", headers },
-        );
-
-        return response.data as { success: boolean };
+        return response as { success: boolean };
       } catch (err) {
         if (devMode) {
           console.warn(
@@ -287,13 +242,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [
-      networkClient,
-      buildHeaders,
-      config.cloudflareWorkerUrl,
-      config.backendUrl,
-      devMode,
-    ],
+    [api, createUserAuth, devMode],
   );
 
   const refresh = useCallback(

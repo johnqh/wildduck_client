@@ -7,9 +7,9 @@ import type {
   UpdateMailboxRequest,
   WildduckConfig,
   WildduckMailbox,
-  WildduckMailboxResponse,
   WildduckUserAuth,
 } from "@sudobility/types";
+import { WildduckClient } from "../network/wildduck-client";
 
 interface UseWildduckMailboxesReturn {
   // Query state
@@ -71,16 +71,14 @@ const useWildduckMailboxes = (
   const queryClient = useQueryClient();
   const hasFetchedRef = useRef(false);
 
+  // Create API instance
+  const api = useMemo(
+    () => new WildduckClient(networkClient, config),
+    [networkClient, config],
+  );
+
   // Get userId from wildduckUserAuth (single source of truth)
   const userId = wildduckUserAuth?.userId || null;
-
-  // Helper to build headers
-  const buildHeaders = useCallback((): Record<string, string> => {
-    return {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-  }, []);
 
   // Get mailboxes query (not auto-fetched, only when explicitly called)
   const getMailboxes = useCallback(
@@ -94,26 +92,24 @@ const useWildduckMailboxes = (
       } = {},
     ): Promise<WildduckMailbox[]> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        if (!wildduckUserAuth) {
+          throw new Error("User not authenticated");
+        }
 
-        const queryParams = new URLSearchParams();
-        if (options.specialUse) queryParams.append("specialUse", "true");
-        if (options.showHidden) queryParams.append("showHidden", "true");
-        if (options.counters) queryParams.append("counters", "true");
-        if (options.sizes) queryParams.append("sizes", "true");
+        const getMailboxesOptions: any = {};
+        if (options.specialUse !== undefined)
+          getMailboxesOptions.specialUse = options.specialUse;
+        if (options.showHidden !== undefined)
+          getMailboxesOptions.showHidden = options.showHidden;
+        if (options.counters !== undefined)
+          getMailboxesOptions.counters = options.counters;
+        if (options.sizes !== undefined)
+          getMailboxesOptions.sizes = options.sizes;
 
-        const query = queryParams.toString();
-        const endpoint = `/users/${userId}/mailboxes${query ? `?${query}` : ""}`;
-
-        const response = await networkClient.request<WildduckMailboxResponse>(
-          `${apiUrl}${endpoint}`,
-          {
-            method: "GET",
-            headers,
-          },
+        const mailboxData = await api.getMailboxes(
+          wildduckUserAuth,
+          getMailboxesOptions,
         );
-        const mailboxData = response.data as WildduckMailboxResponse;
         const mailboxList = mailboxData.results || [];
 
         // Update cache
@@ -130,26 +126,18 @@ const useWildduckMailboxes = (
         throw new Error(errorMessage);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+    [api, wildduckUserAuth, queryClient],
   );
 
   // Get single mailbox
   const getMailbox = useCallback(
     async (userId: string, mailboxId: string): Promise<WildduckMailbox> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        if (!wildduckUserAuth) {
+          throw new Error("User not authenticated");
+        }
 
-        const endpoint = `/users/${userId}/mailboxes/${mailboxId}`;
-
-        const response = await networkClient.request<WildduckMailboxResponse>(
-          `${apiUrl}${endpoint}`,
-          {
-            method: "GET",
-            headers,
-          },
-        );
-        const mailboxData = response.data as WildduckMailboxResponse;
+        const mailboxData = await api.getMailbox(wildduckUserAuth, mailboxId);
 
         // The API returns a response with a single mailbox in results array
         if (!mailboxData.results || mailboxData.results.length === 0) {
@@ -178,7 +166,7 @@ const useWildduckMailboxes = (
         throw new Error(errorMessage);
       }
     },
-    [config.cloudflareWorkerUrl, config.backendUrl, buildHeaders, queryClient],
+    [api, wildduckUserAuth, queryClient],
   );
 
   // Get cached mailboxes from query cache (used for reading state)
@@ -221,30 +209,18 @@ const useWildduckMailboxes = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
       params,
     }: {
-      userId: string;
       params: Omit<CreateMailboxRequest, "sess" | "ip">;
     }): Promise<{ success: boolean; id: string }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        if (!wildduckUserAuth) {
+          throw new Error("User not authenticated");
+        }
 
-        const response = await networkClient.request<{
-          success: boolean;
-          id: string;
-        }>(`${apiUrl}/users/${userId}/mailboxes`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            path: params.path,
-            hidden: params.hidden,
-            retention: params.retention,
-          }),
-        });
+        await api.createMailbox(wildduckUserAuth, params);
 
-        return response.data as { success: boolean; id: string };
+        return { success: true, id: "" };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to create mailbox";
@@ -255,9 +231,11 @@ const useWildduckMailboxes = (
         throw new Error(errorMessage);
       }
     },
-    onSuccess: async (_, variables) => {
+    onSuccess: async () => {
       // Automatically refresh mailboxes after creation
-      await getMailboxes(variables.userId, { counters: true });
+      if (userId) {
+        await getMailboxes(userId, { counters: true });
+      }
     },
   });
 
@@ -268,28 +246,24 @@ const useWildduckMailboxes = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
       mailboxId,
       params,
     }: {
-      userId: string;
       mailboxId: string;
       params: Omit<UpdateMailboxRequest, "sess" | "ip">;
     }): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        if (!wildduckUserAuth) {
+          throw new Error("User not authenticated");
+        }
 
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}`,
-          {
-            method: "PUT",
-            headers,
-            body: JSON.stringify(params),
-          },
+        const response = await api.updateMailbox(
+          wildduckUserAuth,
+          mailboxId,
+          params,
         );
 
-        return response.data as { success: boolean };
+        return { success: response.success };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update mailbox";
@@ -300,9 +274,11 @@ const useWildduckMailboxes = (
         throw new Error(errorMessage);
       }
     },
-    onSuccess: async (_, variables) => {
+    onSuccess: async () => {
       // Automatically refresh mailboxes after update
-      await getMailboxes(variables.userId, { counters: true });
+      if (userId) {
+        await getMailboxes(userId, { counters: true });
+      }
     },
   });
 
@@ -313,25 +289,18 @@ const useWildduckMailboxes = (
       config.cloudflareWorkerUrl || config.backendUrl,
     ],
     mutationFn: async ({
-      userId,
       mailboxId,
     }: {
-      userId: string;
       mailboxId: string;
     }): Promise<{ success: boolean }> => {
       try {
-        const apiUrl = config.cloudflareWorkerUrl || config.backendUrl;
-        const headers = buildHeaders();
+        if (!wildduckUserAuth) {
+          throw new Error("User not authenticated");
+        }
 
-        const response = await networkClient.request<{ success: boolean }>(
-          `${apiUrl}/users/${userId}/mailboxes/${mailboxId}`,
-          {
-            method: "DELETE",
-            headers,
-          },
-        );
+        const response = await api.deleteMailbox(wildduckUserAuth, mailboxId);
 
-        return response.data as { success: boolean };
+        return { success: response.success };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete mailbox";
@@ -342,9 +311,11 @@ const useWildduckMailboxes = (
         throw new Error(errorMessage);
       }
     },
-    onSuccess: async (_, variables) => {
+    onSuccess: async () => {
       // Automatically refresh mailboxes after deletion
-      await getMailboxes(variables.userId, { counters: true });
+      if (userId) {
+        await getMailboxes(userId, { counters: true });
+      }
     },
   });
 
@@ -368,23 +339,25 @@ const useWildduckMailboxes = (
     null;
 
   const createMailbox = useCallback(
-    async (userId: string, params: Omit<CreateMailboxRequest, "sess" | "ip">) =>
-      createMutation.mutateAsync({ userId, params }),
+    async (
+      _userId: string,
+      params: Omit<CreateMailboxRequest, "sess" | "ip">,
+    ) => createMutation.mutateAsync({ params }),
     [createMutation],
   );
 
   const updateMailbox = useCallback(
     async (
-      userId: string,
+      _userId: string,
       mailboxId: string,
       params: Omit<UpdateMailboxRequest, "sess" | "ip">,
-    ) => updateMutation.mutateAsync({ userId, mailboxId, params }),
+    ) => updateMutation.mutateAsync({ mailboxId, params }),
     [updateMutation],
   );
 
   const deleteMailbox = useCallback(
-    async (userId: string, mailboxId: string) =>
-      deleteMutation.mutateAsync({ userId, mailboxId }),
+    async (_userId: string, mailboxId: string) =>
+      deleteMutation.mutateAsync({ mailboxId }),
     [deleteMutation],
   );
 

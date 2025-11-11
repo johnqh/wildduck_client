@@ -3,14 +3,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useWildduckUserProfile } from "../useWildduckUserProfile";
-import type { WildduckAPI } from "../../../network/wildduck-client";
+import type { WildduckClient } from "../../../network/wildduck-client";
 import type { WildduckUserResponse } from "@sudobility/types";
 
 const TEST_USER_AUTH = { username: "testuser", userId: "user123", accessToken: "test-token" };
 
 describe("useUserProfile", () => {
   let queryClient: QueryClient;
-  let mockApi: WildduckAPI;
+  let mockApi: WildduckClient;
 
   beforeEach(() => {
     queryClient = new QueryClient({
