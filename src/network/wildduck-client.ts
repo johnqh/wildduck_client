@@ -714,19 +714,13 @@ class WildduckAPI {
       );
     }
 
-    const url = `${this.baseUrl}/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/message.eml`;
-
-    const headers = {
-      ...this.headers,
-      Authorization: `Bearer ${wildduckUserAuth.accessToken}`,
-    };
-
-    const response = await this.networkClient.request<string>(url, {
-      method: "GET",
-      headers,
-    });
-
-    return response.data as string;
+    return this.request<string>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/message.eml`,
+      {
+        method: "GET",
+        wildduckUserAuth,
+      },
+    );
   }
 
   // Download message attachment
@@ -744,19 +738,13 @@ class WildduckAPI {
       );
     }
 
-    const url = `${this.baseUrl}/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/attachments/${attachmentId}`;
-
-    const headers = {
-      ...this.headers,
-      Authorization: `Bearer ${wildduckUserAuth.accessToken}`,
-    };
-
-    const response = await this.networkClient.request<Blob>(url, {
-      method: "GET",
-      headers,
-    });
-
-    return response.data as Blob;
+    return this.request<Blob>(
+      `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}/attachments/${attachmentId}`,
+      {
+        method: "GET",
+        wildduckUserAuth,
+      },
+    );
   }
 
   // Forward a stored message
