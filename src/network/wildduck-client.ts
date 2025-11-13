@@ -442,12 +442,8 @@ class WildduckClient {
       );
     }
 
-    // Validate message ID format (should also be ObjectId)
-    if (!isValidObjectId(messageId)) {
-      throw new Error(
-        `Invalid message ID format: "${messageId}". Expected 24-character hexadecimal string (MongoDB ObjectId)`,
-      );
-    }
+    // Note: messageId can be numeric (sequence number) or ObjectId depending on WildDuck configuration
+    // No validation needed - the API will handle invalid IDs
 
     const endpoint = `/users/${validatedUserId}/mailboxes/${mailboxId}/messages/${messageId}`;
 
