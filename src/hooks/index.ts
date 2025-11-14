@@ -18,14 +18,14 @@ export * from "./useWildduckUsers"; // Users list and create
 // Individual endpoint hooks (deprecated - use monolithic hooks instead)
 // ============================================================================
 
-// Messages API hooks
+// Messages API hooks (only specialized hooks remaining)
 export * from "./messages";
 
-// Users API hooks
-export * from "./users";
+// Users API hooks - consolidated into useWildduckUser and useWildduckUsers
+// (no individual exports needed)
 
-// Addresses API hooks
-export * from "./addresses";
+// Addresses API hooks - consolidated into useWildduckAddresses
+// (no individual exports needed)
 
 // ============================================================================
 // Legacy monolithic hooks (deprecated - use individual hooks instead)

@@ -55,11 +55,6 @@ interface UseWildduckMessagesReturn {
     mailboxId: string,
     messageId: string,
   ) => Promise<WildduckMessageResponse>;
-  searchMessages: (
-    wildduckUserAuth: WildduckUserAuth,
-    query: string,
-    options?: GetMessagesOptions,
-  ) => Promise<WildduckMessage[]>;
   refresh: () => Promise<void>;
 
   // Send mutation
@@ -69,6 +64,15 @@ interface UseWildduckMessagesReturn {
   ) => Promise<{ success: boolean; id: string }>;
   isSending: boolean;
   sendError: Optional<Error>;
+
+  // Upload mutation
+  uploadMessage: (
+    wildduckUserAuth: WildduckUserAuth,
+    mailboxId: string,
+    params: any,
+  ) => Promise<{ success: boolean; id: number; mailbox: string }>;
+  isUploading: boolean;
+  uploadError: Optional<Error>;
 
   // Update mutation
   updateMessage: (
@@ -211,37 +215,55 @@ const useWildduckMessages = (
     [api, queryClient],
   );
 
-  // Search messages function (imperative)
-  const searchMessages = useCallback(
-    async (
-      wildduckUserAuth: WildduckUserAuth,
-      query: string,
-      options: GetMessagesOptions = {},
-    ): Promise<WildduckMessage[]> => {
+  // Upload message mutation
+  const uploadMutation = useMutation({
+    mutationKey: [
+      "wildduck-upload-message",
+      config.cloudflareWorkerUrl || config.backendUrl,
+    ],
+    mutationFn: async ({
+      wildduckUserAuth,
+      mailboxId,
+      params,
+    }: {
+      wildduckUserAuth: WildduckUserAuth;
+      mailboxId: string;
+      params: any;
+    }): Promise<{ success: boolean; id: number; mailbox: string }> => {
       try {
-        const response = await api.searchMessages(wildduckUserAuth, query, {
-          limit: options.limit || 50,
-          page: options.page || 1,
-        });
+        const response = await api.uploadMessage(
+          wildduckUserAuth,
+          mailboxId,
+          params,
+        );
 
-        const messageList = (response.results as WildduckMessage[]) || [];
-
-        setMessages(messageList);
-        setTotalMessages(response.total || 0);
-        setCurrentPage(response.page || 1);
-
-        return messageList;
+        return {
+          success: response.success,
+          id: response.message.id,
+          mailbox: response.message.mailbox,
+        };
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "Failed to search messages";
+          err instanceof Error ? err.message : "Failed to upload message";
         console.error(errorMessage);
-        setMessages([]);
-        setTotalMessages(0);
-        return [];
+        return { success: false, id: 0, mailbox: "" };
       }
     },
-    [api],
-  );
+    onSuccess: async (_, variables) => {
+      // Invalidate messages queries
+      queryClient.invalidateQueries({
+        queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
+      });
+      // Auto-refresh messages list
+      if (lastFetchParams) {
+        await getMessages(
+          lastFetchParams.wildduckUserAuth,
+          lastFetchParams.mailboxId,
+          lastFetchParams.options,
+        );
+      }
+    },
+  });
 
   // Send message mutation
   const sendMutation = useMutation({
@@ -507,6 +529,15 @@ const useWildduckMessages = (
     [sendMutation],
   );
 
+  const uploadMessage = useCallback(
+    async (
+      wildduckUserAuth: WildduckUserAuth,
+      mailboxId: string,
+      params: any,
+    ) => uploadMutation.mutateAsync({ wildduckUserAuth, mailboxId, params }),
+    [uploadMutation],
+  );
+
   const updateMessage = useCallback(
     async (
       wildduckUserAuth: WildduckUserAuth,
@@ -550,10 +581,17 @@ const useWildduckMessages = (
 
   const clearError = useCallback(() => {
     sendMutation.reset();
+    uploadMutation.reset();
     updateMutation.reset();
     deleteMutation.reset();
     moveMutation.reset();
-  }, [sendMutation, updateMutation, deleteMutation, moveMutation]);
+  }, [
+    sendMutation,
+    uploadMutation,
+    updateMutation,
+    deleteMutation,
+    moveMutation,
+  ]);
 
   return useMemo(
     () => ({
@@ -567,13 +605,17 @@ const useWildduckMessages = (
       // Query functions
       getMessages,
       getMessage,
-      searchMessages,
       refresh,
 
       // Send mutation
       sendMessage,
       isSending: sendMutation.isPending,
       sendError: sendMutation.error,
+
+      // Upload mutation
+      uploadMessage,
+      isUploading: uploadMutation.isPending,
+      uploadError: uploadMutation.error,
 
       // Update mutation
       updateMessage,
@@ -601,11 +643,13 @@ const useWildduckMessages = (
       error,
       getMessages,
       getMessage,
-      searchMessages,
       refresh,
       sendMessage,
       sendMutation.isPending,
       sendMutation.error,
+      uploadMessage,
+      uploadMutation.isPending,
+      uploadMutation.error,
       updateMessage,
       updateMutation.isPending,
       updateMutation.error,

@@ -1,7 +1,10 @@
 /**
- * Individual hooks for Wildduck Addresses API
- * Each hook is isolated with its own state management
+ * Address Hooks
+ *
+ * IMPORTANT: All address operations are available in the monolithic hook:
+ * - useWildduckAddresses (at root level: src/hooks/useWildduckAddresses.ts)
+ *
+ * The specialized useWildduckGetAddresses hook has been removed.
  */
 
-// Read operations
-export * from "./useWildduckGetAddresses";
+// No individual address hooks - all in useWildduckAddresses

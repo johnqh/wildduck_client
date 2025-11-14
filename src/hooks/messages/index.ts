@@ -1,19 +1,16 @@
 /**
- * Individual hooks for Wildduck Messages API
- * Each hook is isolated with its own state management
+ * Message Hooks
+ *
+ * Specialized hooks for message operations in Wildduck.
+ *
+ * IMPORTANT: Most message operations are now available in monolithic hooks:
+ * - useWildduckMessages (collection-level: list, send, upload)
+ * - useWildduckMessage (singular-level: get, update, delete, forward, submit)
+ *
+ * Only specialized hooks that remain:
+ * - useWildduckSearchMessages (different query pattern)
+ * - useWildduckUploadMessage (kept for backward compatibility, use useWildduckMessages.uploadMessage instead)
  */
 
-// Read operations
-export * from "./useWildduckGetMessages";
-export * from "./useWildduckGetMessage";
 export * from "./useWildduckSearchMessages";
-export * from "./useWildduckGetMessageSource";
-export * from "./useWildduckGetMessageAttachment";
-
-// Write operations (mutations)
-export * from "./useWildduckSendMessage";
-export * from "./useWildduckUpdateMessage";
-export * from "./useWildduckDeleteMessage";
 export * from "./useWildduckUploadMessage";
-export * from "./useWildduckForwardMessage";
-export * from "./useWildduckSubmitDraft";

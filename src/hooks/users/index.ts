@@ -1,19 +1,11 @@
 /**
- * User Settings Hooks
+ * User Hooks
  *
- * Specialized hooks for managing different aspects of user settings in Wildduck.
- * Each hook focuses on a specific category of user settings for better organization
- * and reusability.
+ * IMPORTANT: All user operations are now available in monolithic hooks:
+ * - useWildduckUsers (collection-level: list, create)
+ * - useWildduckUser (singular-level: get, update, delete, and ALL settings)
+ *
+ * The specialized user hooks have been removed. Use the monolithic hooks instead.
  */
 
-export * from "./useWildduckUserQuota";
-export * from "./useWildduckUserLimits";
-export * from "./useWildduckUserEncryption";
-export * from "./useWildduckUserForwarding";
-export * from "./useWildduckUserSpam";
-export * from "./useWildduckUser2FA";
-export * from "./useWildduckUserProfile";
-export * from "./useWildduckGetUser";
-export * from "./useWildduckCreateUser";
-export * from "./useWildduckUpdateUser";
-export * from "./useWildduckDeleteUser";
+// No individual user hooks - all consolidated into useWildduckUser and useWildduckUsers
