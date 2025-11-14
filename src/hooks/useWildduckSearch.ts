@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { WildduckClient } from "../../network/wildduck-client";
+import { WildduckClient } from "../network/wildduck-client";
 import type {
   NetworkClient,
   WildduckConfig,
   WildduckUserAuth,
 } from "@sudobility/types";
 
-export interface UseWildduckSearchMessagesParams {
+export interface UseWildduckSearchParams {
   wildduckUserAuth?: WildduckUserAuth;
   query?: string;
   limit?: number;
@@ -23,10 +23,10 @@ export interface UseWildduckSearchMessagesParams {
  * @param params - Query parameters including wildduckUserAuth, query string, and pagination options
  * @returns React Query result with search results
  */
-export const useWildduckSearchMessages = (
+export const useWildduckSearch = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  params: UseWildduckSearchMessagesParams = {},
+  params: UseWildduckSearchParams = {},
 ) => {
   const { wildduckUserAuth, query, limit = 50, page = 1 } = params;
 
@@ -64,6 +64,4 @@ export const useWildduckSearchMessages = (
   });
 };
 
-export type UseWildduckSearchMessagesReturn = ReturnType<
-  typeof useWildduckSearchMessages
->;
+export type UseWildduckSearchReturn = ReturnType<typeof useWildduckSearch>;

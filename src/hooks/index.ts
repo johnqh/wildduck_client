@@ -13,19 +13,13 @@ export * from "./useWildduckUser"; // Single user + all settings
 // Collection hooks (for list/search/create operations)
 export * from "./useWildduckMessages"; // Messages list and operations
 export * from "./useWildduckUsers"; // Users list and create
+export * from "./useWildduckSearch"; // Search messages
 
 // ============================================================================
 // Individual endpoint hooks (deprecated - use monolithic hooks instead)
 // ============================================================================
 
-// Messages API hooks (only specialized hooks remaining)
-export * from "./messages";
-
-// Users API hooks - consolidated into useWildduckUser and useWildduckUsers
-// (no individual exports needed)
-
-// Addresses API hooks - consolidated into useWildduckAddresses
-// (no individual exports needed)
+// All specialized hooks have been consolidated into monolithic hooks
 
 // ============================================================================
 // Legacy monolithic hooks (deprecated - use individual hooks instead)
