@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   NetworkClient,
   Optional,
   WildduckConfig,
+  WildduckCreateUserRequest,
+  WildduckCreateUserResponse,
   WildduckUser,
   WildduckUserAuth,
 } from "@sudobility/types";
@@ -18,6 +20,12 @@ interface UseWildduckUsersReturn {
     query?: string,
     limit?: number,
   ) => Promise<{ users: WildduckUser[]; total: number }>;
+  createUser: (
+    params: WildduckCreateUserRequest,
+  ) => Promise<WildduckCreateUserResponse>;
+  isCreating: boolean;
+  createError: Optional<Error>;
+  refresh: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -37,6 +45,10 @@ const useWildduckUsers = (
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Optional<string>>(null);
+  const [lastFetchParams, setLastFetchParams] = useState<{
+    query?: string | undefined;
+    limit?: number | undefined;
+  } | null>(null);
 
   // Create API instance
   const api = useMemo(
@@ -115,6 +127,9 @@ const useWildduckUsers = (
         // Update cache
         queryClient.setQueryData(["wildduck-users", query, limit], result);
 
+        // Save fetch params for refresh
+        setLastFetchParams({ query: query || undefined, limit });
+
         return result;
       } catch (err) {
         const errorMessage =
@@ -147,7 +162,57 @@ const useWildduckUsers = (
     [api, queryClient, devMode],
   );
 
-  const clearError = useCallback(() => setError(null), []);
+  // Create user mutation
+  const createMutation = useMutation({
+    mutationKey: [
+      "wildduck-create-user",
+      config.cloudflareWorkerUrl || config.backendUrl,
+    ],
+    mutationFn: async (
+      params: WildduckCreateUserRequest,
+    ): Promise<WildduckCreateUserResponse> => {
+      try {
+        return await api.createUser(params);
+      } catch (err) {
+        if (devMode) {
+          return {
+            success: true,
+            id: `mock-user-${Date.now()}`,
+          };
+        }
+        console.error("Failed to create user:", err);
+        throw err;
+      }
+    },
+    onSuccess: async () => {
+      // Invalidate users list
+      queryClient.invalidateQueries({
+        queryKey: ["wildduck-users"],
+      });
+      // Auto-refresh users list
+      if (lastFetchParams) {
+        await getUsers(lastFetchParams.query, lastFetchParams.limit);
+      }
+    },
+  });
+
+  const createUser = useCallback(
+    async (params: WildduckCreateUserRequest) => {
+      return createMutation.mutateAsync(params);
+    },
+    [createMutation],
+  );
+
+  const refresh = useCallback(async (): Promise<void> => {
+    if (lastFetchParams) {
+      await getUsers(lastFetchParams.query, lastFetchParams.limit);
+    }
+  }, [lastFetchParams, getUsers]);
+
+  const clearError = useCallback(() => {
+    setError(null);
+    createMutation.reset();
+  }, [createMutation]);
 
   return useMemo(
     () => ({
@@ -155,9 +220,23 @@ const useWildduckUsers = (
       error,
       getUser,
       getUsers,
+      createUser,
+      isCreating: createMutation.isPending,
+      createError: createMutation.error,
+      refresh,
       clearError,
     }),
-    [isLoading, error, getUser, getUsers, clearError],
+    [
+      isLoading,
+      error,
+      getUser,
+      getUsers,
+      createUser,
+      createMutation.isPending,
+      createMutation.error,
+      refresh,
+      clearError,
+    ],
   );
 };
 

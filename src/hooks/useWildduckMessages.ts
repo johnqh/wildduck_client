@@ -282,11 +282,19 @@ const useWildduckMessages = (
         return { success: false, id: "" };
       }
     },
-    onSuccess: (_, variables) => {
-      // Invalidate messages queries to refetch
+    onSuccess: async (_, variables) => {
+      // Invalidate messages queries
       queryClient.invalidateQueries({
         queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
+      // Auto-refresh messages list
+      if (lastFetchParams) {
+        await getMessages(
+          lastFetchParams.wildduckUserAuth,
+          lastFetchParams.mailboxId,
+          lastFetchParams.options,
+        );
+      }
     },
   });
 
@@ -323,7 +331,7 @@ const useWildduckMessages = (
         return { success: false };
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate both message detail and messages list
       queryClient.invalidateQueries({
         queryKey: [
@@ -340,6 +348,14 @@ const useWildduckMessages = (
           variables.mailboxId,
         ],
       });
+      // Auto-refresh messages list
+      if (lastFetchParams) {
+        await getMessages(
+          lastFetchParams.wildduckUserAuth,
+          lastFetchParams.mailboxId,
+          lastFetchParams.options,
+        );
+      }
     },
   });
 
@@ -373,7 +389,7 @@ const useWildduckMessages = (
         return { success: false };
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate both message detail and messages list
       queryClient.invalidateQueries({
         queryKey: [
@@ -390,6 +406,14 @@ const useWildduckMessages = (
           variables.mailboxId,
         ],
       });
+      // Auto-refresh messages list
+      if (lastFetchParams) {
+        await getMessages(
+          lastFetchParams.wildduckUserAuth,
+          lastFetchParams.mailboxId,
+          lastFetchParams.options,
+        );
+      }
     },
   });
 
@@ -426,7 +450,7 @@ const useWildduckMessages = (
         return { success: false };
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate both message detail and messages list for all mailboxes
       queryClient.invalidateQueries({
         queryKey: [
@@ -442,6 +466,14 @@ const useWildduckMessages = (
       queryClient.invalidateQueries({
         queryKey: ["wildduck-mailboxes", variables.wildduckUserAuth.userId],
       });
+      // Auto-refresh messages list
+      if (lastFetchParams) {
+        await getMessages(
+          lastFetchParams.wildduckUserAuth,
+          lastFetchParams.mailboxId,
+          lastFetchParams.options,
+        );
+      }
     },
   });
 
