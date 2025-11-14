@@ -7,10 +7,8 @@
  * - useWildduckMessages (collection-level: list, send, upload)
  * - useWildduckMessage (singular-level: get, update, delete, forward, submit)
  *
- * Only specialized hooks that remain:
- * - useWildduckSearchMessages (different query pattern)
- * - useWildduckUploadMessage (kept for backward compatibility, use useWildduckMessages.uploadMessage instead)
+ * Only specialized hook remaining:
+ * - useWildduckSearchMessages (different query pattern - not in monolithic hooks)
  */
 
 export * from "./useWildduckSearchMessages";
-export * from "./useWildduckUploadMessage";
