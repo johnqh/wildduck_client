@@ -351,10 +351,6 @@ class WildduckClient {
     if (options?.showHidden) queryParams.append("showHidden", "true");
     if (options?.counters) queryParams.append("counters", "true");
     if (options?.sizes) queryParams.append("sizes", "true");
-    if (options?.limit) queryParams.append("limit", options.limit.toString());
-    if (options?.page) queryParams.append("page", options.page.toString());
-    if (options?.next) queryParams.append("next", options.next);
-    if (options?.previous) queryParams.append("previous", options.previous);
 
     const query = queryParams.toString();
     const endpoint = `/users/${validatedUserId}/mailboxes${query ? `?${query}` : ""}`;
