@@ -12,7 +12,6 @@ export * from "./useWildduckUser"; // Single user + all settings
 
 // Collection hooks (for list/search/create operations)
 export * from "./useWildduckMessages"; // Messages list and operations
-export * from "./useWildduckUsers"; // Users list and create
 export * from "./useWildduckSearch"; // Search messages
 
 // ============================================================================
@@ -27,7 +26,6 @@ export * from "./useWildduckSearch"; // Search messages
 export * from "./useWildduckSettings";
 export * from "./useWildduckMessages"; // Deprecated - use individual message hooks
 export * from "./useWildduckMailboxes"; // Deprecated - use individual mailbox hooks
-export * from "./useWildduckUsers"; // Deprecated - use individual user hooks
 export * from "./useWildduckFilters";
 export * from "./useWildduckAddresses"; // Deprecated - use useWildduckGetAddresses
 export * from "./useWildduckAuth";

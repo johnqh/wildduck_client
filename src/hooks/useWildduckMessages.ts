@@ -1,23 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
+  GetMessagesRequest,
   NetworkClient,
   Optional,
   WildduckConfig,
   WildduckMessage,
   WildduckMessageResponse,
+  WildduckSubmitMessageRequest,
+  WildduckSuccessResponse,
   WildduckUpdateMessageRequest,
+  WildduckUpdateMessageResponse,
+  WildduckUploadMessageRequest,
   WildduckUserAuth,
 } from "@sudobility/types";
 import { useCallback, useMemo, useState } from "react";
 import { WildduckClient } from "../network/wildduck-client";
 
-interface GetMessagesOptions {
-  limit?: number;
-  page?: number;
-  order?: "asc" | "desc";
-  search?: string;
-  thread?: string;
-}
+type GetMessagesOptions = Omit<GetMessagesRequest, "sess" | "ip">;
 
 interface SendMessageParams {
   from?: string;
@@ -29,11 +28,16 @@ interface SendMessageParams {
   html?: string;
   attachments?: Array<{
     filename: string;
-    content: string | Buffer;
+    content: string;
     contentType?: string;
+    cid?: string;
   }>;
+  files?: string[];
+  headers?: Array<{ key: string; value: string }>;
   inReplyTo?: string;
   references?: string[];
+  sess?: string;
+  ip?: string;
 }
 
 interface UseWildduckMessagesReturn {
@@ -61,7 +65,12 @@ interface UseWildduckMessagesReturn {
   sendMessage: (
     wildduckUserAuth: WildduckUserAuth,
     params: SendMessageParams,
-  ) => Promise<{ success: boolean; id: string }>;
+  ) => Promise<{
+    success: boolean;
+    id: number;
+    mailbox: string;
+    queueId: string;
+  }>;
   isSending: boolean;
   sendError: Optional<Error>;
 
@@ -69,7 +78,7 @@ interface UseWildduckMessagesReturn {
   uploadMessage: (
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
-    params: any,
+    params: WildduckUploadMessageRequest,
   ) => Promise<{ success: boolean; id: number; mailbox: string }>;
   isUploading: boolean;
   uploadError: Optional<Error>;
@@ -80,7 +89,7 @@ interface UseWildduckMessagesReturn {
     mailboxId: string,
     messageId: string,
     params: WildduckUpdateMessageRequest,
-  ) => Promise<{ success: boolean }>;
+  ) => Promise<WildduckUpdateMessageResponse>;
   isUpdating: boolean;
   updateError: Optional<Error>;
 
@@ -89,7 +98,7 @@ interface UseWildduckMessagesReturn {
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
     messageId: string,
-  ) => Promise<{ success: boolean }>;
+  ) => Promise<WildduckSuccessResponse>;
   isDeleting: boolean;
   deleteError: Optional<Error>;
 
@@ -99,7 +108,7 @@ interface UseWildduckMessagesReturn {
     mailboxId: string,
     messageId: string,
     targetMailbox: string,
-  ) => Promise<{ success: boolean }>;
+  ) => Promise<WildduckSuccessResponse>;
   isMoving: boolean;
   moveError: Optional<Error>;
 
@@ -146,23 +155,16 @@ const useWildduckMessages = (
       options: GetMessagesOptions = {},
     ): Promise<WildduckMessage[]> => {
       try {
-        const getMessagesOptions: any = {};
-        if (options.limit !== undefined)
-          getMessagesOptions.limit = options.limit;
-        if (options.page !== undefined) getMessagesOptions.page = options.page;
-        if (options.order !== undefined)
-          getMessagesOptions.order = options.order;
-
         const response = await api.getMessages(
           wildduckUserAuth,
           mailboxId,
-          getMessagesOptions,
+          options,
         );
-        const messageList = response.results || [];
+        const messageList = response.results ?? [];
 
         setMessages(messageList);
-        setTotalMessages(response.total || 0);
-        setCurrentPage(response.page || 1);
+        setTotalMessages(response.total ?? 0);
+        setCurrentPage(response.page ?? 1);
         setLastFetchParams({ wildduckUserAuth, mailboxId, options });
 
         // Update cache
@@ -228,8 +230,13 @@ const useWildduckMessages = (
     }: {
       wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
-      params: any;
-    }): Promise<{ success: boolean; id: number; mailbox: string }> => {
+      params: WildduckUploadMessageRequest;
+    }): Promise<{
+      success: boolean;
+      id: number;
+      mailbox: string;
+      size?: number;
+    }> => {
       try {
         const response = await api.uploadMessage(
           wildduckUserAuth,
@@ -237,11 +244,22 @@ const useWildduckMessages = (
           params,
         );
 
-        return {
+        const uploadResult: {
+          success: boolean;
+          id: number;
+          mailbox: string;
+          size?: number;
+        } = {
           success: response.success,
           id: response.message.id,
           mailbox: response.message.mailbox,
         };
+
+        if (typeof response.message.size === "number") {
+          uploadResult.size = response.message.size;
+        }
+
+        return uploadResult;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to upload message";
@@ -277,31 +295,51 @@ const useWildduckMessages = (
     }: {
       wildduckUserAuth: WildduckUserAuth;
       params: SendMessageParams;
-    }): Promise<{ success: boolean; id: string }> => {
+    }): Promise<{
+      success: boolean;
+      id: number;
+      mailbox: string;
+      queueId: string;
+    }> => {
       try {
-        // Convert SendMessageParams to WildduckSubmitMessageRequest
-        const submitRequest: any = {
-          from: params.from ? { address: params.from } : undefined,
+        const normalizedAttachments = params.attachments?.map((attachment) => ({
+          filename: attachment.filename,
+          content: attachment.content,
+          contentType: attachment.contentType ?? "application/octet-stream",
+          ...(attachment.cid && { cid: attachment.cid }),
+        }));
+
+        const submitRequest = {
           to: params.to,
           cc: params.cc,
           bcc: params.bcc,
           subject: params.subject,
           text: params.text,
           html: params.html,
-          attachments: params.attachments,
-        };
+          attachments: normalizedAttachments,
+          files: params.files,
+          headers: params.headers,
+          sess: params.sess,
+          ip: params.ip,
+          from: params.from ? { address: params.from } : undefined,
+        } as WildduckSubmitMessageRequest;
 
         const response = await api.submitMessage(
           wildduckUserAuth,
           submitRequest,
         );
 
-        return { success: response.success, id: response.message.id };
+        return {
+          success: response.success,
+          id: response.message.id,
+          mailbox: response.message.mailbox,
+          queueId: response.message.queueId,
+        };
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to send message";
         console.error(errorMessage);
-        return { success: false, id: "" };
+        return { success: false, id: 0, mailbox: "", queueId: "" };
       }
     },
     onSuccess: async (_, variables) => {
@@ -336,7 +374,7 @@ const useWildduckMessages = (
       mailboxId: string;
       messageId: string;
       params: WildduckUpdateMessageRequest;
-    }): Promise<{ success: boolean }> => {
+    }): Promise<WildduckUpdateMessageResponse> => {
       try {
         const response = await api.updateMessage(
           wildduckUserAuth,
@@ -345,7 +383,7 @@ const useWildduckMessages = (
           params,
         );
 
-        return { success: response.success };
+        return response;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update message";
@@ -395,7 +433,7 @@ const useWildduckMessages = (
       wildduckUserAuth: WildduckUserAuth;
       mailboxId: string;
       messageId: string;
-    }): Promise<{ success: boolean }> => {
+    }): Promise<WildduckSuccessResponse> => {
       try {
         const response = await api.deleteMessage(
           wildduckUserAuth,
@@ -403,7 +441,7 @@ const useWildduckMessages = (
           Number(messageId),
         );
 
-        return { success: response.success };
+        return response;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete message";
@@ -455,13 +493,13 @@ const useWildduckMessages = (
       mailboxId: string;
       messageId: string;
       targetMailbox: string;
-    }): Promise<{ success: boolean }> => {
+    }): Promise<WildduckSuccessResponse> => {
       try {
         const response = await api.updateMessage(
           wildduckUserAuth,
           mailboxId,
           Number(messageId),
-          { mailbox: targetMailbox },
+          { moveTo: targetMailbox },
         );
 
         return { success: response.success };
@@ -513,11 +551,13 @@ const useWildduckMessages = (
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
     sendMutation.isPending ||
+    uploadMutation.isPending ||
     updateMutation.isPending ||
     deleteMutation.isPending ||
     moveMutation.isPending;
   const error: Optional<string> =
     sendMutation.error?.message ||
+    uploadMutation.error?.message ||
     updateMutation.error?.message ||
     deleteMutation.error?.message ||
     moveMutation.error?.message ||
@@ -533,7 +573,7 @@ const useWildduckMessages = (
     async (
       wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
-      params: any,
+      params: WildduckUploadMessageRequest,
     ) => uploadMutation.mutateAsync({ wildduckUserAuth, mailboxId, params }),
     [uploadMutation],
   );

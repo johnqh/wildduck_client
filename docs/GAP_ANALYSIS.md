@@ -96,13 +96,6 @@ The core client (`WildDuckAPI` class) implements the following methods:
 - PUT /settings/:key (update setting)
 - DELETE /settings/:key (delete setting)
 
-#### useWildduckUsers
-**Implemented operations:**
-- GET /users/:user (get user)
-- GET /users (list users)
-
----
-
 ## Section 2: Missing API Endpoints
 
 ### 2.1 Authentication (Missing: 0 endpoints)
@@ -491,7 +484,6 @@ These endpoints are less commonly needed:
 - New `getMessageFromMailbox()` method in WildDuckAPI
 - New `downloadAttachment()` method in WildDuckAPI
 - Updated types for user creation and message upload
-- Updated useWildduckUsers hook with create user mutation
 
 #### Phase 2: Enhanced Email Features (High Priority)
 **Timeline:** 1-2 weeks
@@ -516,7 +508,6 @@ These endpoints are less commonly needed:
 - Webhooks
 
 **Deliverables:**
-- Enhanced `useWildduckUsers` hook with update/resolve
 - New `useWildduckASPs` hook
 - New `useWildduckStorage` hook
 - New `useWildduckWebhooks` hook

@@ -42,7 +42,9 @@
       "Bash(npm audit)",
       "Bash(npm run clean:*)",
       "Bash(npm ls:*)",
-      "Bash(do grep -c wildduckUserAuth $file)"
+      "Bash(do grep -c wildduckUserAuth $file)",
+      "Bash(xargs:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []

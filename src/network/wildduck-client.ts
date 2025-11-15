@@ -30,6 +30,10 @@ import type {
   WildduckUserAuth,
   WildduckUserResponse,
 } from "@sudobility/types";
+import type {
+  WildduckSearchMessagesResponse,
+  WildduckSearchQueryParams,
+} from "../types/wildduck-search";
 
 // Platform-specific globals
 declare const sessionStorage: Storage;
@@ -45,16 +49,21 @@ const getWildduckStorageKeys = (username: string) => ({
 
 // URL search params utility
 const createURLSearchParams = () => {
-  const params: Record<string, string> = {};
+  const params: Record<string, string[]> = {};
   return {
     append: (key: string, value: string) => {
-      params[key] = value;
+      if (!params[key]) {
+        params[key] = [];
+      }
+      params[key].push(value);
     },
     toString: () => {
       return Object.entries(params)
-        .map(
-          ([key, value]) =>
-            `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+        .flatMap(([key, values]) =>
+          values.map(
+            (value) =>
+              `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+          ),
         )
         .join("&");
     },
@@ -402,28 +411,58 @@ class WildduckClient {
   // Search messages across all mailboxes
   async searchMessages(
     wildduckUserAuth: WildduckUserAuth,
-    query: string,
-    options?: {
-      limit?: number;
-      page?: number;
-    },
-  ): Promise<{ results?: unknown[]; total?: number; page?: number }> {
+    params: WildduckSearchQueryParams & { q: string },
+  ): Promise<WildduckSearchMessagesResponse> {
     const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
     const queryParams = createURLSearchParams();
-    queryParams.append("q", query);
-    if (options?.limit) queryParams.append("limit", options.limit.toString());
-    if (options?.page) queryParams.append("page", options.page.toString());
+    if (params.q) queryParams.append("q", params.q);
+    if (params.mailbox) queryParams.append("mailbox", params.mailbox);
+    if (params.id) queryParams.append("id", params.id);
+    if (params.thread) queryParams.append("thread", params.thread);
+    if (params.query) queryParams.append("query", params.query);
+    if (params.datestart) queryParams.append("datestart", params.datestart);
+    if (params.dateend) queryParams.append("dateend", params.dateend);
+    if (params.from) queryParams.append("from", params.from);
+    if (params.to) queryParams.append("to", params.to);
+    if (params.subject) queryParams.append("subject", params.subject);
+    if (params.minSize !== undefined)
+      queryParams.append("minSize", params.minSize.toString());
+    if (params.maxSize !== undefined)
+      queryParams.append("maxSize", params.maxSize.toString());
+    if (params.attachments !== undefined)
+      queryParams.append("attachments", String(params.attachments));
+    if (params.flagged !== undefined)
+      queryParams.append("flagged", String(params.flagged));
+    if (params.unseen !== undefined)
+      queryParams.append("unseen", String(params.unseen));
+    if (params.searchable !== undefined)
+      queryParams.append("searchable", String(params.searchable));
+    if (params.threadCounters !== undefined)
+      queryParams.append("threadCounters", String(params.threadCounters));
+    if (params.limit !== undefined)
+      queryParams.append("limit", params.limit.toString());
+    if (params.page !== undefined)
+      queryParams.append("page", params.page.toString());
+    if (params.order) queryParams.append("order", params.order);
+    if (params.next) queryParams.append("next", params.next);
+    if (params.previous) queryParams.append("previous", params.previous);
+    if (params.includeHeaders) {
+      const headers = Array.isArray(params.includeHeaders)
+        ? params.includeHeaders
+        : [params.includeHeaders];
+      headers.forEach((header) => queryParams.append("includeHeaders", header));
+    }
+    if (params.or && Object.keys(params.or).length > 0) {
+      queryParams.append("or", JSON.stringify(params.or));
+    }
 
     const queryString = queryParams.toString();
-    const endpoint = `/users/${validatedUserId}/search?${queryString}`;
+    const endpoint = `/users/${validatedUserId}/search${queryString ? `?${queryString}` : ""}`;
 
-    return this.request<{ results?: unknown[]; total?: number; page?: number }>(
-      endpoint,
-      {
-        wildduckUserAuth,
-      },
-    );
+    return this.request<WildduckSearchMessagesResponse>(endpoint, {
+      wildduckUserAuth,
+    });
   }
 
   // Get a specific message by ID
@@ -1313,46 +1352,6 @@ class WildduckClient {
 
     return this.request<{ success: boolean }>(
       `/users/${validatedUserId}/addresses/${addressId}`,
-      {
-        method: "DELETE",
-        wildduckUserAuth,
-      },
-    );
-  }
-
-  /**
-   * Register forwarded address
-   * @param wildduckUserAuth - User authentication
-   * @param params - Registration parameters
-   * @returns Registration result
-   */
-  async registerForwardedAddress(
-    wildduckUserAuth: WildduckUserAuth,
-    params: any,
-  ): Promise<any> {
-    const validatedUserId = validateUserId(wildduckUserAuth.userId);
-
-    return this.request(`/users/${validatedUserId}/addresses/forwarded`, {
-      method: "POST",
-      body: params,
-      wildduckUserAuth,
-    });
-  }
-
-  /**
-   * Delete forwarded address
-   * @param wildduckUserAuth - User authentication
-   * @param addressId - Address ID
-   * @returns Success response
-   */
-  async deleteForwardedAddress(
-    wildduckUserAuth: WildduckUserAuth,
-    addressId: string,
-  ): Promise<{ success: boolean }> {
-    const validatedUserId = validateUserId(wildduckUserAuth.userId);
-
-    return this.request<{ success: boolean }>(
-      `/users/${validatedUserId}/addresses/forwarded/${addressId}`,
       {
         method: "DELETE",
         wildduckUserAuth,

@@ -7,6 +7,7 @@ import type {
   Optional,
   WildduckConfig,
   WildduckForwardMessageRequest,
+  WildduckMessageResponse,
   WildduckSuccessResponse,
   WildduckUpdateMessageRequest,
   WildduckUpdateMessageResponse,
@@ -22,14 +23,14 @@ export interface UseWildduckMessageParams {
 
 export interface UseWildduckMessageReturn {
   // Query data
-  message: any;
+  message: WildduckMessageResponse | undefined;
   messageSource: string | undefined;
   isLoading: boolean;
   isError: boolean;
   error: Optional<Error>;
 
   // Query functions
-  getMessage: () => Promise<any>;
+  getMessage: () => Promise<WildduckMessageResponse | undefined>;
   getMessageSource: () => Promise<string | undefined>;
   getAttachment: (attachmentId: string) => Promise<any>;
 
@@ -113,14 +114,48 @@ export const useWildduckMessage = (
         return await api.getMessage(wildduckUserAuth, mailboxId, messageId);
       } catch (err) {
         if (devMode) {
+          const mock = WildduckMockData.getMessageQuery(
+            messageId,
+            wildduckUserAuth.userId,
+          );
           return {
             success: true,
-            data: WildduckMockData.getMessageQuery(
-              messageId,
-              wildduckUserAuth.userId,
-            ),
-            error: null,
-          };
+            id: Number(messageId) || Date.now(),
+            mailbox: mock.mailbox,
+            user: wildduckUserAuth.userId,
+            thread: mock.thread || "mock-thread",
+            subject: mock.envelope?.subject || "Mock Subject",
+            messageId: mock.envelope?.messageId || messageId,
+            date: mock.date || new Date().toISOString(),
+            size: mock.size || 0,
+            seen: mock.seen || false,
+            deleted: mock.deleted || false,
+            flagged: mock.flagged || false,
+            draft: mock.draft || false,
+            answered: mock.answered || false,
+            forwarded: mock.forwarded || false,
+            to:
+              mock.envelope?.to?.map((addr: any) => ({
+                address: addr.address,
+                ...(addr.name && { name: addr.name }),
+              })) || [],
+            cc: [],
+            bcc: [],
+            attachments: [],
+            references: [],
+            contentType: { value: "text/plain", params: {} },
+            intro: mock.intro,
+            text: mock.intro,
+            html: [mock.intro],
+            envelope: {
+              from: mock.envelope?.from?.[0]?.address || "mock@example.com",
+              rcpt:
+                mock.envelope?.to?.map((addr: any) => ({
+                  value: addr.address,
+                  formatted: `${addr.name || ""} <${addr.address}>`,
+                })) || [],
+            },
+          } as WildduckMessageResponse;
         }
         console.error("Failed to get message:", err);
         return undefined;

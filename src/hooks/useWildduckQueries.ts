@@ -19,7 +19,7 @@ import type {
   WildduckFilterListItem,
   WildduckHealthResponse,
   WildduckMailboxResponse,
-  WildduckMessage,
+  WildduckMessageResponse,
   WildduckMessagesResponse,
   WildduckUser,
   WildduckUserAuth,
@@ -27,6 +27,10 @@ import type {
 } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
 import { WildduckClient } from "../network/wildduck-client";
+import type {
+  WildduckSearchMessagesResponse,
+  WildduckSearchQueryParams,
+} from "../types/wildduck-search";
 
 interface WildduckUserSettings {
   // Define based on actual API response
@@ -309,73 +313,27 @@ const useWildduckMessage = (
   wildduckUserAuth: WildduckUserAuth,
   mailboxId: string,
   messageId: string,
-  options?: UseQueryOptions<WildduckMessage>,
-): UseQueryResult<WildduckMessage> => {
+  options?: UseQueryOptions<WildduckMessageResponse>,
+): UseQueryResult<WildduckMessageResponse> => {
   const api = useMemo(
     () => new WildduckClient(networkClient, config),
     [networkClient, config],
   );
 
-  const queryFn = useCallback(async (): Promise<WildduckMessage> => {
+  const queryFn = useCallback(async (): Promise<WildduckMessageResponse> => {
     const response = await api.getMessage(
       wildduckUserAuth,
       mailboxId,
       messageId,
     );
-    if (!response.success || !response.data) {
+    if (!response.success) {
       console.error(
         "[useWildduckQueries] getMessage error:",
         response.error || "Failed to fetch message",
       );
-      return undefined as any;
+      return response;
     }
-    const msg = response.data;
-    const result: WildduckMessage = {
-      id: msg.id,
-      mailbox: msg.mailbox,
-      thread: msg.thread || "",
-      to:
-        msg.to?.map((addr) => ({
-          address: addr.address || "",
-          ...(addr.name !== undefined && { name: addr.name }),
-        })) || [],
-      subject: msg.subject || "",
-      date: msg.date || "",
-      intro: msg.intro || "",
-      seen: msg.seen || false,
-      deleted: msg.deleted || false,
-      flagged: msg.flagged || false,
-      draft: msg.draft || false,
-      answered: msg.answered || false,
-      size: msg.size || 0,
-      ha: Array.isArray(msg.attachments) ? msg.attachments.length > 0 : false,
-      attachments: Array.isArray(msg.attachments)
-        ? msg.attachments.length > 0
-        : false,
-    };
-
-    if (msg.from) {
-      result.from = {
-        address: msg.from.address || "",
-        ...(msg.from.name !== undefined && { name: msg.from.name }),
-      };
-    }
-
-    if (msg.cc) {
-      result.cc = msg.cc.map((addr) => ({
-        address: addr.address || "",
-        ...(addr.name !== undefined && { name: addr.name }),
-      }));
-    }
-
-    if (msg.bcc) {
-      result.bcc = msg.bcc.map((addr) => ({
-        address: addr.address || "",
-        ...(addr.name !== undefined && { name: addr.name }),
-      }));
-    }
-
-    return result;
+    return response;
   }, [api, wildduckUserAuth, mailboxId, messageId]);
 
   const query = useQuery({
@@ -643,34 +601,36 @@ const useWildduckSearchMessages = (
   networkClient: NetworkClient,
   config: WildduckConfig,
   wildduckUserAuth: WildduckUserAuth,
-  mailboxId: string,
+  mailboxId: string | undefined,
   query: string,
-  searchOptions?: Record<string, unknown>,
-  queryOptions?: UseQueryOptions<WildduckMessagesResponse>,
-): UseQueryResult<WildduckMessagesResponse> => {
+  searchOptions?: WildduckSearchQueryParams,
+  queryOptions?: UseQueryOptions<WildduckSearchMessagesResponse>,
+): UseQueryResult<WildduckSearchMessagesResponse> => {
   const api = useMemo(
     () => new WildduckClient(networkClient, config),
     [networkClient, config],
   );
 
-  const queryFn = useCallback(async (): Promise<WildduckMessagesResponse> => {
-    const response = await api.getMessages(wildduckUserAuth, mailboxId, {
-      ...searchOptions,
-      q: query,
-    } as any);
-    return response;
-  }, [api, wildduckUserAuth, mailboxId, query, searchOptions]);
+  const queryFn =
+    useCallback(async (): Promise<WildduckSearchMessagesResponse> => {
+      const params = {
+        ...(mailboxId ? { mailbox: mailboxId } : {}),
+        ...(searchOptions || {}),
+        q: query,
+      };
+      return api.searchMessages(wildduckUserAuth, params);
+    }, [api, wildduckUserAuth, mailboxId, query, searchOptions]);
 
   const queryResult = useQuery({
     queryKey: queryKeys.wildduck.searchMessages(
       wildduckUserAuth.userId,
-      mailboxId,
+      mailboxId ?? "all",
       query,
-      searchOptions,
+      searchOptions || {},
     ),
     queryFn,
     staleTime: STALE_TIMES.MESSAGES,
-    enabled: !!(wildduckUserAuth && mailboxId && query),
+    enabled: !!(wildduckUserAuth && query),
     ...queryOptions,
   });
 

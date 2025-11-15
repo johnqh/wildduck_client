@@ -6,12 +6,14 @@ import type {
   WildduckConfig,
   WildduckUserAuth,
 } from "@sudobility/types";
+import type {
+  WildduckSearchMessagesResponse,
+  WildduckSearchQueryParams,
+} from "../types/wildduck-search";
 
-export interface UseWildduckSearchParams {
+export interface UseWildduckSearchParams extends WildduckSearchQueryParams {
   wildduckUserAuth?: WildduckUserAuth;
   query?: string;
-  limit?: number;
-  page?: number;
 }
 
 /**
@@ -28,37 +30,35 @@ export const useWildduckSearch = (
   config: WildduckConfig,
   params: UseWildduckSearchParams = {},
 ) => {
-  const { wildduckUserAuth, query, limit = 50, page = 1 } = params;
+  const { wildduckUserAuth, query, ...filters } = params;
+  const searchFilters = filters as WildduckSearchQueryParams;
 
   const api = useMemo(
     () => new WildduckClient(networkClient, config),
     [networkClient, config],
   );
 
-  return useQuery({
+  return useQuery<WildduckSearchMessagesResponse | undefined>({
     queryKey: [
       "wildduck-search-messages",
       wildduckUserAuth?.userId,
       query,
-      limit,
-      page,
+      searchFilters,
     ],
     queryFn: async () => {
       if (!wildduckUserAuth) {
         console.error("wildduckUserAuth is required");
-        return [];
+        return undefined;
       }
       if (!query) {
         console.error("query is required");
-        return [];
+        return undefined;
       }
 
-      const response = await api.searchMessages(wildduckUserAuth, query, {
-        limit,
-        page,
+      return api.searchMessages(wildduckUserAuth, {
+        ...searchFilters,
+        q: query,
       });
-
-      return response.results || [];
     },
     enabled: !!wildduckUserAuth && !!query,
   });
