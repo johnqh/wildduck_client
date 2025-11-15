@@ -101,6 +101,7 @@ const useWildduckHealth = (
  * @param config - Wildduck configuration
  * @param devMode - Development mode flag
  * @param filters - Optional filters for the query
+ * @param pageSize - Default page size for user queries (optional)
  * @param options - React Query options
  */
 const useWildduckUsersList = (
@@ -108,6 +109,7 @@ const useWildduckUsersList = (
   config: WildduckConfig,
   devMode: boolean = false,
   filters?: Record<string, unknown>,
+  pageSize?: number,
   options?: UseQueryOptions<WildduckUserListResponse>,
 ): UseQueryResult<WildduckUserListResponse> => {
   const api = useMemo(
@@ -117,7 +119,11 @@ const useWildduckUsersList = (
 
   const queryFn = useCallback(async (): Promise<WildduckUserListResponse> => {
     try {
-      const data = await api.getUsersList(filters);
+      const mergedFilters = {
+        ...(pageSize !== undefined && { limit: pageSize }),
+        ...filters,
+      };
+      const data = await api.getUsersList(mergedFilters);
       return data as WildduckUserListResponse;
     } catch (err) {
       if (devMode) {
@@ -126,7 +132,7 @@ const useWildduckUsersList = (
       console.error("[useWildduckQueries] getUsersList error:", err);
       return undefined as any;
     }
-  }, [api, filters, devMode]);
+  }, [api, filters, devMode, pageSize]);
 
   const query = useQuery({
     queryKey: queryKeys.wildduck.usersList(filters),
@@ -253,6 +259,7 @@ const useWildduckUserAddresses = (
  * @param wildduckUserAuth - User authentication info
  * @param mailboxId - Mailbox ID
  * @param filters - Optional filters
+ * @param pageSize - Default page size for message queries (optional)
  * @param options - React Query options
  */
 const useWildduckUserMessages = (
@@ -261,6 +268,7 @@ const useWildduckUserMessages = (
   wildduckUserAuth: WildduckUserAuth,
   mailboxId: string,
   filters?: Record<string, unknown>,
+  pageSize?: number,
   options?: UseQueryOptions<WildduckMessagesResponse>,
 ): UseQueryResult<WildduckMessagesResponse> => {
   const api = useMemo(
@@ -269,13 +277,17 @@ const useWildduckUserMessages = (
   );
 
   const queryFn = useCallback(async (): Promise<WildduckMessagesResponse> => {
+    const mergedFilters = {
+      ...(pageSize !== undefined && { limit: pageSize }),
+      ...filters,
+    };
     const response = await api.getMessages(
       wildduckUserAuth,
       mailboxId,
-      filters,
+      mergedFilters,
     );
     return response;
-  }, [api, wildduckUserAuth, mailboxId, filters]);
+  }, [api, wildduckUserAuth, mailboxId, filters, pageSize]);
 
   const query = useQuery({
     queryKey: queryKeys.wildduck.userMessages(
@@ -595,6 +607,7 @@ const useWildduckAuthStatus = (
  * @param mailboxId - Mailbox ID
  * @param query - Search query string
  * @param searchOptions - Optional search options
+ * @param pageSize - Default page size for search queries (optional)
  * @param queryOptions - React Query options
  */
 const useWildduckSearchMessages = (
@@ -604,6 +617,7 @@ const useWildduckSearchMessages = (
   mailboxId: string | undefined,
   query: string,
   searchOptions?: WildduckSearchQueryParams,
+  pageSize?: number,
   queryOptions?: UseQueryOptions<WildduckSearchMessagesResponse>,
 ): UseQueryResult<WildduckSearchMessagesResponse> => {
   const api = useMemo(
@@ -614,12 +628,13 @@ const useWildduckSearchMessages = (
   const queryFn =
     useCallback(async (): Promise<WildduckSearchMessagesResponse> => {
       const params = {
+        ...(pageSize !== undefined && { limit: pageSize }),
         ...(mailboxId ? { mailbox: mailboxId } : {}),
         ...(searchOptions || {}),
         q: query,
       };
       return api.searchMessages(wildduckUserAuth, params);
-    }, [api, wildduckUserAuth, mailboxId, query, searchOptions]);
+    }, [api, wildduckUserAuth, mailboxId, query, searchOptions, pageSize]);
 
   const queryResult = useQuery({
     queryKey: queryKeys.wildduck.searchMessages(

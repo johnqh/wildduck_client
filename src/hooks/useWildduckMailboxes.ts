@@ -232,9 +232,7 @@ const useWildduckMailboxes = (
     },
     onSuccess: async () => {
       // Automatically refresh mailboxes after creation
-      if (wildduckUserAuth) {
-        await getMailboxes(wildduckUserAuth, { counters: true });
-      }
+      await refresh();
     },
   });
 
@@ -273,9 +271,7 @@ const useWildduckMailboxes = (
     },
     onSuccess: async () => {
       // Automatically refresh mailboxes after update
-      if (wildduckUserAuth) {
-        await getMailboxes(wildduckUserAuth, { counters: true });
-      }
+      await refresh();
     },
   });
 
@@ -308,9 +304,7 @@ const useWildduckMailboxes = (
     },
     onSuccess: async () => {
       // Automatically refresh mailboxes after deletion
-      if (wildduckUserAuth) {
-        await getMailboxes(wildduckUserAuth, { counters: true });
-      }
+      await refresh();
     },
   });
 

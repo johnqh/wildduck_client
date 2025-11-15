@@ -129,9 +129,9 @@ const useWildduckAutoReply = (
         return { success: false };
       }
     },
-    onSuccess: async (_, variables) => {
+    onSuccess: async () => {
       // Automatically refresh autoreply after update
-      await getAutoreply(variables.wildduckUserAuth);
+      await refresh();
     },
   });
 
@@ -158,9 +158,9 @@ const useWildduckAutoReply = (
         return { success: false };
       }
     },
-    onSuccess: async (_, wildduckUserAuth) => {
+    onSuccess: async () => {
       // Automatically refresh autoreply after deletion
-      await getAutoreply(wildduckUserAuth);
+      await refresh();
     },
   });
 

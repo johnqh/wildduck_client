@@ -235,11 +235,13 @@ const useWildduckAddresses = (
         return { success: false, id: "" };
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate addresses query to refetch
       queryClient.invalidateQueries({
         queryKey: ["wildduck-addresses", variables.wildduckUserAuth.userId],
       });
+      // Refresh addresses list
+      await refresh(variables.wildduckUserAuth);
     },
   });
 
@@ -282,11 +284,13 @@ const useWildduckAddresses = (
         return { success: false };
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate addresses query to refetch
       queryClient.invalidateQueries({
         queryKey: ["wildduck-addresses", variables.wildduckUserAuth.userId],
       });
+      // Refresh addresses list
+      await refresh(variables.wildduckUserAuth);
     },
   });
 
@@ -323,11 +327,13 @@ const useWildduckAddresses = (
         return { success: false };
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate addresses query to refetch
       queryClient.invalidateQueries({
         queryKey: ["wildduck-addresses", variables.wildduckUserAuth.userId],
       });
+      // Refresh addresses list
+      await refresh(variables.wildduckUserAuth);
     },
   });
 

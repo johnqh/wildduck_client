@@ -48,6 +48,12 @@ interface UseWildduckMessagesReturn {
   isLoading: boolean;
   error: Optional<string>;
 
+  // Pagination state
+  nextCursor: string | false;
+  previousCursor: string | false;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+
   // Query functions
   getMessages: (
     wildduckUserAuth: WildduckUserAuth,
@@ -60,6 +66,11 @@ interface UseWildduckMessagesReturn {
     messageId: string,
   ) => Promise<WildduckMessageResponse>;
   refresh: () => Promise<void>;
+
+  // Pagination functions
+  next: () => Promise<WildduckMessage[]>;
+  previous: () => Promise<WildduckMessage[]>;
+  resetMessages: () => void;
 
   // Send mutation
   sendMessage: (
@@ -123,11 +134,13 @@ interface UseWildduckMessagesReturn {
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
  * @param _devMode - Development mode flag (unused)
+ * @param pageSize - Default page size for message queries (optional)
  */
 const useWildduckMessages = (
   networkClient: NetworkClient,
   config: WildduckConfig,
   _devMode: boolean = false,
+  pageSize?: number,
 ): UseWildduckMessagesReturn => {
   const queryClient = useQueryClient();
 
@@ -141,6 +154,8 @@ const useWildduckMessages = (
   const [messages, setMessages] = useState<WildduckMessage[]>([]);
   const [totalMessages, setTotalMessages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [nextCursor, setNextCursor] = useState<string | false>(false);
+  const [previousCursor, setPreviousCursor] = useState<string | false>(false);
   const [lastFetchParams, setLastFetchParams] = useState<{
     wildduckUserAuth: WildduckUserAuth;
     mailboxId: string;
@@ -155,16 +170,22 @@ const useWildduckMessages = (
       options: GetMessagesOptions = {},
     ): Promise<WildduckMessage[]> => {
       try {
+        const mergedOptions = {
+          ...(pageSize !== undefined && { limit: pageSize }),
+          ...options,
+        };
         const response = await api.getMessages(
           wildduckUserAuth,
           mailboxId,
-          options,
+          mergedOptions,
         );
         const messageList = response.results ?? [];
 
         setMessages(messageList);
         setTotalMessages(response.total ?? 0);
         setCurrentPage(response.page ?? 1);
+        setNextCursor(response.nextCursor ?? false);
+        setPreviousCursor(response.previousCursor ?? false);
         setLastFetchParams({ wildduckUserAuth, mailboxId, options });
 
         // Update cache
@@ -183,7 +204,7 @@ const useWildduckMessages = (
         return [];
       }
     },
-    [api, queryClient],
+    [api, queryClient, pageSize],
   );
 
   // Get single message function (imperative)
@@ -273,13 +294,7 @@ const useWildduckMessages = (
         queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
       // Auto-refresh messages list
-      if (lastFetchParams) {
-        await getMessages(
-          lastFetchParams.wildduckUserAuth,
-          lastFetchParams.mailboxId,
-          lastFetchParams.options,
-        );
-      }
+      await refresh();
     },
   });
 
@@ -348,13 +363,7 @@ const useWildduckMessages = (
         queryKey: ["wildduck-messages", variables.wildduckUserAuth.userId],
       });
       // Auto-refresh messages list
-      if (lastFetchParams) {
-        await getMessages(
-          lastFetchParams.wildduckUserAuth,
-          lastFetchParams.mailboxId,
-          lastFetchParams.options,
-        );
-      }
+      await refresh();
     },
   });
 
@@ -466,12 +475,22 @@ const useWildduckMessages = (
           variables.mailboxId,
         ],
       });
-      // Auto-refresh messages list
+      // Optimized: Remove deleted message from local state instead of refetching
+      const updatedMessages = messages.filter(
+        (msg) => msg.id.toString() !== variables.messageId,
+      );
+      setMessages(updatedMessages);
+      setTotalMessages((prev) => Math.max(0, prev - 1));
+
+      // Update cache
       if (lastFetchParams) {
-        await getMessages(
-          lastFetchParams.wildduckUserAuth,
-          lastFetchParams.mailboxId,
-          lastFetchParams.options,
+        queryClient.setQueryData(
+          [
+            "wildduck-messages",
+            lastFetchParams.wildduckUserAuth.userId,
+            lastFetchParams.mailboxId,
+          ],
+          updatedMessages,
         );
       }
     },
@@ -526,12 +545,22 @@ const useWildduckMessages = (
       queryClient.invalidateQueries({
         queryKey: ["wildduck-mailboxes", variables.wildduckUserAuth.userId],
       });
-      // Auto-refresh messages list
+      // Optimized: Remove moved message from local state instead of refetching
+      const updatedMessages = messages.filter(
+        (msg) => msg.id.toString() !== variables.messageId,
+      );
+      setMessages(updatedMessages);
+      setTotalMessages((prev) => Math.max(0, prev - 1));
+
+      // Update cache for current mailbox
       if (lastFetchParams) {
-        await getMessages(
-          lastFetchParams.wildduckUserAuth,
-          lastFetchParams.mailboxId,
-          lastFetchParams.options,
+        queryClient.setQueryData(
+          [
+            "wildduck-messages",
+            lastFetchParams.wildduckUserAuth.userId,
+            lastFetchParams.mailboxId,
+          ],
+          updatedMessages,
         );
       }
     },
@@ -547,6 +576,121 @@ const useWildduckMessages = (
       );
     }
   }, [lastFetchParams, getMessages]);
+
+  // Next page function - appends new messages to the end
+  const next = useCallback(async (): Promise<WildduckMessage[]> => {
+    if (!lastFetchParams) {
+      console.error("No previous fetch params available");
+      return [];
+    }
+    if (!nextCursor) {
+      console.error("No next page available");
+      return messages;
+    }
+
+    try {
+      const mergedOptions = {
+        ...(pageSize !== undefined && { limit: pageSize }),
+        ...lastFetchParams.options,
+        next: nextCursor as string,
+      };
+
+      const response = await api.getMessages(
+        lastFetchParams.wildduckUserAuth,
+        lastFetchParams.mailboxId,
+        mergedOptions,
+      );
+
+      const newMessages = response.results ?? [];
+
+      // Append new messages to existing list
+      const updatedMessages = [...messages, ...newMessages];
+      setMessages(updatedMessages);
+      setTotalMessages(response.total ?? 0);
+      setCurrentPage(response.page ?? 1);
+      setNextCursor(response.nextCursor ?? false);
+      setPreviousCursor(response.previousCursor ?? false);
+
+      // Update cache
+      queryClient.setQueryData(
+        [
+          "wildduck-messages",
+          lastFetchParams.wildduckUserAuth.userId,
+          lastFetchParams.mailboxId,
+        ],
+        updatedMessages,
+      );
+
+      return updatedMessages;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to get next messages";
+      console.error(errorMessage);
+      return messages;
+    }
+  }, [lastFetchParams, nextCursor, messages, pageSize, api, queryClient]);
+
+  // Previous page function - prepends new messages to the beginning
+  const previous = useCallback(async (): Promise<WildduckMessage[]> => {
+    if (!lastFetchParams) {
+      console.error("No previous fetch params available");
+      return [];
+    }
+    if (!previousCursor) {
+      console.error("No previous page available");
+      return messages;
+    }
+
+    try {
+      const mergedOptions = {
+        ...(pageSize !== undefined && { limit: pageSize }),
+        ...lastFetchParams.options,
+        previous: previousCursor as string,
+      };
+
+      const response = await api.getMessages(
+        lastFetchParams.wildduckUserAuth,
+        lastFetchParams.mailboxId,
+        mergedOptions,
+      );
+
+      const newMessages = response.results ?? [];
+
+      // Prepend new messages to existing list
+      const updatedMessages = [...newMessages, ...messages];
+      setMessages(updatedMessages);
+      setTotalMessages(response.total ?? 0);
+      setCurrentPage(response.page ?? 1);
+      setNextCursor(response.nextCursor ?? false);
+      setPreviousCursor(response.previousCursor ?? false);
+
+      // Update cache
+      queryClient.setQueryData(
+        [
+          "wildduck-messages",
+          lastFetchParams.wildduckUserAuth.userId,
+          lastFetchParams.mailboxId,
+        ],
+        updatedMessages,
+      );
+
+      return updatedMessages;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to get previous messages";
+      console.error(errorMessage);
+      return messages;
+    }
+  }, [lastFetchParams, previousCursor, messages, pageSize, api, queryClient]);
+
+  // Reset messages function - clears the accumulated list
+  const resetMessages = useCallback(() => {
+    setMessages([]);
+    setTotalMessages(0);
+    setCurrentPage(1);
+    setNextCursor(false);
+    setPreviousCursor(false);
+  }, []);
 
   // Aggregate loading and error states for legacy compatibility
   const isLoading =
@@ -642,10 +786,21 @@ const useWildduckMessages = (
       isLoading,
       error,
 
+      // Pagination state
+      nextCursor,
+      previousCursor,
+      hasNextPage: !!nextCursor,
+      hasPreviousPage: !!previousCursor,
+
       // Query functions
       getMessages,
       getMessage,
       refresh,
+
+      // Pagination functions
+      next,
+      previous,
+      resetMessages,
 
       // Send mutation
       sendMessage,
@@ -681,9 +836,14 @@ const useWildduckMessages = (
       currentPage,
       isLoading,
       error,
+      nextCursor,
+      previousCursor,
       getMessages,
       getMessage,
       refresh,
+      next,
+      previous,
+      resetMessages,
       sendMessage,
       sendMutation.isPending,
       sendMutation.error,
