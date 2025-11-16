@@ -18,7 +18,7 @@ This directory contains integration tests that run against a live Wildduck serve
 ### Optional
 
 - `WILDDUCK_EMAIL_DOMAIN` - Email domain for testing (default: `example.com`)
-  - Example: `0xmail.box`
+  - Example: `yourdomain.com`
 - `WILDDUCK_API_TOKEN` - Admin API token if needed for certain operations
   - This is optional and only used for admin-level operations
 
@@ -48,7 +48,7 @@ WILDDUCK_ENDPOINT=http://localhost:8080 npm run test:integration
 ### Run with custom email domain
 
 ```bash
-WILDDUCK_ENDPOINT=http://localhost:8080 WILDDUCK_EMAIL_DOMAIN=0xmail.box npm run test:integration
+WILDDUCK_ENDPOINT=http://localhost:8080 WILDDUCK_EMAIL_DOMAIN=yourdomain.com npm run test:integration
 ```
 
 ### Run in watch mode

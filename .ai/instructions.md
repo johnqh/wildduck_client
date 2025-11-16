@@ -4,7 +4,7 @@ This document provides comprehensive context for AI assistants working on the Wi
 
 ## Project Purpose
 
-This library provides a TypeScript client for the WildDuck email API, enabling React and React Native applications to interact with WildDuck email servers. It's part of the 0xmail ecosystem, which provides blockchain-based email services.
+This library provides a TypeScript client for the WildDuck email API, enabling React and React Native applications to interact with WildDuck email servers.
 
 ### Key Use Cases
 
@@ -139,7 +139,7 @@ Located in `src/network/wildduck-client.ts`:
 
 Types are defined in two places:
 
-1. **@sudobility/types package**: Shared types across 0xmail projects
+1. **@sudobility/types package**: Shared types across projects
    - `WildduckUserAuth`
    - `WildDuckMessage`
    - `WildDuckMailbox`
@@ -580,7 +580,6 @@ Update the API coverage table in README.md.
 For questions about:
 - **WildDuck API**: Check [WildDuck docs](https://docs.wildduck.email/api/)
 - **Types Package**: See @sudobility/types README
-- **0xmail Project**: Check 0xmail organization
 - **This Library**: Open GitHub issue
 
 ## Version History
@@ -593,4 +592,4 @@ For questions about:
 ---
 
 Last Updated: 2025-10-11
-Maintained by: 0xmail team
+Maintained by: Sudobility Team

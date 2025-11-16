@@ -33,10 +33,9 @@
     "client",
     "react",
     "react-native",
-    "typescript",
-    "0xmail"
+    "typescript"
   ],
-  "author": "0xmail.box team",
+  "author": "Sudobility Team",
   "license": "MIT",
   "peerDependencies": {
     "@sudobility/di": "^1.4.17",

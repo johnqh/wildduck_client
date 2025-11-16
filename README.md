@@ -342,7 +342,6 @@ MIT
 
 - [WildDuck](https://github.com/nodemailer/wildduck) - The WildDuck email server
 - [@sudobility/types](https://www.npmjs.com/package/@sudobility/types) - Shared type definitions
-- [0xmail](https://github.com/0xmail) - Blockchain-based email platform
 
 ## Support
 
