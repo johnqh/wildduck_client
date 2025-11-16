@@ -28,6 +28,7 @@ npm version major
 ```
 
 This automatically:
+
 - Updates `package.json` version
 - Updates `package-lock.json`
 - Creates a git commit
@@ -67,18 +68,20 @@ Once pushed, GitHub Actions automatically:
 
 Check the deployment succeeded:
 
-- **GitHub Actions**: https://github.com/0xmail/wildduck_client/actions
-- **GitHub Releases**: https://github.com/0xmail/wildduck_client/releases
-- **NPM Package**: https://www.npmjs.com/package/@sudobility/wildduck_client
+- **GitHub Actions**: <https://github.com/johnqh/wildduck_client/actions>
+- **GitHub Releases**: <https://github.com/johnqh/wildduck_client/releases>
+- **NPM Package**: <https://www.npmjs.com/package/@sudobility/wildduck_client>
 
 ## Post-Deployment
 
 1. **Verify NPM Installation**:
+
    ```bash
    npm view @sudobility/wildduck_client
    ```
 
 2. **Test Installation**:
+
    ```bash
    mkdir test-install && cd test-install
    npm init -y
@@ -125,6 +128,7 @@ git push origin main
 ```
 
 This will:
+
 - ✅ Run tests
 - ⏭️ Skip release creation
 - ⏭️ Skip NPM publishing
@@ -133,7 +137,7 @@ This will:
 
 ### Build Fails in CI/CD
 
-1. Check the workflow logs: https://github.com/0xmail/wildduck_client/actions
+1. Check the workflow logs: <https://github.com/johnqh/wildduck_client/actions>
 2. Identify the failing step
 3. Fix the issue locally
 4. Test locally: `npm run check-all`
@@ -181,7 +185,7 @@ npm login
 npm publish --access restricted
 
 # Create GitHub release manually
-# Go to: https://github.com/0xmail/wildduck_client/releases/new
+# Go to: https://github.com/johnqh/wildduck_client/releases/new
 ```
 
 ## Version History
@@ -199,7 +203,7 @@ npm view @sudobility/wildduck_client versions
 Add to README.md:
 
 ```markdown
-[![CI/CD](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml)
+[![CI/CD](https://github.com/johnqh/wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/johnqh/wildduck_client/actions/workflows/ci-cd.yml)
 ```
 
 ### NPM Version Badge
@@ -225,6 +229,7 @@ Add to README.md:
 ## Support
 
 For deployment issues:
+
 1. Check workflow logs
 2. Review this guide
 3. Check CI/CD documentation: `.github/workflows/README.md`
@@ -233,5 +238,5 @@ For deployment issues:
 ---
 
 **Package Name**: `@sudobility/wildduck_client`
-**Registry**: https://registry.npmjs.org
-**Repository**: https://github.com/0xmail/wildduck_client
+**Registry**: <https://registry.npmjs.org>
+**Repository**: <https://github.com/johnqh/wildduck_client>

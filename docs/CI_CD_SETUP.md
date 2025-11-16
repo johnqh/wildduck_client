@@ -32,7 +32,7 @@ graph LR
 ### 1. Configure NPM Token
 
 1. Create an NPM automation token:
-   - Go to https://www.npmjs.com/settings/YOUR_USERNAME/tokens
+   - Go to <https://www.npmjs.com/settings/YOUR_USERNAME/tokens>
    - Click "Generate New Token"
    - Select "Automation" type
    - Save the token securely
@@ -48,6 +48,7 @@ graph LR
 ### 2. Release a New Version
 
 1. **Update version** in `package.json`:
+
    ```bash
    npm version patch  # For bug fixes (0.0.1 → 0.0.2)
    npm version minor  # For new features (0.0.1 → 0.1.0)
@@ -55,6 +56,7 @@ graph LR
    ```
 
 2. **Commit and push**:
+
    ```bash
    git add package.json package-lock.json
    git commit -m "Release v0.0.2"
@@ -83,6 +85,7 @@ graph LR
 - **Integration Tests**: `npm run test:integration`
   - Skipped because they require a live WildDuck server
   - Run these locally before pushing:
+
     ```bash
     WILDDUCK_ENDPOINT=http://localhost:8080 npm run test:integration
     ```
@@ -133,11 +136,13 @@ Only runs if tests pass and release is needed:
 Each release includes:
 
 ### Release Title
-```
+
+```text
 Release v0.0.2
 ```
 
 ### Release Body
+
 ```markdown
 ## WildDuck Email Client v0.0.2
 
@@ -146,20 +151,23 @@ documentation links, testing instructions, and auto-generated changelog.
 ```
 
 ### Release Artifacts
+
 - Source code (zip & tar.gz)
 - Auto-generated release notes from commits
 
 ## NPM Package
 
-Published to: https://www.npmjs.com/package/@sudobility/wildduck_client
+Published to: <https://www.npmjs.com/package/@sudobility/wildduck_client>
 
 ### Package Contents
+
 - `dist/` - Compiled JavaScript and TypeScript definitions
 - `package.json` - Package metadata
 - `README.md` - Package documentation
 - All files specified in `package.json` `files` field
 
 ### Installation
+
 ```bash
 npm install @sudobility/wildduck_client@latest
 ```
@@ -193,6 +201,7 @@ git commit -m "Update README [skip ci]"
 ```
 
 This will:
+
 - ✅ Still run tests
 - ⏭️ Skip creating a release
 - ⏭️ Skip publishing to NPM
@@ -230,6 +239,7 @@ npm run test:coverage
 ### NPM Publish Fails
 
 Check:
+
 - [ ] `NPM_TOKEN` secret is configured
 - [ ] Token has "Automation" type and write permissions
 - [ ] Version in `package.json` is incremented
@@ -239,6 +249,7 @@ Check:
 ### GitHub Release Fails
 
 Check:
+
 - [ ] Workflow has `contents: write` permission (already configured)
 - [ ] Version tag doesn't already exist
 - [ ] Repository allows workflows to create releases
@@ -246,6 +257,7 @@ Check:
 ### Build Output Issues
 
 Verify build contents:
+
 ```bash
 npm run build
 ls -la dist/
@@ -256,13 +268,16 @@ head dist/index.d.ts
 ## Monitoring
 
 ### View Workflow Runs
-https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml
+
+<https://github.com/johnqh/wildduck_client/actions/workflows/ci-cd.yml>
 
 ### Check NPM Package
-https://www.npmjs.com/package/@sudobility/wildduck_client
+
+<https://www.npmjs.com/package/@sudobility/wildduck_client>
 
 ### View Releases
-https://github.com/0xmail/wildduck_client/releases
+
+<https://github.com/johnqh/wildduck_client/releases>
 
 ## Best Practices
 
@@ -285,6 +300,7 @@ https://github.com/0xmail/wildduck_client/releases
 ## Support
 
 For issues with CI/CD:
+
 1. Check the workflow run logs
 2. Review this documentation
 3. Open an issue on GitHub
