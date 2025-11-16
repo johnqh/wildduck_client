@@ -5,7 +5,7 @@
       "Bash(npm run test:run:*)",
       "Bash(npm run lint)",
       "Bash(npm run lint:*)",
-      "Read(//Users/johnhuang/0xmail/wildduck/**)",
+      "Read(../wildduck/**)",
       "Bash(for:*)",
       "Bash(do mv \"$file\" \"$file%x.tsx\")",
       "Bash(done)",
@@ -14,7 +14,7 @@
       "Bash(npm run typecheck:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run test:integration:*)",
-      "Read(//Users/johnhuang/0xmail/mail_box_indexer_client/**)",
+      "Read(../mail_box_indexer_client/**)",
       "Bash(node:*)",
       "Bash(python3 -c \"import yaml; yaml.safe_load(open(''.github/workflows/ci-cd.yml''))\")",
       "Bash(npm run check-all:*)",
@@ -33,7 +33,7 @@
       "Bash(tail:*)",
       "Bash(npm run lint:fix:*)",
       "Bash(npm run format:*)",
-      "Read(//Users/johnhuang/0xmail/types/**)",
+      "Read(../types/**)",
       "Bash(find:*)",
       "Bash(npm view:*)",
       "Bash(git add:*)",
@@ -44,7 +44,8 @@
       "Bash(npm ls:*)",
       "Bash(do grep -c wildduckUserAuth $file)",
       "Bash(xargs:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

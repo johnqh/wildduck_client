@@ -3,7 +3,7 @@
 TypeScript client library for the WildDuck email API with React and React Native support.
 
 [![npm version](https://badge.fury.io/js/@sudobility%2Fwildduck_client.svg)](https://www.npmjs.com/package/@sudobility/wildduck_client)
-[![CI/CD](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/0xmail/wildduck_client/actions/workflows/ci-cd.yml)
+[![CI/CD](https://github.com/johnqh/wildduck_client/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/johnqh/wildduck_client/actions/workflows/ci-cd.yml)
 
 ## Features
 
@@ -147,17 +147,17 @@ Currently implements ~15% of the WildDuck API endpoints (see [docs/GAP_ANALYSIS.
 
 ### Implemented Endpoints
 
-| Category | Status | Coverage |
-|----------|--------|----------|
-| Authentication | ✅ Complete | 100% |
-| Users | ⚠️ Partial | ~12% |
-| Mailboxes | ✅ Mostly Complete | 80% |
-| Messages | ⚠️ Partial | ~31% |
-| Addresses | ✅ Mostly Complete | 64% |
-| Filters | ✅ Complete | 100% |
-| Autoreply | ⚠️ Partial | ~67% |
-| Health | ✅ Complete | 100% |
-| Settings | ✅ Mostly Complete | 67% |
+| Category       | Status             | Coverage |
+| -------------- | ------------------ | -------- |
+| Authentication | ✅ Complete        | 100%     |
+| Users          | ⚠️ Partial         | ~12%     |
+| Mailboxes      | ✅ Mostly Complete | 80%      |
+| Messages       | ⚠️ Partial         | ~31%     |
+| Addresses      | ✅ Mostly Complete | 64%      |
+| Filters        | ✅ Complete        | 100%     |
+| Autoreply      | ⚠️ Partial         | ~67%     |
+| Health         | ✅ Complete        | 100%     |
+| Settings       | ✅ Mostly Complete | 67%      |
 
 ### Priority Features to Implement
 
@@ -166,6 +166,7 @@ See [docs/GAP_ANALYSIS.md](./docs/GAP_ANALYSIS.md) for a comprehensive breakdown
 ## Available Hooks
 
 ### Messages
+
 - `useWildduckGetMessages` - List messages in a mailbox
 - `useWildduckGetMessage` - Get a single message
 - `useWildduckUpdateMessage` - Update message properties (mark as read, move, flag)
@@ -179,6 +180,7 @@ See [docs/GAP_ANALYSIS.md](./docs/GAP_ANALYSIS.md) for a comprehensive breakdown
 - `useWildduckSubmitDraft` - Submit a draft for delivery
 
 ### Mailboxes
+
 - `useWildduckGetMailboxes` - List all mailboxes
 - `useWildduckGetMailbox` - Get specific mailbox info
 - `useWildduckCreateMailbox` - Create new mailbox/folder
@@ -186,24 +188,29 @@ See [docs/GAP_ANALYSIS.md](./docs/GAP_ANALYSIS.md) for a comprehensive breakdown
 - `useWildduckDeleteMailbox` - Delete a mailbox
 
 ### Users
+
 - `useWildduckGetUser` - Get user information
 - `useWildduckCreateUser` - Create new user (admin)
 - `useWildduckUpdateUser` - Update user settings
 - `useWildduckDeleteUser` - Delete user account
 
 ### Addresses
+
 - `useWildduckGetAddresses` - List user's email addresses
 - Additional address management hooks
 
 ### Autoreply
+
 - `useWildduckGetAutoreply` - Get autoreply settings
 - `useWildduckUpdateAutoreply` - Update autoreply (vacation mode)
 - `useWildduckDeleteAutoreply` - Delete autoreply
 
 ### Filters
+
 - Complete filter management hooks
 
 ### Other
+
 - `useWildduckHealth` - Server health check
 - `useWildduckSettings` - Settings management
 
@@ -345,9 +352,9 @@ MIT
 
 ## Support
 
-- [GitHub Issues](https://github.com/0xmail/wildduck_client/issues)
+- [GitHub Issues](https://github.com/johnqh/wildduck_client/issues)
 - [API Documentation](https://docs.wildduck.email/api/)
 
 ## Changelog
 
-See [GitHub Releases](https://github.com/0xmail/wildduck_client/releases) for version history and release notes.
+See [GitHub Releases](https://github.com/johnqh/wildduck_client/releases) for version history and release notes.

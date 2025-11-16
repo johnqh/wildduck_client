@@ -69,12 +69,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/0xmail/wildduck_client.git"
+    "url": "https://github.com/johnqh/wildduck_client.git"
   },
   "bugs": {
-    "url": "https://github.com/0xmail/wildduck_client/issues"
+    "url": "https://github.com/johnqh/wildduck_client/issues"
   },
-  "homepage": "https://github.com/0xmail/wildduck_client#readme",
+  "homepage": "https://github.com/johnqh/wildduck_client#readme",
   "publishConfig": {
     "access": "restricted"
   }
