@@ -14,3 +14,6 @@ export * from "./hooks";
 
 // Export network client
 export * from "./network";
+
+// Export WebSocket client (optional real-time support)
+export * from "./websocket";

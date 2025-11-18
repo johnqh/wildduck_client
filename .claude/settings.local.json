@@ -45,7 +45,8 @@
       "Bash(do grep -c wildduckUserAuth $file)",
       "Bash(xargs:*)",
       "Bash(sed:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
