@@ -9,8 +9,10 @@ TypeScript client library for the WildDuck email API with React and React Native
 
 - ✅ **Complete Type Safety** - Full TypeScript support with comprehensive type definitions
 - ✅ **React Integration** - Built-in hooks using @tanstack/react-query for optimal data fetching
+- ✅ **Real-time WebSocket Support** - Optional WebSocket connections for instant updates (v2.3.0+)
 - ✅ **Crypto Authentication** - SIWE (Sign-in with Ethereum) and traditional password authentication
 - ✅ **Comprehensive API** - User, mailbox, message, address, filter, and autoreply management
+- ✅ **React Native Compatible** - Works seamlessly in both React JS and React Native (0.64+)
 - ✅ **Development Mode** - Mock data for testing without a live server
 - ✅ **Integration Tests** - Full test coverage with real WildDuck server testing
 - ✅ **Cloudflare Worker Support** - Optional worker URL configuration for proxying requests
@@ -215,6 +217,50 @@ See [docs/GAP_ANALYSIS.md](./docs/GAP_ANALYSIS.md) for a comprehensive breakdown
 - `useWildduckSettings` - Settings management
 
 For detailed documentation on all hooks, see [docs/HOOKS_DOCUMENTATION.md](./docs/HOOKS_DOCUMENTATION.md).
+
+## WebSocket Real-time Support
+
+Since v2.3.0, all hooks support optional WebSocket connections for real-time updates.
+
+### Quick Start
+
+```tsx
+import { WebSocketProvider } from '@sudobility/wildduck_client';
+
+function App() {
+  return (
+    <WebSocketProvider
+      enabled={true}
+      config={{ url: 'ws://your-server.com/ws' }}
+    >
+      <YourApp />
+    </WebSocketProvider>
+  );
+}
+
+// Enable WebSocket in any hook
+const { mailboxes } = useWildduckMailboxes(
+  networkClient,
+  config,
+  wildduckUserAuth,
+  false,
+  { enableWebSocket: true } // ← Enable real-time updates
+);
+```
+
+### Features
+
+- **Automatic reconnection** with exponential backoff
+- **Per-user connections** - one WebSocket per authenticated user
+- **Seamless fallback** to REST API if WebSocket unavailable
+- **React Query integration** - automatic cache updates
+- **Event-driven updates** - mailboxes, messages, filters, settings, autoreply
+
+### Documentation
+
+- **[Complete WebSocket Guide](./docs/WEBSOCKET.md)** - Setup, configuration, API reference
+- **[Usage Examples](./docs/examples/WEBSOCKET_EXAMPLES.md)** - Real-world code examples
+- **[React Native Compatibility](./docs/REACT_NATIVE_COMPATIBILITY.md)** - Mobile support guide
 
 ## Development
 
