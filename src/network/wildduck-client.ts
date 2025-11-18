@@ -1185,37 +1185,62 @@ class WildduckClient {
   }
 
   /**
-   * Get system settings
-   * @returns System settings
+   * Get user settings
+   * @param wildduckUserAuth - User authentication
+   * @returns User settings
    */
-  async getSettings(): Promise<any> {
-    return this.request("/settings", {
+  async getSettings(wildduckUserAuth: WildduckUserAuth): Promise<any> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request(`/users/${validatedUserId}/settings`, {
       method: "GET",
+      wildduckUserAuth,
     });
   }
 
   /**
-   * Update a system setting
+   * Update a user setting
+   * @param wildduckUserAuth - User authentication
    * @param key - Setting key
    * @param value - Setting value
    * @returns Success response
    */
-  async updateSetting(key: string, value: any): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>(`/settings/${key}`, {
-      method: "PUT",
-      body: { value },
-    });
+  async updateSetting(
+    wildduckUserAuth: WildduckUserAuth,
+    key: string,
+    value: any,
+  ): Promise<{ success: boolean }> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request<{ success: boolean }>(
+      `/users/${validatedUserId}/settings/${key}`,
+      {
+        method: "PUT",
+        body: { value },
+        wildduckUserAuth,
+      },
+    );
   }
 
   /**
-   * Delete a system setting
+   * Delete a user setting
+   * @param wildduckUserAuth - User authentication
    * @param key - Setting key
    * @returns Success response
    */
-  async deleteSetting(key: string): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>(`/settings/${key}`, {
-      method: "DELETE",
-    });
+  async deleteSetting(
+    wildduckUserAuth: WildduckUserAuth,
+    key: string,
+  ): Promise<{ success: boolean }> {
+    const validatedUserId = validateUserId(wildduckUserAuth.userId);
+
+    return this.request<{ success: boolean }>(
+      `/users/${validatedUserId}/settings/${key}`,
+      {
+        method: "DELETE",
+        wildduckUserAuth,
+      },
+    );
   }
 
   /**
