@@ -6,45 +6,45 @@
  */
 
 import type {
-  WebSocketConfig,
-  ConnectionState,
-  WebSocketReadyState,
   ChannelName,
-  SubscriptionParams,
-  FetchParams,
-  SubscriptionResponse,
-  FetchResponse,
-  SubscriptionState,
-  ServerMessage,
-  WebSocketEventMap,
+  ConnectionState,
   EventListener,
+  FetchParams,
+  FetchResponse,
   IWebSocketClient,
+  ServerMessage,
   ServerResponseData,
+  SubscriptionParams,
+  SubscriptionResponse,
+  SubscriptionState,
+  WebSocketConfig,
+  WebSocketEventMap,
+  WebSocketReadyState,
 } from "./types";
 
 import {
-  DEFAULT_CONFIG,
   CLOSE_CODES,
-  CUSTOM_CLOSE_CODES,
   CONNECTION_TIMEOUT,
+  CUSTOM_CLOSE_CODES,
+  DEFAULT_CONFIG,
+  EVENTS,
   MESSAGE_TIMEOUT,
   RECONNECT_BACKOFF_MULTIPLIER,
-  EVENTS,
 } from "./constants";
 
 import {
+  buildFetchMessage,
   buildSubscribeMessage,
   buildUnsubscribeMessage,
-  buildFetchMessage,
+  extractError,
+  extractResponseData,
+  getDisconnectReason,
+  isDataMessage,
+  isDisconnectMessage,
+  isErrorMessage,
+  isUpdateMessage,
   parseServerMessage,
   serializeClientMessage,
-  isErrorMessage,
-  isDisconnectMessage,
-  isDataMessage,
-  isUpdateMessage,
-  extractResponseData,
-  extractError,
-  getDisconnectReason,
 } from "./protocol";
 
 import type { TimerHandle } from "./types";
@@ -73,10 +73,8 @@ export class WildduckWebSocketClient implements IWebSocketClient {
   private subscriptionMap = new Map<ChannelName, SubscriptionState>();
 
   // Event listeners
-  private listeners = new Map<
-    keyof WebSocketEventMap,
-    Set<Function>
-  >();
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  private listeners = new Map<keyof WebSocketEventMap, Set<Function>>();
 
   // Reconnection state
   private _reconnectAttempt = 0;
@@ -154,10 +152,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
    * @param auth - User authentication data
    * @throws Error if already connected or connecting
    */
-  async connect(auth: {
-    userId: string;
-    accessToken: string;
-  }): Promise<void> {
+  async connect(auth: { userId: string; accessToken: string }): Promise<void> {
     if (this.connectionState === "connected") {
       this.debug("Already connected");
       return;
@@ -201,7 +196,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
         reject(
           error instanceof Error
             ? error
-            : new Error("Failed to create WebSocket")
+            : new Error("Failed to create WebSocket"),
         );
       }
     });
@@ -215,7 +210,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
    */
   disconnect(
     code: number = CLOSE_CODES.NORMAL,
-    reason: string = "Client disconnect"
+    reason: string = "Client disconnect",
   ): void {
     this.debug("Disconnecting", { code, reason });
 
@@ -246,7 +241,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
    */
   async subscribe(
     channel: ChannelName,
-    params: SubscriptionParams
+    params: SubscriptionParams,
   ): Promise<SubscriptionResponse> {
     if (!this.isConnected) {
       throw new Error("Not connected to WebSocket server");
@@ -264,7 +259,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
     // Send message and wait for response
     const response = await this.sendMessageAndWait<SubscriptionResponse>(
       message,
-      channel
+      channel,
     );
 
     // Track subscription
@@ -314,7 +309,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
    */
   async fetch(
     channel: ChannelName,
-    params: FetchParams
+    params: FetchParams,
   ): Promise<FetchResponse> {
     if (!this.isConnected) {
       throw new Error("Not connected to WebSocket server");
@@ -326,7 +321,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
     // Send message and wait for response
     const response = await this.sendMessageAndWait<FetchResponse>(
       message,
-      channel
+      channel,
     );
 
     this.debug(`Fetched data from ${channel}`, response);
@@ -342,11 +337,12 @@ export class WildduckWebSocketClient implements IWebSocketClient {
    */
   on<T extends keyof WebSocketEventMap>(
     event: T,
-    listener: EventListener<T>
+    listener: EventListener<T>,
   ): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-function-type
     this.listeners.get(event)!.add(listener as Function);
   }
 
@@ -358,10 +354,11 @@ export class WildduckWebSocketClient implements IWebSocketClient {
    */
   off<T extends keyof WebSocketEventMap>(
     event: T,
-    listener: EventListener<T>
+    listener: EventListener<T>,
   ): void {
     const eventListeners = this.listeners.get(event);
     if (eventListeners) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
       eventListeners.delete(listener as Function);
     }
   }
@@ -439,10 +436,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
   /**
    * Handle WebSocket error event
    */
-  private handleError(
-    error: Error,
-    reject?: (error: Error) => void
-  ): void {
+  private handleError(error: Error, reject?: (error: Error) => void): void {
     this.debug("WebSocket error", error);
 
     // Emit error event
@@ -494,7 +488,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
         const reason = getDisconnectReason(message);
         this.disconnect(
           CUSTOM_CLOSE_CODES.SERVER_DISCONNECT,
-          `Server disconnect: ${reason}`
+          `Server disconnect: ${reason}`,
         );
         return;
       }
@@ -518,7 +512,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
       this.debug("Failed to handle message", error);
       this.emit(
         EVENTS.ERROR,
-        error instanceof Error ? error : new Error("Message handling failed")
+        error instanceof Error ? error : new Error("Message handling failed"),
       );
     }
   }
@@ -579,7 +573,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
    */
   private async sendMessageAndWait<T extends ServerResponseData>(
     message: any,
-    channel: ChannelName
+    channel: ChannelName,
   ): Promise<T> {
     if (!this.ws || !this.isConnected) {
       throw new Error("Not connected to WebSocket server");
@@ -603,14 +597,13 @@ export class WildduckWebSocketClient implements IWebSocketClient {
 
       // Send message
       try {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.ws!.send(serializeClientMessage(message));
       } catch (error) {
         clearTimeout(timeout);
         this.pendingRequests.delete(requestKey);
         reject(
-          error instanceof Error
-            ? error
-            : new Error("Failed to send message")
+          error instanceof Error ? error : new Error("Failed to send message"),
         );
       }
     });
@@ -642,7 +635,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
       this.updateState("disconnected");
       this.disconnect(
         CUSTOM_CLOSE_CODES.MAX_RECONNECTS,
-        "Max reconnection attempts reached"
+        "Max reconnection attempts reached",
       );
       return;
     }
@@ -651,20 +644,23 @@ export class WildduckWebSocketClient implements IWebSocketClient {
     const delay = Math.min(
       this.config.reconnectDelay *
         Math.pow(RECONNECT_BACKOFF_MULTIPLIER, this._reconnectAttempt),
-      this.config.maxReconnectDelay
+      this.config.maxReconnectDelay,
     );
 
     this._reconnectAttempt++;
     this._isReconnecting = true;
     this.updateState("reconnecting");
 
-    this.debug(`Reconnecting in ${delay}ms (attempt ${this._reconnectAttempt})`);
+    this.debug(
+      `Reconnecting in ${delay}ms (attempt ${this._reconnectAttempt})`,
+    );
 
     // Emit reconnecting event
     this.emit(EVENTS.RECONNECTING, this._reconnectAttempt, delay);
 
     // Schedule reconnection
     this.reconnectTimer = setTimeout(() => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.connect(this.auth!).catch((error) => {
         this.debug("Reconnection failed", error);
         this.handleClose(CLOSE_CODES.ABNORMAL, "Reconnection failed");

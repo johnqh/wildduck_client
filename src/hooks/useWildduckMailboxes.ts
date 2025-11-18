@@ -235,7 +235,7 @@ const useWildduckMailboxes = (
         // Update cache with initial data
         queryClient.setQueryData(
           ["wildduck-mailboxes", wildduckUserAuth.userId],
-          mailboxes
+          mailboxes,
         );
       }
     };
@@ -280,14 +280,14 @@ const useWildduckMailboxes = (
         case "updated":
           // Update existing mailbox
           updatedMailboxes = currentMailboxes.map((m) =>
-            m.id === mailbox.id ? { ...m, ...mailbox } : m
+            m.id === mailbox.id ? { ...m, ...mailbox } : m,
           );
           break;
 
         case "deleted":
           // Remove mailbox from list
           updatedMailboxes = currentMailboxes.filter(
-            (m) => m.id !== mailbox.id
+            (m) => m.id !== mailbox.id,
           );
           break;
 
@@ -298,7 +298,7 @@ const useWildduckMailboxes = (
       // Update cache
       queryClient.setQueryData(
         ["wildduck-mailboxes", wildduckUserAuth.userId],
-        updatedMailboxes
+        updatedMailboxes,
       );
     };
 

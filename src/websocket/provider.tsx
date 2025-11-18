@@ -7,15 +7,15 @@
 
 import React, {
   createContext,
-  useContext,
-  useCallback,
-  useRef,
-  useEffect,
   type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
 } from "react";
 import type { WildduckUserAuth } from "@sudobility/types";
 import { WildduckWebSocketClient } from "./client";
-import type { WebSocketConfig, ConnectionState } from "./types";
+import type { ConnectionState, WebSocketConfig } from "./types";
 import { CLEANUP_DELAY } from "./constants";
 
 import type { TimerHandle } from "./types";
@@ -165,7 +165,7 @@ export function WebSocketProvider({
 
       return client;
     },
-    [enabled, config]
+    [enabled, config],
   );
 
   /**
@@ -245,7 +245,7 @@ export function WebSocketProvider({
         }
       }
     },
-    [enabled, config]
+    [enabled, config],
   );
 
   /**
@@ -319,7 +319,7 @@ export function useWebSocketContext(): WebSocketContextValue {
   if (!context) {
     throw new Error(
       "useWebSocketContext must be used within a WebSocketProvider. " +
-        "Wrap your app with <WebSocketProvider> to use WebSocket features."
+        "Wrap your app with <WebSocketProvider> to use WebSocket features.",
     );
   }
 

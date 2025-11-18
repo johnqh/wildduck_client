@@ -80,6 +80,7 @@ export interface BaseSubscriptionParams {
 /**
  * Mailboxes channel subscription parameters
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface MailboxesSubscriptionParams extends BaseSubscriptionParams {
   // No additional params needed
 }
@@ -95,6 +96,7 @@ export interface MessagesSubscriptionParams extends BaseSubscriptionParams {
 /**
  * Settings channel subscription parameters
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SettingsSubscriptionParams extends BaseSubscriptionParams {
   // No additional params needed
 }
@@ -102,6 +104,7 @@ export interface SettingsSubscriptionParams extends BaseSubscriptionParams {
 /**
  * Filters channel subscription parameters
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FiltersSubscriptionParams extends BaseSubscriptionParams {
   // No additional params needed
 }
@@ -109,6 +112,7 @@ export interface FiltersSubscriptionParams extends BaseSubscriptionParams {
 /**
  * AutoReply channel subscription parameters
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface AutoReplySubscriptionParams extends BaseSubscriptionParams {
   // No additional params needed
 }
@@ -188,6 +192,7 @@ export interface ServerMessage {
 /**
  * Subscription response (initial data from subscribe)
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SubscriptionResponse extends ServerResponseData {
   // Channel-specific data extends this interface
 }
@@ -195,6 +200,7 @@ export interface SubscriptionResponse extends ServerResponseData {
 /**
  * Fetch response (paginated data)
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FetchResponse extends ServerResponseData {
   // Channel-specific data extends this interface
 }
@@ -312,7 +318,7 @@ export interface IWebSocketClient {
    */
   subscribe(
     channel: ChannelName,
-    params: SubscriptionParams
+    params: SubscriptionParams,
   ): Promise<SubscriptionResponse>;
 
   /**
@@ -336,7 +342,7 @@ export interface IWebSocketClient {
    */
   on<T extends keyof WebSocketEventMap>(
     event: T,
-    listener: EventListener<T>
+    listener: EventListener<T>,
   ): void;
 
   /**
@@ -346,7 +352,7 @@ export interface IWebSocketClient {
    */
   off<T extends keyof WebSocketEventMap>(
     event: T,
-    listener: EventListener<T>
+    listener: EventListener<T>,
   ): void;
 
   /**

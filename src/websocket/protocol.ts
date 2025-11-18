@@ -5,15 +5,15 @@
  */
 
 import type {
-  ClientMessage,
-  ServerMessage,
   ChannelName,
+  ClientMessage,
   ClientMessageType,
-  SubscriptionParams,
   FetchParams,
+  ServerMessage,
   ServerResponseData,
+  SubscriptionParams,
 } from "./types";
-import { MESSAGE_TYPES, MESSAGE_CODES } from "./constants";
+import { MESSAGE_CODES, MESSAGE_TYPES } from "./constants";
 
 /**
  * Build a subscribe message
@@ -24,7 +24,7 @@ import { MESSAGE_TYPES, MESSAGE_CODES } from "./constants";
  */
 export function buildSubscribeMessage(
   channel: ChannelName,
-  params: SubscriptionParams
+  params: SubscriptionParams,
 ): ClientMessage {
   return {
     type: MESSAGE_TYPES.SUBSCRIBE as ClientMessageType,
@@ -56,7 +56,7 @@ export function buildUnsubscribeMessage(channel: ChannelName): ClientMessage {
  */
 export function buildFetchMessage(
   channel: ChannelName,
-  params: FetchParams
+  params: FetchParams,
 ): ClientMessage {
   return {
     type: MESSAGE_TYPES.FETCH as ClientMessageType,
@@ -73,7 +73,7 @@ export function buildFetchMessage(
  * @throws Error if message is invalid JSON
  */
 export function parseServerMessage(
-  data: string | ArrayBuffer | Blob
+  data: string | ArrayBuffer | Blob,
 ): ServerMessage {
   // Convert to string if needed
   let jsonString: string;
@@ -86,7 +86,9 @@ export function parseServerMessage(
     jsonString = decoder.decode(data);
   } else {
     // Blob (browser only, but handle it)
-    throw new Error("Blob data type not supported. Server should send text messages.");
+    throw new Error(
+      "Blob data type not supported. Server should send text messages.",
+    );
   }
 
   try {
@@ -204,7 +206,7 @@ export function isUpdateMessage(message: ServerMessage): boolean {
  * @returns Response data
  */
 export function extractResponseData(
-  message: ServerMessage
+  message: ServerMessage,
 ): ServerResponseData {
   return message.data.response;
 }
@@ -219,8 +221,7 @@ export function extractError(message: ServerMessage): Error {
   const response = message.data.response;
   const code = message.data.code;
   const errorName = response.error || "Unknown Error";
-  const errorMessage =
-    response.message || `WebSocket error (code: ${code})`;
+  const errorMessage = response.message || `WebSocket error (code: ${code})`;
 
   const error = new Error(`${errorName}: ${errorMessage}`);
   (error as any).code = code;
@@ -262,7 +263,7 @@ export function getDisconnectReason(message: ServerMessage): string {
  */
 export function createMockSuccessResponse(
   channel: ChannelName,
-  data: Record<string, any>
+  data: Record<string, any>,
 ): ServerMessage {
   return {
     type: MESSAGE_TYPES.DATA,
@@ -290,7 +291,7 @@ export function createMockErrorResponse(
   channel: ChannelName,
   code: number,
   error: string,
-  message: string
+  message: string,
 ): ServerMessage {
   return {
     type: MESSAGE_TYPES.DATA,
@@ -315,7 +316,7 @@ export function createMockErrorResponse(
  */
 export function createMockUpdateMessage(
   channel: ChannelName,
-  data: Record<string, any>
+  data: Record<string, any>,
 ): ServerMessage {
   return {
     type: MESSAGE_TYPES.UPDATE,
