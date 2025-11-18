@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
   WildduckAutoreplyRequest,
@@ -8,6 +8,8 @@ import type {
   WildduckUserAuth,
 } from "@sudobility/types";
 import { WildduckClient } from "../network/wildduck-client";
+import { useWebSocket } from "../websocket/useWebSocket";
+import type { ChannelName, ServerResponseData } from "../websocket/types";
 
 interface UseWildduckAutoReplyReturn {
   // Query state
@@ -40,6 +42,14 @@ interface UseWildduckAutoReplyReturn {
 }
 
 /**
+ * Hook options for Wildduck autoreply
+ */
+interface UseWildduckAutoReplyOptions {
+  /** Enable WebSocket real-time updates (default: false) */
+  enableWebSocket?: boolean;
+}
+
+/**
  * Hook for Wildduck autoreply operations using React Query
  * Automatically fetches autoreply when user is authenticated
  * Queries are cached and automatically refetched, mutations invalidate related queries
@@ -48,14 +58,26 @@ interface UseWildduckAutoReplyReturn {
  * @param config - Wildduck configuration
  * @param wildduckUserAuth - WildDuck user authentication data (single source of truth)
  * @param _devMode - Development mode flag (unused, kept for compatibility)
+ * @param options - Hook options (including WebSocket enablement)
  */
 const useWildduckAutoReply = (
   networkClient: NetworkClient,
   config: WildduckConfig,
   wildduckUserAuth: Optional<WildduckUserAuth>,
   _devMode: boolean = false,
+  options?: UseWildduckAutoReplyOptions,
 ): UseWildduckAutoReplyReturn => {
   const queryClient = useQueryClient();
+  const wsSubscribedRef = useRef(false);
+
+  // Get WebSocket context (if provider is available)
+  let wsContext;
+  try {
+    wsContext = useWebSocket();
+  } catch {
+    // WebSocketProvider not available, that's fine
+    wsContext = null;
+  }
 
   // Get userId from wildduckUserAuth (single source of truth)
   const userId = wildduckUserAuth?.userId || null;
@@ -65,6 +87,117 @@ const useWildduckAutoReply = (
     () => new WildduckClient(networkClient, config),
     [networkClient, config],
   );
+
+  // Determine if WebSocket should be used
+  const shouldUseWebSocket =
+    options?.enableWebSocket &&
+    wsContext?.isEnabled &&
+    wildduckUserAuth !== null;
+
+  // WebSocket subscription and real-time updates
+  useEffect(() => {
+    if (!shouldUseWebSocket || !wildduckUserAuth || !wsContext) {
+      return;
+    }
+
+    const client = wsContext.getClient(wildduckUserAuth);
+    if (!client) {
+      return;
+    }
+
+    // Connect if not already connected
+    wsContext.connect(wildduckUserAuth).catch((error) => {
+      console.error("Failed to connect WebSocket:", error);
+    });
+
+    // Handle data messages (initial subscription response)
+    const handleData = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "autoreply" || !data.success) {
+        return;
+      }
+
+      const autoreplyData = data as any;
+      const autoreply = autoreplyData.autoreply as WildduckAutoreplyResponse;
+
+      // Update cache
+      queryClient.setQueryData(
+        ["wildduck-autoreply", wildduckUserAuth.userId],
+        autoreply,
+      );
+    };
+
+    // Handle update messages (real-time updates)
+    const handleUpdate = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "autoreply" || !data.success) {
+        return;
+      }
+
+      const updateData = data as any;
+      const event = updateData.event as "updated" | "deleted";
+      const autoreply = updateData.autoreply as WildduckAutoreplyResponse;
+
+      if (!event) {
+        // If no specific event, invalidate and refetch
+        queryClient.invalidateQueries({
+          queryKey: ["wildduck-autoreply", wildduckUserAuth.userId],
+        });
+        return;
+      }
+
+      switch (event) {
+        case "updated":
+          // Update autoreply in cache
+          if (autoreply) {
+            queryClient.setQueryData(
+              ["wildduck-autoreply", wildduckUserAuth.userId],
+              autoreply,
+            );
+          }
+          break;
+
+        case "deleted":
+          // Clear autoreply from cache
+          queryClient.setQueryData(
+            ["wildduck-autoreply", wildduckUserAuth.userId],
+            null,
+          );
+          break;
+      }
+    };
+
+    // Register event handlers
+    client.on("data", handleData);
+    client.on("update", handleUpdate);
+
+    // Subscribe to autoreply channel
+    if (!wsSubscribedRef.current) {
+      wsSubscribedRef.current = true;
+      client
+        .subscribe("autoreply", {
+          userId: wildduckUserAuth.userId,
+          token: wildduckUserAuth.accessToken,
+        })
+        .catch((error) => {
+          console.error("Failed to subscribe to autoreply channel:", error);
+          wsSubscribedRef.current = false;
+        });
+    }
+
+    // Cleanup
+    return () => {
+      client.off("data", handleData);
+      client.off("update", handleUpdate);
+
+      if (wsSubscribedRef.current) {
+        client.unsubscribe("autoreply").catch((error) => {
+          console.error("Failed to unsubscribe from autoreply:", error);
+        });
+        wsSubscribedRef.current = false;
+      }
+
+      wsContext.disconnect(wildduckUserAuth.userId);
+    };
+  }, [shouldUseWebSocket, wildduckUserAuth, wsContext, queryClient]);
 
   // Get autoreply
   const getAutoreply = useCallback(
@@ -240,4 +373,8 @@ const useWildduckAutoReply = (
   );
 };
 
-export { useWildduckAutoReply, type UseWildduckAutoReplyReturn };
+export {
+  useWildduckAutoReply,
+  type UseWildduckAutoReplyReturn,
+  type UseWildduckAutoReplyOptions,
+};

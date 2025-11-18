@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   NetworkClient,
   Optional,
@@ -10,6 +10,9 @@ import type {
 } from "@sudobility/types";
 import { WildduckMockData } from "./mocks";
 import { WildduckClient } from "../network/wildduck-client";
+import { useWebSocket } from "../websocket/useWebSocket";
+import type { ChannelName, ServerResponseData } from "../websocket/types";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UseWildduckFiltersReturn {
   isLoading: boolean;
@@ -40,26 +43,184 @@ interface UseWildduckFiltersReturn {
 }
 
 /**
+ * Hook options for Wildduck filters
+ */
+interface UseWildduckFiltersOptions {
+  /** Enable WebSocket real-time updates (default: false) */
+  enableWebSocket?: boolean;
+}
+
+/**
  * Hook for Wildduck filter management operations
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
+ * @param wildduckUserAuth - WildDuck user authentication data (single source of truth)
  * @param devMode - Development mode flag
+ * @param options - Hook options (including WebSocket enablement)
  */
 const useWildduckFilters = (
   networkClient: NetworkClient,
   config: WildduckConfig,
+  wildduckUserAuth: Optional<WildduckUserAuth>,
   devMode: boolean = false,
+  options?: UseWildduckFiltersOptions,
 ): UseWildduckFiltersReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Optional<string>>(null);
   const [filters, setFilters] = useState<WildduckFilterListItem[]>([]);
+
+  const queryClient = useQueryClient();
+  const wsSubscribedRef = useRef(false);
+
+  // Get WebSocket context (if provider is available)
+  let wsContext;
+  try {
+    wsContext = useWebSocket();
+  } catch {
+    // WebSocketProvider not available, that's fine
+    wsContext = null;
+  }
 
   // Create API instance
   const api = useMemo(
     () => new WildduckClient(networkClient, config),
     [networkClient, config],
   );
+
+  // Determine if WebSocket should be used
+  const shouldUseWebSocket =
+    options?.enableWebSocket &&
+    wsContext?.isEnabled &&
+    wildduckUserAuth !== null;
+
+  // WebSocket subscription and real-time updates
+  useEffect(() => {
+    if (!shouldUseWebSocket || !wildduckUserAuth || !wsContext) {
+      return;
+    }
+
+    const client = wsContext.getClient(wildduckUserAuth);
+    if (!client) {
+      return;
+    }
+
+    // Connect if not already connected
+    wsContext.connect(wildduckUserAuth).catch((error) => {
+      console.error("Failed to connect WebSocket:", error);
+    });
+
+    // Handle data messages (initial subscription response)
+    const handleData = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "filters" || !data.success) {
+        return;
+      }
+
+      const filtersData = data as any;
+      const filterList =
+        (filtersData.filters as WildduckFilterListItem[]) || [];
+
+      // Update local state
+      setFilters(filterList);
+
+      // Update cache
+      queryClient.setQueryData(
+        ["wildduck-filters", wildduckUserAuth.userId],
+        filterList,
+      );
+    };
+
+    // Handle update messages (real-time updates)
+    const handleUpdate = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "filters" || !data.success) {
+        return;
+      }
+
+      const updateData = data as any;
+      const event = updateData.event as "created" | "updated" | "deleted";
+      const filter = updateData.filter as WildduckFilterListItem;
+
+      if (!event || !filter) {
+        // If no specific event, invalidate and refetch
+        queryClient.invalidateQueries({
+          queryKey: ["wildduck-filters", wildduckUserAuth.userId],
+        });
+        return;
+      }
+
+      // Get current filters from local state
+      setFilters((currentFilters) => {
+        let updatedFilters: WildduckFilterListItem[];
+
+        switch (event) {
+          case "created":
+            // Add new filter to list (avoid duplicates)
+            if (!currentFilters.find((f) => f.id === filter.id)) {
+              updatedFilters = [...currentFilters, filter];
+            } else {
+              updatedFilters = currentFilters;
+            }
+            break;
+
+          case "updated":
+            // Update existing filter
+            updatedFilters = currentFilters.map((f) =>
+              f.id === filter.id ? { ...f, ...filter } : f,
+            );
+            break;
+
+          case "deleted":
+            // Remove filter from list
+            updatedFilters = currentFilters.filter((f) => f.id !== filter.id);
+            break;
+
+          default:
+            updatedFilters = currentFilters;
+        }
+
+        // Update cache
+        queryClient.setQueryData(
+          ["wildduck-filters", wildduckUserAuth.userId],
+          updatedFilters,
+        );
+
+        return updatedFilters;
+      });
+    };
+
+    // Register event handlers
+    client.on("data", handleData);
+    client.on("update", handleUpdate);
+
+    // Subscribe to filters channel
+    if (!wsSubscribedRef.current) {
+      wsSubscribedRef.current = true;
+      client
+        .subscribe("filters", {
+          userId: wildduckUserAuth.userId,
+          token: wildduckUserAuth.accessToken,
+        })
+        .catch((error) => {
+          console.error("Failed to subscribe to filters channel:", error);
+          wsSubscribedRef.current = false;
+        });
+    }
+
+    // Cleanup
+    return () => {
+      client.off("data", handleData);
+      client.off("update", handleUpdate);
+
+      if (wsSubscribedRef.current) {
+        client.unsubscribe("filters").catch((error) => {
+          console.error("Failed to unsubscribe from filters:", error);
+        });
+        wsSubscribedRef.current = false;
+      }
+
+      wsContext.disconnect(wildduckUserAuth.userId);
+    };
+  }, [shouldUseWebSocket, wildduckUserAuth, wsContext, queryClient]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -258,4 +419,8 @@ const useWildduckFilters = (
   );
 };
 
-export { useWildduckFilters, type UseWildduckFiltersReturn };
+export {
+  useWildduckFilters,
+  type UseWildduckFiltersReturn,
+  type UseWildduckFiltersOptions,
+};
