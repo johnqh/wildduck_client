@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   NetworkClient,
   Optional,
@@ -6,6 +6,9 @@ import type {
 } from "@sudobility/types";
 import type { WildduckConfig } from "@sudobility/types";
 import { WildduckClient } from "../network/wildduck-client";
+import { useWebSocket } from "../websocket/useWebSocket";
+import type { ChannelName, ServerResponseData } from "../websocket/types";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface WildduckSettings {
   [key: string]: any;
@@ -32,27 +35,174 @@ interface UseWildduckSettingsReturn {
 }
 
 /**
+ * Hook options for Wildduck settings
+ */
+interface UseWildduckSettingsOptions {
+  /** Enable WebSocket real-time updates (default: false) */
+  enableWebSocket?: boolean;
+}
+
+/**
  * Hook for Wildduck settings management operations
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration
  * @param wildduckUserAuth - WildDuck user authentication data (single source of truth)
  * @param _devMode - Development mode flag (unused, kept for compatibility)
+ * @param options - Hook options (including WebSocket enablement)
  */
 const useWildduckSettings = (
   networkClient: NetworkClient,
   config: WildduckConfig,
-  _wildduckUserAuth: Optional<WildduckUserAuth>,
+  wildduckUserAuth: Optional<WildduckUserAuth>,
   _devMode: boolean = false,
+  options?: UseWildduckSettingsOptions,
 ): UseWildduckSettingsReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Optional<string>>(null);
   const [settings, setSettings] = useState<WildduckSettings>({});
 
+  const queryClient = useQueryClient();
+  const wsSubscribedRef = useRef(false);
+
+  // Get WebSocket context (if provider is available)
+  let wsContext;
+  try {
+    wsContext = useWebSocket();
+  } catch {
+    // WebSocketProvider not available, that's fine
+    wsContext = null;
+  }
+
   const api = useMemo(
     () => new WildduckClient(networkClient, config),
     [networkClient, config],
   );
+
+  // Determine if WebSocket should be used
+  const shouldUseWebSocket =
+    options?.enableWebSocket &&
+    wsContext?.isEnabled &&
+    wildduckUserAuth !== null;
+
+  // WebSocket subscription and real-time updates
+  useEffect(() => {
+    if (!shouldUseWebSocket || !wildduckUserAuth || !wsContext) {
+      return;
+    }
+
+    const client = wsContext.getClient(wildduckUserAuth);
+    if (!client) {
+      return;
+    }
+
+    // Connect if not already connected
+    wsContext.connect(wildduckUserAuth).catch((error) => {
+      console.error("Failed to connect WebSocket:", error);
+    });
+
+    // Handle data messages (initial subscription response)
+    const handleData = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "settings" || !data.success) {
+        return;
+      }
+
+      const settingsData = data as any;
+      const settingsObj = (settingsData.settings as WildduckSettings) || {};
+
+      // Update local state
+      setSettings(settingsObj);
+
+      // Update cache
+      queryClient.setQueryData(
+        ["wildduck-settings", wildduckUserAuth.userId],
+        settingsObj,
+      );
+    };
+
+    // Handle update messages (real-time updates)
+    const handleUpdate = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "settings" || !data.success) {
+        return;
+      }
+
+      const updateData = data as any;
+      const event = updateData.event as "updated" | "deleted";
+      const key = updateData.key as string;
+      const value = updateData.value;
+
+      if (!event || !key) {
+        // If no specific event, invalidate and refetch
+        queryClient.invalidateQueries({
+          queryKey: ["wildduck-settings", wildduckUserAuth.userId],
+        });
+        return;
+      }
+
+      // Update settings based on event
+      setSettings((currentSettings) => {
+        let updatedSettings: WildduckSettings;
+
+        switch (event) {
+          case "updated":
+            // Update or create setting
+            updatedSettings = { ...currentSettings, [key]: value };
+            break;
+
+          case "deleted": {
+            // Remove setting
+            const { [key]: _removed, ...rest } = currentSettings;
+            updatedSettings = rest;
+            break;
+          }
+
+          default:
+            updatedSettings = currentSettings;
+        }
+
+        // Update cache
+        queryClient.setQueryData(
+          ["wildduck-settings", wildduckUserAuth.userId],
+          updatedSettings,
+        );
+
+        return updatedSettings;
+      });
+    };
+
+    // Register event handlers
+    client.on("data", handleData);
+    client.on("update", handleUpdate);
+
+    // Subscribe to settings channel
+    if (!wsSubscribedRef.current) {
+      wsSubscribedRef.current = true;
+      client
+        .subscribe("settings", {
+          userId: wildduckUserAuth.userId,
+          token: wildduckUserAuth.accessToken,
+        })
+        .catch((error) => {
+          console.error("Failed to subscribe to settings channel:", error);
+          wsSubscribedRef.current = false;
+        });
+    }
+
+    // Cleanup
+    return () => {
+      client.off("data", handleData);
+      client.off("update", handleUpdate);
+
+      if (wsSubscribedRef.current) {
+        client.unsubscribe("settings").catch((error) => {
+          console.error("Failed to unsubscribe from settings:", error);
+        });
+        wsSubscribedRef.current = false;
+      }
+
+      wsContext.disconnect(wildduckUserAuth.userId);
+    };
+  }, [shouldUseWebSocket, wildduckUserAuth, wsContext, queryClient]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -180,4 +330,5 @@ export {
   useWildduckSettings,
   type WildduckSettings,
   type UseWildduckSettingsReturn,
+  type UseWildduckSettingsOptions,
 };
