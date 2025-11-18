@@ -17,3 +17,6 @@ export * from "./network";
 
 // Export WebSocket client (optional real-time support)
 export * from "./websocket";
+
+// Export React components
+export * from "./components";
