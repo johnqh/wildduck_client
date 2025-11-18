@@ -13,8 +13,10 @@ import type {
   WildduckUploadMessageRequest,
   WildduckUserAuth,
 } from "@sudobility/types";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WildduckClient } from "../network/wildduck-client";
+import { useWebSocket } from "../websocket/useWebSocket";
+import type { ChannelName, ServerResponseData } from "../websocket/types";
 
 type GetMessagesOptions = Omit<GetMessagesRequest, "sess" | "ip">;
 
@@ -128,6 +130,14 @@ interface UseWildduckMessagesReturn {
 }
 
 /**
+ * Hook options for Wildduck messages
+ */
+interface UseWildduckMessagesOptions {
+  /** Enable WebSocket real-time updates (default: false) */
+  enableWebSocket?: boolean;
+}
+
+/**
  * Hook for Wildduck message operations using React Query
  * Mutations automatically invalidate related message queries
  *
@@ -135,14 +145,27 @@ interface UseWildduckMessagesReturn {
  * @param config - Wildduck configuration
  * @param _devMode - Development mode flag (unused)
  * @param pageSize - Default page size for message queries (optional)
+ * @param options - Hook options (including WebSocket enablement)
  */
 const useWildduckMessages = (
   networkClient: NetworkClient,
   config: WildduckConfig,
   _devMode: boolean = false,
   pageSize?: number,
+  options?: UseWildduckMessagesOptions,
 ): UseWildduckMessagesReturn => {
   const queryClient = useQueryClient();
+  const wsSubscribedRef = useRef(false);
+  const currentMailboxIdRef = useRef<string | null>(null);
+
+  // Get WebSocket context (if provider is available)
+  let wsContext;
+  try {
+    wsContext = useWebSocket();
+  } catch {
+    // WebSocketProvider not available, that's fine
+    wsContext = null;
+  }
 
   // Create API instance
   const api = useMemo(
@@ -161,6 +184,166 @@ const useWildduckMessages = (
     mailboxId: string;
     options?: GetMessagesOptions;
   } | null>(null);
+
+  // Determine if WebSocket should be used
+  const shouldUseWebSocket =
+    options?.enableWebSocket &&
+    wsContext?.isEnabled &&
+    lastFetchParams !== null;
+
+  // WebSocket subscription and real-time updates
+  useEffect(() => {
+    if (!shouldUseWebSocket || !lastFetchParams || !wsContext) {
+      return;
+    }
+
+    const { wildduckUserAuth, mailboxId } = lastFetchParams;
+    const client = wsContext.getClient(wildduckUserAuth);
+    if (!client) {
+      return;
+    }
+
+    // Connect if not already connected
+    wsContext.connect(wildduckUserAuth).catch((error) => {
+      console.error("Failed to connect WebSocket:", error);
+    });
+
+    // Handle data messages (initial subscription response)
+    const handleData = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "messages" || !data.success) {
+        return;
+      }
+
+      const messagesData = data as any;
+      const messageList = (messagesData.messages as WildduckMessage[]) || [];
+
+      // Update local state with initial messages
+      setMessages(messageList);
+      setTotalMessages(messagesData.total || 0);
+      setNextCursor(messagesData.nextCursor || false);
+      setPreviousCursor(messagesData.previousCursor || false);
+
+      // Update cache
+      queryClient.setQueryData(
+        ["wildduck-messages", wildduckUserAuth.userId, mailboxId],
+        messageList,
+      );
+    };
+
+    // Handle update messages (real-time updates)
+    const handleUpdate = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "messages" || !data.success) {
+        return;
+      }
+
+      const updateData = data as any;
+      const event = updateData.event as "created" | "updated" | "deleted";
+      const message = updateData.message as WildduckMessage;
+
+      if (!event || !message) {
+        // If no specific event, invalidate and refetch
+        queryClient.invalidateQueries({
+          queryKey: ["wildduck-messages", wildduckUserAuth.userId, mailboxId],
+        });
+        return;
+      }
+
+      // Get current messages from local state
+      setMessages((currentMessages) => {
+        let updatedMessages: WildduckMessage[];
+
+        switch (event) {
+          case "created":
+            // Prepend new message to list (newest first)
+            // Avoid duplicates
+            if (!currentMessages.find((m) => m.id === message.id)) {
+              updatedMessages = [message, ...currentMessages];
+              setTotalMessages((prev) => prev + 1);
+            } else {
+              updatedMessages = currentMessages;
+            }
+            break;
+
+          case "updated":
+            // Update existing message (flags, seen status, etc.)
+            updatedMessages = currentMessages.map((m) =>
+              m.id === message.id ? { ...m, ...message } : m,
+            );
+            break;
+
+          case "deleted":
+            // Remove message from list
+            updatedMessages = currentMessages.filter(
+              (m) => m.id !== message.id,
+            );
+            setTotalMessages((prev) => Math.max(0, prev - 1));
+            break;
+
+          default:
+            updatedMessages = currentMessages;
+        }
+
+        // Update cache
+        queryClient.setQueryData(
+          ["wildduck-messages", wildduckUserAuth.userId, mailboxId],
+          updatedMessages,
+        );
+
+        return updatedMessages;
+      });
+    };
+
+    // Register event handlers
+    client.on("data", handleData);
+    client.on("update", handleUpdate);
+
+    // Subscribe to messages channel for this mailbox
+    // Check if we need to resubscribe (mailbox changed)
+    const needsSubscription =
+      !wsSubscribedRef.current || currentMailboxIdRef.current !== mailboxId;
+
+    if (needsSubscription) {
+      // Unsubscribe from previous mailbox if needed
+      if (
+        wsSubscribedRef.current &&
+        currentMailboxIdRef.current !== mailboxId
+      ) {
+        client.unsubscribe("messages").catch((error) => {
+          console.error("Failed to unsubscribe from messages:", error);
+        });
+      }
+
+      wsSubscribedRef.current = true;
+      currentMailboxIdRef.current = mailboxId;
+
+      client
+        .subscribe("messages", {
+          userId: wildduckUserAuth.userId,
+          token: wildduckUserAuth.accessToken,
+          mailboxId,
+        })
+        .catch((error) => {
+          console.error("Failed to subscribe to messages channel:", error);
+          wsSubscribedRef.current = false;
+        });
+    }
+
+    // Cleanup
+    return () => {
+      client.off("data", handleData);
+      client.off("update", handleUpdate);
+
+      if (wsSubscribedRef.current) {
+        client.unsubscribe("messages").catch((error) => {
+          console.error("Failed to unsubscribe from messages:", error);
+        });
+        wsSubscribedRef.current = false;
+        currentMailboxIdRef.current = null;
+      }
+
+      wsContext.disconnect(wildduckUserAuth.userId);
+    };
+  }, [shouldUseWebSocket, lastFetchParams, wsContext, queryClient]);
 
   // Get messages function (imperative)
   const getMessages = useCallback(
@@ -589,6 +772,42 @@ const useWildduckMessages = (
     }
 
     try {
+      // Use WebSocket fetch if enabled, otherwise use REST API
+      if (shouldUseWebSocket && wsContext) {
+        const client = wsContext.getClient(lastFetchParams.wildduckUserAuth);
+        if (client) {
+          const response = await client.fetch("messages", {
+            mailboxId: lastFetchParams.mailboxId,
+            cursor: nextCursor as string,
+          });
+
+          if (response.success) {
+            const fetchData = response as any;
+            const newMessages = (fetchData.messages as WildduckMessage[]) || [];
+
+            // Append new messages to existing list
+            const updatedMessages = [...messages, ...newMessages];
+            setMessages(updatedMessages);
+            setTotalMessages(fetchData.total ?? 0);
+            setNextCursor(fetchData.nextCursor ?? false);
+            setPreviousCursor(fetchData.previousCursor ?? false);
+
+            // Update cache
+            queryClient.setQueryData(
+              [
+                "wildduck-messages",
+                lastFetchParams.wildduckUserAuth.userId,
+                lastFetchParams.mailboxId,
+              ],
+              updatedMessages,
+            );
+
+            return updatedMessages;
+          }
+        }
+      }
+
+      // Fallback to REST API
       const mergedOptions = {
         ...(pageSize !== undefined && { limit: pageSize }),
         ...lastFetchParams.options,
@@ -628,7 +847,16 @@ const useWildduckMessages = (
       console.error(errorMessage);
       return messages;
     }
-  }, [lastFetchParams, nextCursor, messages, pageSize, api, queryClient]);
+  }, [
+    lastFetchParams,
+    nextCursor,
+    messages,
+    pageSize,
+    api,
+    queryClient,
+    shouldUseWebSocket,
+    wsContext,
+  ]);
 
   // Previous page function - prepends new messages to the beginning
   const previous = useCallback(async (): Promise<WildduckMessage[]> => {
