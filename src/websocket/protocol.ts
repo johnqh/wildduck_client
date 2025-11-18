@@ -68,12 +68,26 @@ export function buildFetchMessage(
 /**
  * Parse a server message from JSON string
  *
- * @param data - Raw message data (string or Buffer)
+ * @param data - Raw message data (string, ArrayBuffer, or Blob)
  * @returns Parsed server message
  * @throws Error if message is invalid JSON
  */
-export function parseServerMessage(data: string | Buffer): ServerMessage {
-  const jsonString = typeof data === "string" ? data : data.toString("utf-8");
+export function parseServerMessage(
+  data: string | ArrayBuffer | Blob
+): ServerMessage {
+  // Convert to string if needed
+  let jsonString: string;
+
+  if (typeof data === "string") {
+    jsonString = data;
+  } else if (data instanceof ArrayBuffer) {
+    // React Native or browser ArrayBuffer
+    const decoder = new TextDecoder("utf-8");
+    jsonString = decoder.decode(data);
+  } else {
+    // Blob (browser only, but handle it)
+    throw new Error("Blob data type not supported. Server should send text messages.");
+  }
 
   try {
     const parsed = JSON.parse(jsonString);

@@ -18,6 +18,8 @@ import { WildduckWebSocketClient } from "./client";
 import type { WebSocketConfig, ConnectionState } from "./types";
 import { CLEANUP_DELAY } from "./constants";
 
+import type { TimerHandle } from "./types";
+
 /**
  * Connection instance data
  */
@@ -32,7 +34,7 @@ interface ConnectionInstance {
   refCount: number;
 
   /** Cleanup timer (disconnect after delay if refCount reaches 0) */
-  cleanupTimer: NodeJS.Timeout | null;
+  cleanupTimer: TimerHandle | null;
 
   /** Current connection state */
   state: ConnectionState;

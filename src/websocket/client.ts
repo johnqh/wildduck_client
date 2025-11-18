@@ -47,13 +47,15 @@ import {
   getDisconnectReason,
 } from "./protocol";
 
+import type { TimerHandle } from "./types";
+
 /**
  * Pending request state for tracking in-flight requests
  */
 interface PendingRequest {
   resolve: (data: any) => void;
   reject: (error: Error) => void;
-  timeout: NodeJS.Timeout;
+  timeout: TimerHandle;
 }
 
 /**
@@ -78,14 +80,14 @@ export class WildduckWebSocketClient implements IWebSocketClient {
 
   // Reconnection state
   private _reconnectAttempt = 0;
-  private reconnectTimer: NodeJS.Timeout | null = null;
+  private reconnectTimer: TimerHandle | null = null;
   private _isReconnecting = false;
 
   // Pending requests (waiting for server response)
   private pendingRequests = new Map<string, PendingRequest>();
 
   // Connection timeout
-  private connectTimeout: NodeJS.Timeout | null = null;
+  private connectTimeout: TimerHandle | null = null;
 
   /**
    * Create a new WebSocket client
@@ -481,7 +483,7 @@ export class WildduckWebSocketClient implements IWebSocketClient {
   /**
    * Handle incoming WebSocket message
    */
-  private handleMessage(data: string | Buffer): void {
+  private handleMessage(data: string | ArrayBuffer | Blob): void {
     try {
       const message = parseServerMessage(data);
 

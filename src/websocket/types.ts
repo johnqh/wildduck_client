@@ -372,3 +372,8 @@ export interface ReconnectionOptions {
   /** Maximum delay in milliseconds */
   maxDelay: number;
 }
+
+/**
+ * Timer handle type (compatible with both browser and React Native)
+ */
+export type TimerHandle = ReturnType<typeof setTimeout>;
