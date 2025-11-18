@@ -8,6 +8,11 @@
 // Export main client
 export { WildduckWebSocketClient } from "./client";
 
+// Export React provider and hooks
+export { WebSocketProvider, useWebSocketContext } from "./provider";
+export type { WebSocketContextValue, WebSocketProviderProps } from "./provider";
+export { useWebSocket } from "./useWebSocket";
+
 // Export types
 export type {
   WebSocketConfig,

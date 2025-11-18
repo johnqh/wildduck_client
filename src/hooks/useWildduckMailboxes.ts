@@ -10,6 +10,8 @@ import type {
   WildduckUserAuth,
 } from "@sudobility/types";
 import { WildduckClient } from "../network/wildduck-client";
+import { useWebSocket } from "../websocket/useWebSocket";
+import type { ChannelName, ServerResponseData } from "../websocket/types";
 
 interface UseWildduckMailboxesReturn {
   // Query state
@@ -56,6 +58,14 @@ interface UseWildduckMailboxesReturn {
 }
 
 /**
+ * Hook options for Wildduck mailboxes
+ */
+interface UseWildduckMailboxesOptions {
+  /** Enable WebSocket real-time updates (default: false) */
+  enableWebSocket?: boolean;
+}
+
+/**
  * Hook for Wildduck mailbox operations using React Query
  * Automatically fetches mailboxes when user is authenticated
  * Queries are cached and automatically refetched, mutations invalidate related queries
@@ -64,15 +74,27 @@ interface UseWildduckMailboxesReturn {
  * @param config - Wildduck configuration
  * @param wildduckUserAuth - WildDuck user authentication data (single source of truth)
  * @param devMode - Development mode flag
+ * @param options - Hook options (including WebSocket enablement)
  */
 const useWildduckMailboxes = (
   networkClient: NetworkClient,
   config: WildduckConfig,
   wildduckUserAuth: Optional<WildduckUserAuth>,
   _devMode: boolean = false,
+  options?: UseWildduckMailboxesOptions,
 ): UseWildduckMailboxesReturn => {
   const queryClient = useQueryClient();
   const hasFetchedRef = useRef(false);
+  const wsSubscribedRef = useRef(false);
+
+  // Get WebSocket context (if provider is available)
+  let wsContext;
+  try {
+    wsContext = useWebSocket();
+  } catch {
+    // WebSocketProvider not available, that's fine
+    wsContext = null;
+  }
 
   // Create API instance
   const api = useMemo(
@@ -82,6 +104,12 @@ const useWildduckMailboxes = (
 
   // Get userId from wildduckUserAuth (single source of truth)
   const userId = wildduckUserAuth?.userId || null;
+
+  // Determine if WebSocket should be used
+  const shouldUseWebSocket =
+    options?.enableWebSocket &&
+    wsContext?.isEnabled &&
+    wildduckUserAuth !== null;
 
   // Get mailboxes query (not auto-fetched, only when explicitly called)
   const getMailboxes = useCallback(
@@ -180,8 +208,141 @@ const useWildduckMailboxes = (
       ]) || []
     : [];
 
-  // Auto-fetch mailboxes when user is authenticated (only once per userId)
+  // WebSocket subscription and real-time updates
   useEffect(() => {
+    if (!shouldUseWebSocket || !wildduckUserAuth || !wsContext) {
+      return;
+    }
+
+    const client = wsContext.getClient(wildduckUserAuth);
+    if (!client) {
+      return;
+    }
+
+    // Connect if not already connected
+    wsContext.connect(wildduckUserAuth).catch((error) => {
+      console.error("Failed to connect WebSocket:", error);
+    });
+
+    // Handle data messages (initial subscription response)
+    const handleData = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "mailboxes" || !data.success) {
+        return;
+      }
+
+      const mailboxes = (data as any).mailboxes as WildduckMailbox[];
+      if (mailboxes) {
+        // Update cache with initial data
+        queryClient.setQueryData(
+          ["wildduck-mailboxes", wildduckUserAuth.userId],
+          mailboxes
+        );
+      }
+    };
+
+    // Handle update messages (real-time updates)
+    const handleUpdate = (channel: ChannelName, data: ServerResponseData) => {
+      if (channel !== "mailboxes" || !data.success) {
+        return;
+      }
+
+      // Get current mailboxes from cache
+      const currentMailboxes =
+        queryClient.getQueryData<WildduckMailbox[]>([
+          "wildduck-mailboxes",
+          wildduckUserAuth.userId,
+        ]) || [];
+
+      const updateData = data as any;
+      const event = updateData.event as "created" | "updated" | "deleted";
+      const mailbox = updateData.mailbox as WildduckMailbox;
+
+      if (!event || !mailbox) {
+        // If no specific event, refresh entire list
+        queryClient.invalidateQueries({
+          queryKey: ["wildduck-mailboxes", wildduckUserAuth.userId],
+        });
+        return;
+      }
+
+      let updatedMailboxes: WildduckMailbox[];
+
+      switch (event) {
+        case "created":
+          // Add new mailbox to list (avoid duplicates)
+          if (!currentMailboxes.find((m) => m.id === mailbox.id)) {
+            updatedMailboxes = [...currentMailboxes, mailbox];
+          } else {
+            updatedMailboxes = currentMailboxes;
+          }
+          break;
+
+        case "updated":
+          // Update existing mailbox
+          updatedMailboxes = currentMailboxes.map((m) =>
+            m.id === mailbox.id ? { ...m, ...mailbox } : m
+          );
+          break;
+
+        case "deleted":
+          // Remove mailbox from list
+          updatedMailboxes = currentMailboxes.filter(
+            (m) => m.id !== mailbox.id
+          );
+          break;
+
+        default:
+          updatedMailboxes = currentMailboxes;
+      }
+
+      // Update cache
+      queryClient.setQueryData(
+        ["wildduck-mailboxes", wildduckUserAuth.userId],
+        updatedMailboxes
+      );
+    };
+
+    // Register event handlers
+    client.on("data", handleData);
+    client.on("update", handleUpdate);
+
+    // Subscribe to mailboxes channel
+    if (!wsSubscribedRef.current) {
+      wsSubscribedRef.current = true;
+      client
+        .subscribe("mailboxes", {
+          userId: wildduckUserAuth.userId,
+          token: wildduckUserAuth.accessToken,
+        })
+        .catch((error) => {
+          console.error("Failed to subscribe to mailboxes channel:", error);
+          wsSubscribedRef.current = false;
+        });
+    }
+
+    // Cleanup
+    return () => {
+      client.off("data", handleData);
+      client.off("update", handleUpdate);
+
+      if (wsSubscribedRef.current) {
+        client.unsubscribe("mailboxes").catch((error) => {
+          console.error("Failed to unsubscribe from mailboxes:", error);
+        });
+        wsSubscribedRef.current = false;
+      }
+
+      wsContext.disconnect(wildduckUserAuth.userId);
+    };
+  }, [shouldUseWebSocket, wildduckUserAuth, wsContext, queryClient]);
+
+  // Auto-fetch mailboxes when user is authenticated (only if WebSocket is disabled)
+  useEffect(() => {
+    if (shouldUseWebSocket) {
+      // WebSocket will provide initial data
+      return;
+    }
+
     if (wildduckUserAuth && !hasFetchedRef.current) {
       const cached = queryClient.getQueryData<WildduckMailbox[]>([
         "wildduck-mailboxes",
@@ -201,7 +362,7 @@ const useWildduckMailboxes = (
         });
       }
     }
-  }, [wildduckUserAuth, getMailboxes, queryClient]);
+  }, [shouldUseWebSocket, wildduckUserAuth, getMailboxes, queryClient]);
 
   // Create mailbox mutation
   const createMutation = useMutation({
@@ -408,4 +569,8 @@ const useWildduckMailboxes = (
   );
 };
 
-export { useWildduckMailboxes, type UseWildduckMailboxesReturn };
+export {
+  useWildduckMailboxes,
+  type UseWildduckMailboxesReturn,
+  type UseWildduckMailboxesOptions,
+};
