@@ -49,7 +49,10 @@
       "Bash(mkdir:*)",
       "Bash(npm run test:unit:*)",
       "Bash(npm run build:main:*)",
-      "Bash(npm run)"
+      "Bash(npm run)",
+      "Bash(gh run list:*)",
+      "Bash(git remote:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
