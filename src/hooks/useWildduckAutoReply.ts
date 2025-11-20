@@ -105,11 +105,6 @@ const useWildduckAutoReply = (
       return;
     }
 
-    // Connect if not already connected
-    wsContext.connect(wildduckUserAuth).catch((error) => {
-      console.error("Failed to connect WebSocket:", error);
-    });
-
     // Handle data messages (initial subscription response)
     const handleData = (channel: ChannelName, data: ServerResponseData) => {
       if (channel !== "autoreply" || !data.success) {
@@ -172,13 +167,20 @@ const useWildduckAutoReply = (
     // Subscribe to autoreply channel
     if (!wsSubscribedRef.current) {
       wsSubscribedRef.current = true;
-      client
-        .subscribe("autoreply", {
-          userId: wildduckUserAuth.userId,
-          token: wildduckUserAuth.accessToken,
+      // Connect first, then subscribe
+      wsContext
+        .connect(wildduckUserAuth)
+        .then(() => {
+          return client.subscribe("autoreply", {
+            userId: wildduckUserAuth.userId,
+            token: wildduckUserAuth.accessToken,
+          });
         })
         .catch((error) => {
-          console.error("Failed to subscribe to autoreply channel:", error);
+          console.error(
+            "Failed to connect/subscribe to autoreply channel:",
+            error,
+          );
           wsSubscribedRef.current = false;
         });
     }

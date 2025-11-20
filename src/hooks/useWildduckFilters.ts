@@ -105,11 +105,6 @@ const useWildduckFilters = (
       return;
     }
 
-    // Connect if not already connected
-    wsContext.connect(wildduckUserAuth).catch((error) => {
-      console.error("Failed to connect WebSocket:", error);
-    });
-
     // Handle data messages (initial subscription response)
     const handleData = (channel: ChannelName, data: ServerResponseData) => {
       if (channel !== "filters" || !data.success) {
@@ -195,13 +190,20 @@ const useWildduckFilters = (
     // Subscribe to filters channel
     if (!wsSubscribedRef.current) {
       wsSubscribedRef.current = true;
-      client
-        .subscribe("filters", {
-          userId: wildduckUserAuth.userId,
-          token: wildduckUserAuth.accessToken,
+      // Connect first, then subscribe
+      wsContext
+        .connect(wildduckUserAuth)
+        .then(() => {
+          return client.subscribe("filters", {
+            userId: wildduckUserAuth.userId,
+            token: wildduckUserAuth.accessToken,
+          });
         })
         .catch((error) => {
-          console.error("Failed to subscribe to filters channel:", error);
+          console.error(
+            "Failed to connect/subscribe to filters channel:",
+            error,
+          );
           wsSubscribedRef.current = false;
         });
     }

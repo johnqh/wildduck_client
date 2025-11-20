@@ -203,11 +203,6 @@ const useWildduckMessages = (
       return;
     }
 
-    // Connect if not already connected
-    wsContext.connect(wildduckUserAuth).catch((error) => {
-      console.error("Failed to connect WebSocket:", error);
-    });
-
     // Handle data messages (initial subscription response)
     const handleData = (channel: ChannelName, data: ServerResponseData) => {
       if (channel !== "messages" || !data.success) {
@@ -316,14 +311,21 @@ const useWildduckMessages = (
       wsSubscribedRef.current = true;
       currentMailboxIdRef.current = mailboxId;
 
-      client
-        .subscribe("messages", {
-          userId: wildduckUserAuth.userId,
-          token: wildduckUserAuth.accessToken,
-          mailboxId,
+      // Connect first, then subscribe
+      wsContext
+        .connect(wildduckUserAuth)
+        .then(() => {
+          return client.subscribe("messages", {
+            userId: wildduckUserAuth.userId,
+            token: wildduckUserAuth.accessToken,
+            mailboxId,
+          });
         })
         .catch((error) => {
-          console.error("Failed to subscribe to messages channel:", error);
+          console.error(
+            "Failed to connect/subscribe to messages channel:",
+            error,
+          );
           wsSubscribedRef.current = false;
         });
     }

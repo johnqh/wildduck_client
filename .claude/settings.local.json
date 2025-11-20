@@ -47,7 +47,9 @@
       "Bash(sed:*)",
       "mcp__ide__getDiagnostics",
       "Bash(mkdir:*)",
-      "Bash(npm run test:unit:*)"
+      "Bash(npm run test:unit:*)",
+      "Bash(npm run build:main:*)",
+      "Bash(npm run)"
     ],
     "deny": [],
     "ask": []

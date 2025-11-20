@@ -96,11 +96,6 @@ const useWildduckSettings = (
       return;
     }
 
-    // Connect if not already connected
-    wsContext.connect(wildduckUserAuth).catch((error) => {
-      console.error("Failed to connect WebSocket:", error);
-    });
-
     // Handle data messages (initial subscription response)
     const handleData = (channel: ChannelName, data: ServerResponseData) => {
       if (channel !== "settings" || !data.success) {
@@ -177,13 +172,20 @@ const useWildduckSettings = (
     // Subscribe to settings channel
     if (!wsSubscribedRef.current) {
       wsSubscribedRef.current = true;
-      client
-        .subscribe("settings", {
-          userId: wildduckUserAuth.userId,
-          token: wildduckUserAuth.accessToken,
+      // Connect first, then subscribe
+      wsContext
+        .connect(wildduckUserAuth)
+        .then(() => {
+          return client.subscribe("settings", {
+            userId: wildduckUserAuth.userId,
+            token: wildduckUserAuth.accessToken,
+          });
         })
         .catch((error) => {
-          console.error("Failed to subscribe to settings channel:", error);
+          console.error(
+            "Failed to connect/subscribe to settings channel:",
+            error,
+          );
           wsSubscribedRef.current = false;
         });
     }
