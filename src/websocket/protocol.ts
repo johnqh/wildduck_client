@@ -37,13 +37,17 @@ export function buildSubscribeMessage(
  * Build an unsubscribe message
  *
  * @param channel - Channel name
+ * @param params - Optional parameters to identify the subscription (used by messages channel)
  * @returns Client message object
  */
-export function buildUnsubscribeMessage(channel: ChannelName): ClientMessage {
+export function buildUnsubscribeMessage(
+  channel: ChannelName,
+  params?: Partial<SubscriptionParams>,
+): ClientMessage {
   return {
     type: MESSAGE_TYPES.UNSUBSCRIBE as ClientMessageType,
     channel,
-    data: {},
+    data: params || {},
   };
 }
 

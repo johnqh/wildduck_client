@@ -281,13 +281,14 @@ export class WildduckWebSocketClient implements IWebSocketClient {
    * @param channel - Channel name
    */
   async unsubscribe(channel: ChannelName): Promise<void> {
-    if (!this.subscriptionMap.has(channel)) {
+    const subscription = this.subscriptionMap.get(channel);
+    if (!subscription) {
       this.debug(`Not subscribed to ${channel}`);
       return;
     }
 
     // Build unsubscribe message
-    const message = buildUnsubscribeMessage(channel);
+    const message = buildUnsubscribeMessage(channel, subscription.params);
 
     // Send message (don't wait for response)
     if (this.isConnected && this.ws) {
