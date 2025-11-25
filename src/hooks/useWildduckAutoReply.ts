@@ -207,6 +207,24 @@ const useWildduckAutoReply = (
       wildduckUserAuth: WildduckUserAuth,
     ): Promise<WildduckAutoreplyResponse> => {
       try {
+        const isWebSocketConnected =
+          shouldUseWebSocket &&
+          !!wsContext?.isConnected(wildduckUserAuth.userId);
+
+        if (isWebSocketConnected) {
+          const cachedAutoreply =
+            queryClient.getQueryData<WildduckAutoreplyResponse>([
+              "wildduck-autoreply",
+              wildduckUserAuth.userId,
+            ]);
+
+          if (cachedAutoreply !== undefined) {
+            return cachedAutoreply;
+          }
+
+          return undefined as any;
+        }
+
         const autoreplyData = await api.getAutoreply(wildduckUserAuth);
 
         // Update cache
@@ -226,7 +244,7 @@ const useWildduckAutoReply = (
         return undefined as any;
       }
     },
-    [api, queryClient],
+    [api, queryClient, shouldUseWebSocket, wsContext],
   );
 
   // Get cached autoreply from query cache (used for reading state)

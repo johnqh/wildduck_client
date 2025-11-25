@@ -212,6 +212,18 @@ const useWildduckSettings = (
 
   const getSettings = useCallback(
     async (wildduckUserAuth: WildduckUserAuth): Promise<WildduckSettings> => {
+      const isWebSocketConnected =
+        shouldUseWebSocket && !!wsContext?.isConnected(wildduckUserAuth.userId);
+
+      if (isWebSocketConnected) {
+        return (
+          queryClient.getQueryData<WildduckSettings>([
+            "wildduck-settings",
+            wildduckUserAuth.userId,
+          ]) || settings
+        );
+      }
+
       setIsLoading(true);
       setError(null);
 
@@ -234,7 +246,7 @@ const useWildduckSettings = (
         setIsLoading(false);
       }
     },
-    [api],
+    [api, queryClient, settings, shouldUseWebSocket, wsContext],
   );
 
   const updateSetting = useCallback(

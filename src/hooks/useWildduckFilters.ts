@@ -232,6 +232,18 @@ const useWildduckFilters = (
     async (
       wildduckUserAuth: WildduckUserAuth,
     ): Promise<WildduckFilterListItem[]> => {
+      const isWebSocketConnected =
+        shouldUseWebSocket && !!wsContext?.isConnected(wildduckUserAuth.userId);
+
+      if (isWebSocketConnected) {
+        const cachedFilters =
+          queryClient.getQueryData<WildduckFilterListItem[]>([
+            "wildduck-filters",
+            wildduckUserAuth.userId,
+          ]) || filters;
+        return cachedFilters;
+      }
+
       setIsLoading(true);
       setError(null);
 
@@ -261,7 +273,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [api, devMode],
+    [api, devMode, filters, queryClient, shouldUseWebSocket, wsContext],
   );
 
   const getFilter = useCallback(
@@ -269,6 +281,18 @@ const useWildduckFilters = (
       wildduckUserAuth: WildduckUserAuth,
       filterId: string,
     ): Promise<WildduckFilterListItem | undefined> => {
+      const isWebSocketConnected =
+        shouldUseWebSocket && !!wsContext?.isConnected(wildduckUserAuth.userId);
+
+      if (isWebSocketConnected) {
+        const cachedFilters =
+          queryClient.getQueryData<WildduckFilterListItem[]>([
+            "wildduck-filters",
+            wildduckUserAuth.userId,
+          ]) || filters;
+        return cachedFilters.find((f) => f.id === filterId);
+      }
+
       setIsLoading(true);
       setError(null);
 
@@ -291,7 +315,7 @@ const useWildduckFilters = (
         setIsLoading(false);
       }
     },
-    [api, devMode],
+    [api, devMode, filters, queryClient, shouldUseWebSocket, wsContext],
   );
 
   const createFilter = useCallback(

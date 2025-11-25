@@ -123,6 +123,20 @@ const useWildduckMailboxes = (
       } = {},
     ): Promise<WildduckMailbox[]> => {
       try {
+        const isWebSocketConnected =
+          shouldUseWebSocket &&
+          !!wsContext?.isConnected(wildduckUserAuth.userId);
+
+        // When WebSocket is active, rely on real-time data instead of REST
+        if (isWebSocketConnected) {
+          return (
+            queryClient.getQueryData<WildduckMailbox[]>([
+              "wildduck-mailboxes",
+              wildduckUserAuth.userId,
+            ]) || []
+          );
+        }
+
         const getMailboxesOptions: any = {};
         if (options.specialUse !== undefined)
           getMailboxesOptions.specialUse = options.specialUse;
@@ -153,7 +167,7 @@ const useWildduckMailboxes = (
         return [];
       }
     },
-    [api, wildduckUserAuth, queryClient],
+    [api, wildduckUserAuth, queryClient, shouldUseWebSocket, wsContext],
   );
 
   // Get single mailbox

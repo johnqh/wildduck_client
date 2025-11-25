@@ -352,13 +352,34 @@ const useWildduckMessages = (
     async (
       wildduckUserAuth: WildduckUserAuth,
       mailboxId: string,
-      options: GetMessagesOptions = {},
+      requestOptions: GetMessagesOptions = {},
     ): Promise<WildduckMessage[]> => {
+      const mergedOptions = {
+        ...(pageSize !== undefined && { limit: pageSize }),
+        ...requestOptions,
+      };
+      const isWebSocketConnected =
+        options?.enableWebSocket &&
+        wsContext?.isEnabled &&
+        !!wsContext?.isConnected(wildduckUserAuth.userId);
+
+      setLastFetchParams({
+        wildduckUserAuth,
+        mailboxId,
+        options: requestOptions,
+      });
+
+      if (isWebSocketConnected) {
+        return (
+          queryClient.getQueryData<WildduckMessage[]>([
+            "wildduck-messages",
+            wildduckUserAuth.userId,
+            mailboxId,
+          ]) || messages
+        );
+      }
+
       try {
-        const mergedOptions = {
-          ...(pageSize !== undefined && { limit: pageSize }),
-          ...options,
-        };
         const response = await api.getMessages(
           wildduckUserAuth,
           mailboxId,
@@ -371,7 +392,6 @@ const useWildduckMessages = (
         setCurrentPage(response.page ?? 1);
         setNextCursor(response.nextCursor ?? false);
         setPreviousCursor(response.previousCursor ?? false);
-        setLastFetchParams({ wildduckUserAuth, mailboxId, options });
 
         // Update cache
         queryClient.setQueryData(
@@ -389,7 +409,7 @@ const useWildduckMessages = (
         return [];
       }
     },
-    [api, queryClient, pageSize],
+    [api, messages, pageSize, queryClient, wsContext, options],
   );
 
   // Get single message function (imperative)
@@ -400,6 +420,34 @@ const useWildduckMessages = (
       messageId: string,
     ): Promise<WildduckMessageResponse> => {
       try {
+        const isWebSocketConnected =
+          options?.enableWebSocket &&
+          wsContext?.isEnabled &&
+          !!wsContext?.isConnected(wildduckUserAuth.userId);
+
+        if (isWebSocketConnected) {
+          const cachedMessages = queryClient.getQueryData<WildduckMessage[]>([
+            "wildduck-messages",
+            wildduckUserAuth.userId,
+            mailboxId,
+          ]);
+
+          const cachedMessage =
+            queryClient.getQueryData<WildduckMessageResponse>([
+              "wildduck-message",
+              wildduckUserAuth.userId,
+              mailboxId,
+              messageId,
+            ]) ||
+            (cachedMessages?.find((m) => String(m.id) === messageId) as
+              | WildduckMessageResponse
+              | undefined);
+
+          if (cachedMessage) {
+            return cachedMessage;
+          }
+        }
+
         const messageData = await api.getMessage(
           wildduckUserAuth,
           mailboxId,
@@ -420,7 +468,7 @@ const useWildduckMessages = (
         return undefined as any;
       }
     },
-    [api, queryClient],
+    [api, options, queryClient, wsContext],
   );
 
   // Upload message mutation
