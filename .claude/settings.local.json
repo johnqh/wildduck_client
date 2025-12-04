@@ -52,7 +52,8 @@
       "Bash(npm run)",
       "Bash(gh run list:*)",
       "Bash(git remote:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
