@@ -1,5 +1,6 @@
 import type { NetworkClient } from "@sudobility/types";
 import type { Optional } from "@sudobility/types";
+import type { StorageService } from "@sudobility/di";
 import type {
   CreateMailboxRequest,
   GetMailboxesRequest,
@@ -34,9 +35,6 @@ import type {
   WildduckSearchMessagesResponse,
   WildduckSearchQueryParams,
 } from "../types/wildduck-search";
-
-// Platform-specific globals
-declare const sessionStorage: Storage;
 
 // Storage keys utility
 const getWildduckStorageKeys = (username: string) => ({
@@ -124,11 +122,17 @@ class WildduckClient {
   private headers: Record<string, string>;
   private networkClient: NetworkClient;
   private config: ReturnType<typeof createApiConfig>;
+  private storage: Optional<StorageService>;
 
-  constructor(networkClient: NetworkClient, config: WildduckConfig) {
+  constructor(
+    networkClient: NetworkClient,
+    config: WildduckConfig,
+    storage?: StorageService,
+  ) {
     this.config = createApiConfig(config);
     this.baseUrl = this.config.BASE_URL;
     this.networkClient = networkClient;
+    this.storage = storage || null;
 
     // Set basic headers - authentication is handled per-request via wildduckUserAuth
     this.headers = {
@@ -265,20 +269,20 @@ class WildduckClient {
       body: JSON.stringify(requestBody),
     });
 
-    // Store the user ID and token in session storage if authentication is successful
-    if (response.success && response.id) {
+    // Store the user ID and token in storage if authentication is successful
+    if (response.success && response.id && this.storage) {
       try {
         const keys = getWildduckStorageKeys(request.username);
-        sessionStorage.setItem(keys.userId, response.id);
+        await this.storage.setItem(keys.userId, response.id);
 
         // Store the user token if provided
         if (response.token) {
-          sessionStorage.setItem(keys.token, response.token);
+          await this.storage.setItem(keys.token, response.token);
           // Set the user token for this API client instance
           this.setUserToken(response.token);
         }
       } catch {
-        // Failed to store in session storage
+        // Failed to store in storage
       }
     }
 
@@ -305,20 +309,20 @@ class WildduckClient {
       },
     });
 
-    // Store the user ID and token in session storage if authentication is successful
-    if (response.success && response.id) {
+    // Store the user ID and token in storage if authentication is successful
+    if (response.success && response.id && this.storage) {
       try {
         const keys = getWildduckStorageKeys(username);
-        sessionStorage.setItem(keys.userId, response.id);
+        await this.storage.setItem(keys.userId, response.id);
 
         // Store the user token if provided
         if (response.token) {
-          sessionStorage.setItem(keys.token, response.token);
+          await this.storage.setItem(keys.token, response.token);
           // Set the user token for this API client instance
           this.setUserToken(response.token);
         }
       } catch {
-        // Failed to store in session storage
+        // Failed to store in storage
       }
     }
 
@@ -1385,8 +1389,9 @@ class WildduckClient {
 const createWildduckClient = (
   networkClient: NetworkClient,
   config: WildduckConfig,
+  storage?: StorageService,
 ): WildduckClient => {
-  return new WildduckClient(networkClient, config);
+  return new WildduckClient(networkClient, config, storage);
 };
 
 // Export the main WildduckClient class
@@ -1400,8 +1405,11 @@ const isValidObjectId = (id: string): boolean => {
 };
 
 // Helper function to get Wildduck user ID for an email address
-// This retrieves the actual MongoDB ObjectId from session storage after authentication
-const emailToUserId = (emailAddress: string): string => {
+// This retrieves the actual MongoDB ObjectId from storage after authentication
+const emailToUserId = async (
+  emailAddress: string,
+  storage: StorageService,
+): Promise<string> => {
   // Extract the wallet address part from email if it's in email format
   let username = emailAddress.toLowerCase();
   if (username.includes("@")) {
@@ -1420,7 +1428,7 @@ const emailToUserId = (emailAddress: string): string => {
     ];
 
     for (const { key, type } of storageKeys) {
-      const stored = sessionStorage.getItem(key);
+      const stored = await storage.getItem(key);
       if (stored) {
         // Check if it's a cached auth object
         if (type === "cache") {
@@ -1441,7 +1449,7 @@ const emailToUserId = (emailAddress: string): string => {
       }
     }
   } catch {
-    // Failed to retrieve user ID from session storage
+    // Failed to retrieve user ID from storage
   }
 
   // Fallback: No stored user ID found

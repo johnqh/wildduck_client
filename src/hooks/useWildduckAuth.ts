@@ -101,8 +101,8 @@ const useWildduckAuth = (
   const queryClient = useQueryClient();
 
   const api = useMemo(
-    () => new WildduckClient(networkClient, config),
-    [networkClient, config],
+    () => new WildduckClient(networkClient, config, storage),
+    [networkClient, config, storage],
   );
 
   // Subscribe to singleton authData changes
