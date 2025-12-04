@@ -420,34 +420,21 @@ const useWildduckMessages = (
       messageId: string,
     ): Promise<WildduckMessageResponse> => {
       try {
-        const isWebSocketConnected =
-          options?.enableWebSocket &&
-          wsContext?.isEnabled &&
-          !!wsContext?.isConnected(wildduckUserAuth.userId);
-
-        if (isWebSocketConnected) {
-          const cachedMessages = queryClient.getQueryData<WildduckMessage[]>([
-            "wildduck-messages",
+        // Check for cached full message detail first (has html/attachments)
+        const cachedMessageDetail =
+          queryClient.getQueryData<WildduckMessageResponse>([
+            "wildduck-message",
             wildduckUserAuth.userId,
             mailboxId,
+            messageId,
           ]);
 
-          const cachedMessage =
-            queryClient.getQueryData<WildduckMessageResponse>([
-              "wildduck-message",
-              wildduckUserAuth.userId,
-              mailboxId,
-              messageId,
-            ]) ||
-            (cachedMessages?.find((m) => String(m.id) === messageId) as
-              | WildduckMessageResponse
-              | undefined);
-
-          if (cachedMessage) {
-            return cachedMessage;
-          }
+        // Only return cached message if it has full payload (html field exists)
+        if (cachedMessageDetail && "html" in cachedMessageDetail) {
+          return cachedMessageDetail;
         }
 
+        // Always fetch full message details from API
         const messageData = await api.getMessage(
           wildduckUserAuth,
           mailboxId,
@@ -468,7 +455,7 @@ const useWildduckMessages = (
         return undefined as any;
       }
     },
-    [api, options, queryClient, wsContext],
+    [api, queryClient],
   );
 
   // Upload message mutation
