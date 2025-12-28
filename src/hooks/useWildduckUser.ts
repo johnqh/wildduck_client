@@ -1,15 +1,14 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { WildduckClient } from "../network/wildduck-client";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
-  NetworkClient,
-  Optional,
   WildduckConfig,
   WildduckSuccessResponse,
   WildduckUpdateUserRequest,
   WildduckUserAuth,
   WildduckUserResponse,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 
 export interface UseWildduckUserParams {
   wildduckUserAuth?: WildduckUserAuth;

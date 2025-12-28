@@ -1,10 +1,10 @@
 import { WildduckAPI } from "../network/wildduck-client";
+import type { NetworkClient } from "@sudobility/types";
 import type {
-  NetworkClient,
   SpamSettings,
   WildduckConfig,
   WildduckUserAuth,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 
 /**
  * Get current spam settings (spam level and from whitelist)

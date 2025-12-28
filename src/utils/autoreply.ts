@@ -1,10 +1,10 @@
 import { WildduckAPI } from "../network/wildduck-client";
+import type { NetworkClient } from "@sudobility/types";
 import type {
   AutoReplySettings,
-  NetworkClient,
   WildduckConfig,
   WildduckUserAuth,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 
 /**
  * Parameters for updating auto-reply

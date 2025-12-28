@@ -12,8 +12,8 @@ import {
 } from "@tanstack/react-query";
 import { queryKeys } from "./query-keys";
 import { STALE_TIMES } from "./query-config";
+import type { NetworkClient } from "@sudobility/types";
 import type {
-  NetworkClient,
   WildduckAddress,
   WildduckConfig,
   WildduckFilterListItem,
@@ -24,7 +24,7 @@ import type {
   WildduckUser,
   WildduckUserAuth,
   WildduckUserListResponse,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 import { WildduckMockData } from "./mocks";
 import { WildduckClient } from "../network/wildduck-client";
 import type {

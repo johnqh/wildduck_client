@@ -5,7 +5,7 @@
 import type {
   WildduckAuthResponse as AuthenticationResponse,
   WildduckPreAuthResponse as PreAuthResponse,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 
 export class WildduckMockData {
   static getAuthStatus() {

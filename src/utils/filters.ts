@@ -1,14 +1,13 @@
 import { WildduckAPI } from "../network/wildduck-client";
-import type { Optional } from "@sudobility/types";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
   EmailFilter,
   FilterAction,
   FilterQuery,
   FilterResponse,
-  NetworkClient,
   WildduckConfig,
   WildduckUserAuth,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 
 /**
  * Parameters for creating/updating a filter

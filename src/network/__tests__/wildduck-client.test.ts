@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WildduckAPI } from '../wildduck-client';
-import { WildduckConfig } from '@sudobility/types';
+import type { WildduckConfig } from '@sudobility/mail_box_types';
 import { MockNetworkClient, MockStorageService } from '@sudobility/di/mocks';
 
 const TEST_USER_AUTH = { username: 'testuser', userId: 'user123', accessToken: 'test-token' };

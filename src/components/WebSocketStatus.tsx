@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import type { WildduckUserAuth } from "@sudobility/types";
+import type { WildduckUserAuth } from "@sudobility/mail_box_types";
 import { useWebSocket } from "../websocket/useWebSocket";
 import type { ConnectionState } from "../websocket/types";
 

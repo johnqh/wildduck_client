@@ -1,5 +1,4 @@
-import type { NetworkClient } from "@sudobility/types";
-import type { Optional } from "@sudobility/types";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type { StorageService } from "@sudobility/di";
 import type {
   CreateMailboxRequest,
@@ -30,7 +29,7 @@ import type {
   WildduckUploadMessageResponse,
   WildduckUserAuth,
   WildduckUserResponse,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 import type {
   WildduckSearchMessagesResponse,
   WildduckSearchQueryParams,

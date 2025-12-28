@@ -13,7 +13,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import type { WildduckUserAuth } from "@sudobility/types";
+import type { WildduckUserAuth } from "@sudobility/mail_box_types";
 import { WildduckWebSocketClient } from "./client";
 import type { ConnectionState, WebSocketConfig } from "./types";
 import { CLEANUP_DELAY } from "./constants";

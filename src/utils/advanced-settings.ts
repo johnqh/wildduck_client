@@ -1,11 +1,11 @@
 import { WildduckAPI } from "../network/wildduck-client";
+import type { NetworkClient } from "@sudobility/types";
 import type {
   AdvancedSettings,
-  NetworkClient,
   SMTPRelay,
   WildduckConfig,
   WildduckUserAuth,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 
 /**
  * Get advanced settings (uploadSentMessages flag from user info)

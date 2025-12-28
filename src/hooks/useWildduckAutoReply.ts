@@ -6,7 +6,7 @@ import type {
   WildduckAutoreplyResponse,
   WildduckConfig,
   WildduckUserAuth,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 import { WildduckClient } from "../network/wildduck-client";
 import { useWebSocket } from "../websocket/useWebSocket";
 import type { ChannelName, ServerResponseData } from "../websocket/types";

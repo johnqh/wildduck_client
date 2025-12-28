@@ -8,11 +8,11 @@ import type {
   WildduckAuthenticateRequest,
   WildduckConfig,
   WildduckPreAuthRequest,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 import {
   createAuthenticateRequest,
   createPreAuthRequest,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 import { WildduckClient } from "../network/wildduck-client";
 
 // Type aliases for legacy compatibility

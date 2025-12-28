@@ -1,14 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
-  NetworkClient,
-  Optional,
   WildduckAddress,
   WildduckConfig,
   WildduckCreateAddressRequest,
   WildduckUpdateAddressRequest,
   WildduckUserAuth,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 import { WildduckMockData } from "./mocks";
 import { WildduckClient } from "../network/wildduck-client";
 

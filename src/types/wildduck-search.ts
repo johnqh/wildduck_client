@@ -1,7 +1,7 @@
 import type {
   WildduckMessageListItem,
   WildduckSearchMessagesRequest,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 
 export type WildduckSearchQueryParams = Omit<
   Partial<WildduckSearchMessagesRequest>,

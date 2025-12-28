@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
   GetMessagesRequest,
-  NetworkClient,
-  Optional,
   WildduckConfig,
   WildduckMessage,
   WildduckMessageResponse,
@@ -12,7 +11,7 @@ import type {
   WildduckUpdateMessageResponse,
   WildduckUploadMessageRequest,
   WildduckUserAuth,
-} from "@sudobility/types";
+} from "@sudobility/mail_box_types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WildduckClient } from "../network/wildduck-client";
 import { useWebSocket } from "../websocket/useWebSocket";

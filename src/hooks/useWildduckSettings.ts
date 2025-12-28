@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type {
-  NetworkClient,
-  Optional,
-  WildduckUserAuth,
-} from "@sudobility/types";
-import type { WildduckConfig } from "@sudobility/types";
+import type { NetworkClient, Optional } from "@sudobility/types";
+import type { WildduckConfig, WildduckUserAuth } from "@sudobility/mail_box_types";
 import { WildduckClient } from "../network/wildduck-client";
 import { useWebSocket } from "../websocket/useWebSocket";
 import type { ChannelName, ServerResponseData } from "../websocket/types";
