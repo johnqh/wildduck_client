@@ -1,5 +1,5 @@
 import type { NetworkClient, Optional } from "@sudobility/types";
-import type { StorageService } from "@sudobility/di";
+import type { StorageService } from "@sudobility/di/interfaces";
 import type {
   CreateMailboxRequest,
   GetMailboxesRequest,

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { StorageService } from "@sudobility/di";
+import type { StorageService } from "@sudobility/di/interfaces";
 import type { NetworkClient, Optional } from "@sudobility/types";
 import type {
   WildduckAuthResponse as AuthenticationResponse,
