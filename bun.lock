@@ -7,7 +7,7 @@
         "@sudobility/configs": "^0.0.62",
         "@sudobility/di": "^1.5.35",
         "@sudobility/mail_box_types": "^1.0.9",
-        "@sudobility/types": "^1.9.50",
+        "@sudobility/types": "^1.9.51",
         "@tanstack/react-query": "^5.90.5",
         "@testing-library/react": "^16.3.0",
         "@types/node": "^24.9.1",
@@ -31,7 +31,7 @@
       "peerDependencies": {
         "@sudobility/di": "^1.5.35",
         "@sudobility/mail_box_types": "^1.0.9",
-        "@sudobility/types": "^1.9.50",
+        "@sudobility/types": "^1.9.51",
         "@tanstack/react-query": ">=5.0.0",
         "react": ">=18.0.0",
       },
@@ -242,7 +242,7 @@
 
     "@sudobility/mail_box_types": ["@sudobility/mail_box_types@1.0.9", "", { "peerDependencies": { "@sudobility/types": "^1.9.50" } }, "sha512-FBemxMoJNPMYedK2WJMcIHg0xOTrTzPCvPHvmDoIFwi2aKb94+JfoFxfykmm9/Fv4lrvXMQVJ/7bDbeuxx7LMQ=="],
 
-    "@sudobility/types": ["@sudobility/types@1.9.50", "", {}, "sha512-SKopIMJqgNVopcz/MNukrm936yKuBJMFcz4uUbQz9XB7cDjyuExoVeyMnvidMKtOLkmJSRdYYV4+M7eG7KN2aw=="],
+    "@sudobility/types": ["@sudobility/types@1.9.51", "", {}, "sha512-u4hpUH4Jy3t6OAWExkKolwV93n3apECIBaN7u3iqwngpI5p0SxDlQP5utoCt6wrObcKoUmJJ3Ly4nNKLel+ufA=="],
 
     "@tanstack/query-core": ["@tanstack/query-core@5.90.16", "", {}, "sha512-MvtWckSVufs/ja463/K4PyJeqT+HMlJWtw6PrCpywznd2NSgO3m4KwO9RqbFqGg6iDE8vVMFWMeQI4Io3eEYww=="],
 
