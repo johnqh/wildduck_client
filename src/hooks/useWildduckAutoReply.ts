@@ -50,9 +50,12 @@ interface UseWildduckAutoReplyOptions {
 }
 
 /**
- * Hook for Wildduck autoreply operations using React Query
- * Automatically fetches autoreply when user is authenticated
- * Queries are cached and automatically refetched, mutations invalidate related queries
+ * Hook for Wildduck autoreply operations using React Query.
+ * Automatically fetches autoreply when user is authenticated.
+ * Queries are cached and automatically refetched, mutations invalidate related queries.
+ *
+ * @deprecated Prefer using monolithic hooks or direct `WildduckClient` methods
+ * for autoreply operations. This individual domain hook will be removed in v3.
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration

@@ -15,21 +15,16 @@ export * from "./useWildduckMessages"; // Messages list and operations
 export * from "./useWildduckSearch"; // Search messages
 
 // ============================================================================
-// Individual endpoint hooks (deprecated - use monolithic hooks instead)
+// Individual domain hooks (deprecated - migrate to monolithic hooks)
+// These hooks will be removed in v3. Each export below is marked @deprecated
+// in its source file. Prefer the monolithic hooks above for new code.
 // ============================================================================
-
-// All specialized hooks have been consolidated into monolithic hooks
-
-// ============================================================================
-// Legacy monolithic hooks (deprecated - use individual hooks instead)
-// ============================================================================
-export * from "./useWildduckSettings";
-export * from "./useWildduckMessages"; // Deprecated - use individual message hooks
-export * from "./useWildduckMailboxes"; // Deprecated - use individual mailbox hooks
-export * from "./useWildduckFilters";
-export * from "./useWildduckAddresses"; // Deprecated - use useWildduckGetAddresses
-export * from "./useWildduckAuth";
-export * from "./useWildduckAutoReply";
+export * from "./useWildduckSettings"; // @deprecated - use WildduckClient.getSettings / updateSetting
+export * from "./useWildduckMailboxes"; // @deprecated - use useWildduckUserMailboxes
+export * from "./useWildduckFilters"; // @deprecated - use WildduckClient filter methods
+export * from "./useWildduckAddresses"; // @deprecated - use WildduckClient address methods
+export * from "./useWildduckAutoReply"; // @deprecated - use WildduckClient autoreply methods
+export * from "./useWildduckAuth"; // Still actively used (no monolithic replacement)
 
 // ============================================================================
 // TanStack Query hooks
@@ -66,3 +61,21 @@ export type {
 
 // Export mock data helper
 export { WildduckMockData } from "./mocks";
+
+// Export query key factory and invalidation helpers
+export { queryKeys, createQueryKey, getServiceKeys } from "./query-keys";
+export {
+  invalidateAllWildduck,
+  invalidateUser,
+  invalidateUsersList,
+  invalidateUserMessages,
+  invalidateUserMailboxes,
+  invalidateUserAddresses,
+  invalidateUserFilters,
+  invalidateUserSettings,
+  invalidateMessage,
+  invalidateAuthStatus,
+} from "./query-keys";
+
+// Export stale time constants
+export { STALE_TIMES } from "./query-config";

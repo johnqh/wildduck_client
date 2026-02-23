@@ -50,7 +50,10 @@ interface UseWildduckFiltersOptions {
 }
 
 /**
- * Hook for Wildduck filter management operations
+ * Hook for Wildduck filter management operations.
+ *
+ * @deprecated Prefer using monolithic hooks or direct `WildduckClient` methods
+ * for filter operations. This individual domain hook will be removed in v3.
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration

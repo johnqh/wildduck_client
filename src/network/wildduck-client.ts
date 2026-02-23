@@ -115,7 +115,27 @@ const createApiConfig = (config: WildduckConfig) => ({
 
 // Removed: Legacy API_CONFIG - consumers must provide their own WildduckConfig
 
-// Wildduck API client
+/**
+ * Core HTTP client for the WildDuck email API.
+ *
+ * Wraps all WildDuck REST endpoints with typed request/response handling.
+ * Authentication is per-request via `WildduckUserAuth` (Bearer token).
+ * User IDs are validated as 24-character hex MongoDB ObjectIds before every call.
+ *
+ * Prefer using the factory function {@link createWildduckClient} to instantiate.
+ *
+ * @example
+ * ```ts
+ * import { createWildduckClient } from "@sudobility/wildduck_client";
+ *
+ * const client = createWildduckClient(networkClient, {
+ *   backendUrl: "https://mail.example.com",
+ *   apiToken: "your-api-token",
+ * });
+ *
+ * const user = await client.getUser(wildduckUserAuth);
+ * ```
+ */
 class WildduckClient {
   private baseUrl: string;
   private headers: Record<string, string>;
@@ -219,7 +239,14 @@ class WildduckClient {
     return response.data as T;
   }
 
-  // Pre-authenticate user to check if username exists
+  /**
+   * Pre-authenticate a user to check if the username exists.
+   * Returns a nonce for blockchain signature-based authentication.
+   *
+   * @param request - Pre-auth request containing the username
+   * @returns Pre-auth response with nonce and algorithm for signing
+   * @throws {Error} If the network request fails
+   */
   async preAuth(
     request: WildduckPreAuthRequest,
   ): Promise<WildduckPreAuthResponse> {
@@ -238,7 +265,15 @@ class WildduckClient {
     return response;
   }
 
-  // Authenticate user with Wildduck using blockchain signature
+  /**
+   * Authenticate a user with WildDuck using a blockchain signature (SIWE/SIWS).
+   * On success, stores the user ID and token in the provided storage service.
+   *
+   * @param request - Authentication request with username, signature, and message
+   * @param options - Optional flags (e.g., `isDev` for development mode)
+   * @returns Auth response containing user ID, token, and success status
+   * @throws {Error} If the network request fails
+   */
   async authenticate(
     request: WildduckAuthenticateRequest,
     options?: { isDev?: boolean },
@@ -288,8 +323,18 @@ class WildduckClient {
     return response;
   }
 
-  // Legacy password-based authentication (fallback for testing)
-  // Note: Wildduck primarily uses blockchain authentication, password auth may be limited
+  /**
+   * Legacy password-based authentication (fallback for testing).
+   *
+   * @deprecated WildDuck primarily uses blockchain authentication.
+   * Password auth may be limited or disabled on production servers.
+   *
+   * @param username - User's email address or username
+   * @param password - User's password
+   * @param scope - Auth scope (defaults to "master" for full access)
+   * @returns Auth response containing user ID, token, and success status
+   * @throws {Error} If the network request fails
+   */
   async authenticateWithPassword(
     username: string,
     password: string,
@@ -328,7 +373,14 @@ class WildduckClient {
     return response;
   }
 
-  // Get user info
+  /**
+   * Get user information including profile, quota, limits, spam settings, and more.
+   *
+   * @param wildduckUserAuth - User authentication (userId, username, accessToken)
+   * @returns Full user response object
+   * @throws {Error} If the user ID format is invalid (not a 24-char hex string)
+   * @throws {Error} If the network request fails
+   */
   async getUser(
     wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckUserResponse> {
@@ -340,7 +392,15 @@ class WildduckClient {
     });
   }
 
-  // Get mailboxes for a user
+  /**
+   * Get mailboxes for a user.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param options - Optional filters: specialUse, showHidden, counters, sizes
+   * @returns Mailbox list response with results array
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getMailboxes(
     wildduckUserAuth: WildduckUserAuth,
     options?: Omit<GetMailboxesRequest, "sess" | "ip">,
@@ -363,7 +423,16 @@ class WildduckClient {
     });
   }
 
-  // Get messages from a mailbox
+  /**
+   * Get messages from a mailbox with pagination support.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @param options - Pagination and filter options (limit, page, order, next/previous cursors, unseen, flagged, thread, uid, includeHeaders)
+   * @returns Messages list response with results array and pagination cursors
+   * @throws {Error} If the user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getMessages(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -407,7 +476,15 @@ class WildduckClient {
     });
   }
 
-  // Search messages across all mailboxes
+  /**
+   * Search messages across all mailboxes.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param params - Search parameters including required `q` (query string), optional filters (from, to, subject, date range, size, attachments, etc.), and pagination
+   * @returns Search results response with results array and pagination cursors
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async searchMessages(
     wildduckUserAuth: WildduckUserAuth,
     params: WildduckSearchQueryParams & { q: string },
@@ -464,7 +541,16 @@ class WildduckClient {
     });
   }
 
-  // Get a specific message by ID
+  /**
+   * Get a specific message by ID.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @param messageId - Message ID (can be numeric sequence number or ObjectId)
+   * @returns Full message response with headers, body, attachments metadata
+   * @throws {Error} If the user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getMessage(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -490,7 +576,14 @@ class WildduckClient {
     });
   }
 
-  // Get user addresses (email addresses)
+  /**
+   * Get email addresses for a user.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @returns Address list response with results array
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getAddresses(
     wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckAddressResponse> {
@@ -504,7 +597,15 @@ class WildduckClient {
     });
   }
 
-  // Create a new mailbox
+  /**
+   * Create a new mailbox for a user.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param request - Mailbox creation parameters (path, hidden, retention, encryptMessages)
+   * @returns Mailbox response
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async createMailbox(
     wildduckUserAuth: WildduckUserAuth,
     request: CreateMailboxRequest,
@@ -537,7 +638,13 @@ class WildduckClient {
   // User Management Methods
   // ============================================================================
 
-  // Create a new user
+  /**
+   * Create a new user account.
+   *
+   * @param request - User creation parameters (username, password, address, name, etc.)
+   * @returns Response with new user's ID
+   * @throws {Error} If the network request fails
+   */
   async createUser(
     request: WildduckCreateUserRequest,
   ): Promise<WildduckCreateUserResponse> {
@@ -547,7 +654,15 @@ class WildduckClient {
     });
   }
 
-  // Update user information
+  /**
+   * Update user information (name, password, quota, tags, etc.).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param request - Fields to update
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async updateUser(
     wildduckUserAuth: WildduckUserAuth,
     request: WildduckUpdateUserRequest,
@@ -561,7 +676,14 @@ class WildduckClient {
     });
   }
 
-  // Delete a user
+  /**
+   * Delete a user account and all associated data.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async deleteUser(
     wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckSuccessResponse> {
@@ -577,7 +699,15 @@ class WildduckClient {
   // Mailbox Management Methods (Extended)
   // ============================================================================
 
-  // Get specific mailbox information
+  /**
+   * Get specific mailbox information by ID.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @returns Mailbox details
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getMailbox(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -598,7 +728,16 @@ class WildduckClient {
     );
   }
 
-  // Update mailbox settings
+  /**
+   * Update mailbox settings (path, hidden, retention).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @param request - Fields to update
+   * @returns Success response
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async updateMailbox(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -622,7 +761,15 @@ class WildduckClient {
     );
   }
 
-  // Delete a mailbox
+  /**
+   * Delete a mailbox. Messages in the mailbox are typically moved to Trash or permanently deleted.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @returns Success response
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async deleteMailbox(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -648,7 +795,17 @@ class WildduckClient {
   // Message Management Methods (Extended)
   // ============================================================================
 
-  // Get full message details from a specific mailbox
+  /**
+   * Get full message details from a specific mailbox with optional processing.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @param messageId - Numeric message ID
+   * @param options - Optional: replaceCidLinks (resolve inline images), markAsSeen (mark as read)
+   * @returns Full message response with body, attachments, headers
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getMessageFromMailbox(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -680,7 +837,16 @@ class WildduckClient {
     });
   }
 
-  // Upload/create a message in a mailbox (for drafts, imports, etc.)
+  /**
+   * Upload/create a message in a mailbox (for drafts, imports, etc.).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Target mailbox ID (24-char hex MongoDB ObjectId)
+   * @param request - Message content (from, to, subject, text/html, attachments, draft flag)
+   * @returns Upload response with message ID and mailbox
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async uploadMessage(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -704,7 +870,17 @@ class WildduckClient {
     );
   }
 
-  // Update message flags or move to different mailbox
+  /**
+   * Update message flags (seen, flagged, etc.) or move to a different mailbox.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Current mailbox ID (24-char hex MongoDB ObjectId)
+   * @param messageId - Numeric message ID
+   * @param request - Update parameters (seen, flagged, moveTo, etc.)
+   * @returns Update response with success status and affected count
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async updateMessage(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -729,7 +905,16 @@ class WildduckClient {
     );
   }
 
-  // Delete a message from mailbox
+  /**
+   * Delete a message from a mailbox.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @param messageId - Numeric message ID
+   * @returns Success response
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async deleteMessage(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -752,7 +937,16 @@ class WildduckClient {
     );
   }
 
-  // Get raw message source (RFC822 format)
+  /**
+   * Get raw message source in RFC822 format (.eml).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @param messageId - Numeric message ID
+   * @returns Raw message source as a string
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getMessageSource(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -775,7 +969,17 @@ class WildduckClient {
     );
   }
 
-  // Download message attachment
+  /**
+   * Download a message attachment as a Blob.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @param messageId - Numeric message ID
+   * @param attachmentId - Attachment identifier from the message metadata
+   * @returns Attachment data as a Blob
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getMessageAttachment(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -799,7 +1003,17 @@ class WildduckClient {
     );
   }
 
-  // Forward a stored message
+  /**
+   * Forward a stored message to specified recipients.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Mailbox ID (24-char hex MongoDB ObjectId)
+   * @param messageId - Numeric message ID
+   * @param request - Forward parameters (target recipients)
+   * @returns Success response
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async forwardMessage(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -824,7 +1038,16 @@ class WildduckClient {
     );
   }
 
-  // Submit a draft message for delivery
+  /**
+   * Submit a draft message for delivery.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param mailboxId - Drafts mailbox ID (24-char hex MongoDB ObjectId)
+   * @param messageId - Numeric message ID of the draft
+   * @returns Success response
+   * @throws {Error} If user ID or mailbox ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async submitDraft(
     wildduckUserAuth: WildduckUserAuth,
     mailboxId: string,
@@ -847,7 +1070,15 @@ class WildduckClient {
     );
   }
 
-  // Submit a new message for delivery
+  /**
+   * Submit a new message for delivery (compose and send).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param request - Message composition (from, to, cc, bcc, subject, text/html, attachments)
+   * @returns Submit response with message ID, mailbox, and queue ID
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async submitMessage(
     wildduckUserAuth: WildduckUserAuth,
     request: WildduckSubmitMessageRequest,
@@ -868,7 +1099,14 @@ class WildduckClient {
   // Autoreply Methods
   // ============================================================================
 
-  // Get autoreply/vacation responder settings
+  /**
+   * Get autoreply/vacation responder settings for a user.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @returns Autoreply settings (status, subject, text, html, start/end dates)
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async getAutoreply(
     wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckAutoreplyResponse> {
@@ -882,7 +1120,15 @@ class WildduckClient {
     );
   }
 
-  // Update autoreply/vacation responder settings
+  /**
+   * Update autoreply/vacation responder settings.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param request - Autoreply configuration (status, subject, text, html, start/end)
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async updateAutoreply(
     wildduckUserAuth: WildduckUserAuth,
     request: WildduckAutoreplyRequest,
@@ -899,7 +1145,14 @@ class WildduckClient {
     );
   }
 
-  // Disable autoreply/vacation responder
+  /**
+   * Disable and delete autoreply/vacation responder settings.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   * @throws {Error} If the network request fails
+   */
   async deleteAutoreply(
     wildduckUserAuth: WildduckUserAuth,
   ): Promise<WildduckSuccessResponse> {
@@ -918,7 +1171,13 @@ class WildduckClient {
   // Filter Management Methods
   // ============================================================================
 
-  // Get user filters
+  /**
+   * Get all email filters for a user.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @returns Filter list response
+   * @throws {Error} If the user ID format is invalid
+   */
   async getFilters(wildduckUserAuth: WildduckUserAuth): Promise<any> {
     const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
@@ -928,7 +1187,14 @@ class WildduckClient {
     });
   }
 
-  // Create filter
+  /**
+   * Create a new email filter for a user.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param filter - Filter definition (query conditions and actions)
+   * @returns Created filter response with ID
+   * @throws {Error} If the user ID format is invalid
+   */
   async createFilter(
     wildduckUserAuth: WildduckUserAuth,
     filter: any,
@@ -942,7 +1208,15 @@ class WildduckClient {
     });
   }
 
-  // Update filter
+  /**
+   * Update an existing email filter.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param filterId - Filter ID to update
+   * @param filter - Updated filter definition
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   */
   async updateFilter(
     wildduckUserAuth: WildduckUserAuth,
     filterId: string,
@@ -957,7 +1231,14 @@ class WildduckClient {
     });
   }
 
-  // Delete filter
+  /**
+   * Delete an email filter.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param filterId - Filter ID to delete
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   */
   async deleteFilter(
     wildduckUserAuth: WildduckUserAuth,
     filterId: string,
@@ -974,7 +1255,13 @@ class WildduckClient {
   // Spam Settings Methods
   // ============================================================================
 
-  // Get spam settings
+  /**
+   * Get spam settings for a user (fetched from user profile).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @returns User response containing spamLevel and fromWhitelist fields
+   * @throws {Error} If the user ID format is invalid
+   */
   async getSpamSettings(wildduckUserAuth: WildduckUserAuth): Promise<any> {
     const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
@@ -984,7 +1271,14 @@ class WildduckClient {
     });
   }
 
-  // Update spam level
+  /**
+   * Update the spam filtering level for a user (0-100).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param spamLevel - Spam level threshold (0 = no filtering, 100 = aggressive)
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   */
   async updateSpamLevel(
     wildduckUserAuth: WildduckUserAuth,
     spamLevel: number,
@@ -998,7 +1292,14 @@ class WildduckClient {
     });
   }
 
-  // Add to whitelist
+  /**
+   * Add an email address to the sender whitelist (bypass spam filtering).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param address - Email address to whitelist
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   */
   async addToWhitelist(
     wildduckUserAuth: WildduckUserAuth,
     address: string,
@@ -1012,7 +1313,14 @@ class WildduckClient {
     });
   }
 
-  // Remove from whitelist
+  /**
+   * Remove an email address from the sender whitelist.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param address - Email address to remove from whitelist
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   */
   async removeFromWhitelist(
     wildduckUserAuth: WildduckUserAuth,
     address: string,
@@ -1032,7 +1340,13 @@ class WildduckClient {
   // Forwarding Methods
   // ============================================================================
 
-  // Get forwarding targets
+  /**
+   * Get forwarding targets for a user (fetched from user profile).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @returns User response containing targets array
+   * @throws {Error} If the user ID format is invalid
+   */
   async getForwardingTargets(wildduckUserAuth: WildduckUserAuth): Promise<any> {
     const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
@@ -1042,7 +1356,14 @@ class WildduckClient {
     });
   }
 
-  // Add forwarding target
+  /**
+   * Add a forwarding target email address.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param target - Email address to forward messages to
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   */
   async addForwardingTarget(
     wildduckUserAuth: WildduckUserAuth,
     target: string,
@@ -1056,7 +1377,14 @@ class WildduckClient {
     });
   }
 
-  // Remove forwarding target
+  /**
+   * Remove a forwarding target email address.
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param target - Email address to stop forwarding to
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   */
   async removeForwardingTarget(
     wildduckUserAuth: WildduckUserAuth,
     target: string,
@@ -1076,7 +1404,13 @@ class WildduckClient {
   // User Settings Methods
   // ============================================================================
 
-  // Get user settings
+  /**
+   * Get user settings (fetched from user profile endpoint).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @returns User profile data including all settings fields
+   * @throws {Error} If the user ID format is invalid
+   */
   async getUserSettings(wildduckUserAuth: WildduckUserAuth): Promise<any> {
     const validatedUserId = validateUserId(wildduckUserAuth.userId);
 
@@ -1086,7 +1420,14 @@ class WildduckClient {
     });
   }
 
-  // Update user settings (generic)
+  /**
+   * Update user settings (generic update via user profile endpoint).
+   *
+   * @param wildduckUserAuth - User authentication
+   * @param settings - Settings fields to update
+   * @returns Success response
+   * @throws {Error} If the user ID format is invalid
+   */
   async updateUserSettings(
     wildduckUserAuth: WildduckUserAuth,
     settings: any,
@@ -1384,7 +1725,22 @@ class WildduckClient {
   }
 }
 
-// Factory function to create Wildduck API client with dependencies
+/**
+ * Factory function to create a WildDuck API client with dependencies.
+ *
+ * @param networkClient - Transport-agnostic network client (from `@sudobility/types`)
+ * @param config - WildDuck server configuration (backendUrl, apiToken, cloudflareWorkerUrl)
+ * @param storage - Optional storage service for persisting auth tokens
+ * @returns Configured WildduckClient instance
+ *
+ * @example
+ * ```ts
+ * const client = createWildduckClient(networkClient, {
+ *   backendUrl: "https://mail.example.com",
+ *   apiToken: "your-api-token",
+ * });
+ * ```
+ */
 const createWildduckClient = (
   networkClient: NetworkClient,
   config: WildduckConfig,
@@ -1398,13 +1754,27 @@ export { WildduckClient };
 // Legacy export for backward compatibility
 export { WildduckClient as WildduckAPI };
 
-// Helper function to validate MongoDB ObjectId format
+/**
+ * Check if a string is a valid MongoDB ObjectId (24-character hexadecimal).
+ *
+ * @param id - String to validate
+ * @returns true if the string matches the 24-char hex pattern
+ */
 const isValidObjectId = (id: string): boolean => {
   return /^[a-f0-9]{24}$/i.test(id);
 };
 
-// Helper function to get Wildduck user ID for an email address
-// This retrieves the actual MongoDB ObjectId from storage after authentication
+/**
+ * Resolve an email address to a WildDuck user ID (MongoDB ObjectId) from storage.
+ *
+ * Looks up the stored user ID that was saved during authentication.
+ * Checks multiple storage keys in priority order: userId, authCache, legacy.
+ *
+ * @param emailAddress - Email address or username to resolve
+ * @param storage - Storage service containing persisted auth data
+ * @returns The 24-character hex MongoDB ObjectId for the user
+ * @throws {Error} If no valid user ID is found in storage for the given email
+ */
 const emailToUserId = async (
   emailAddress: string,
   storage: StorageService,
@@ -1458,7 +1828,13 @@ const emailToUserId = async (
   );
 };
 
-// Helper function to ensure a string is a valid user ID for Wildduck API calls
+/**
+ * Validate and return a user ID, throwing if the format is invalid.
+ *
+ * @param userId - User ID to validate
+ * @returns The validated user ID (unchanged)
+ * @throws {Error} If userId is empty or not a valid 24-char hex MongoDB ObjectId
+ */
 const validateUserId = (userId: string): string => {
   if (!userId) {
     throw new Error("User ID is required");

@@ -72,8 +72,11 @@ interface UseWildduckAddressesReturn {
 }
 
 /**
- * Hook for Wildduck address management operations using React Query
- * Mutations automatically invalidate related address queries
+ * Hook for Wildduck address management operations using React Query.
+ * Mutations automatically invalidate related address queries.
+ *
+ * @deprecated Prefer using monolithic hooks or direct `WildduckClient` methods
+ * for address operations. This individual domain hook will be removed in v3.
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration

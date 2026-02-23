@@ -42,7 +42,11 @@ interface UseWildduckSettingsOptions {
 }
 
 /**
- * Hook for Wildduck settings management operations
+ * Hook for Wildduck settings management operations.
+ *
+ * @deprecated Use the key-value settings API via `useWildduckUser` for user-level
+ * settings, or use `WildduckClient.getSettings` / `updateSetting` / `deleteSetting`
+ * directly for the `/settings` key-value endpoint. This hook will be removed in v3.
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration

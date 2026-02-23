@@ -66,9 +66,13 @@ interface UseWildduckMailboxesOptions {
 }
 
 /**
- * Hook for Wildduck mailbox operations using React Query
- * Automatically fetches mailboxes when user is authenticated
- * Queries are cached and automatically refetched, mutations invalidate related queries
+ * Hook for Wildduck mailbox operations using React Query.
+ * Automatically fetches mailboxes when user is authenticated.
+ * Queries are cached and automatically refetched, mutations invalidate related queries.
+ *
+ * @deprecated Prefer using `useWildduckUserMailboxes` (TanStack Query hook) or
+ * direct `WildduckClient` methods for mailbox operations. This individual domain
+ * hook will be removed in v3.
  *
  * @param networkClient - Network client for API calls
  * @param config - Wildduck configuration

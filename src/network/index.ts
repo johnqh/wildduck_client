@@ -3,3 +3,4 @@
  */
 
 export * from "./wildduck-client";
+export { WildduckApiError } from "./wildduck-api-error";

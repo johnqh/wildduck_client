@@ -97,3 +97,191 @@ export const createQueryKey = (
 export const getServiceKeys = () => {
   return queryKeys.wildduck.all();
 };
+
+// ============================================================================
+// Type-Safe Invalidation Helpers
+// ============================================================================
+//
+// These helpers wrap `queryClient.invalidateQueries()` with properly typed
+// query keys, preventing typo-induced stale-cache bugs and improving
+// refactoring safety. Import `QueryClient` from `@tanstack/react-query`.
+
+import type { QueryClient } from "@tanstack/react-query";
+
+/**
+ * Invalidate all wildduck queries.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ *
+ * @example
+ * ```ts
+ * invalidateAllWildduck(queryClient);
+ * ```
+ */
+export const invalidateAllWildduck = (queryClient: QueryClient) =>
+  queryClient.invalidateQueries({ queryKey: queryKeys.wildduck.all() });
+
+/**
+ * Invalidate user-specific queries (profile, settings, addresses, etc.).
+ *
+ * @param queryClient - TanStack QueryClient instance
+ * @param userId - The MongoDB ObjectId of the user
+ *
+ * @example
+ * ```ts
+ * invalidateUser(queryClient, "507f1f77bcf86cd799439011");
+ * ```
+ */
+export const invalidateUser = (queryClient: QueryClient, userId: string) =>
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.wildduck.user(userId),
+  });
+
+/**
+ * Invalidate the users list query.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ *
+ * @example
+ * ```ts
+ * invalidateUsersList(queryClient);
+ * ```
+ */
+export const invalidateUsersList = (queryClient: QueryClient) =>
+  queryClient.invalidateQueries({ queryKey: queryKeys.wildduck.users() });
+
+/**
+ * Invalidate all message queries for a specific user.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ * @param userId - The MongoDB ObjectId of the user
+ *
+ * @example
+ * ```ts
+ * invalidateUserMessages(queryClient, "507f1f77bcf86cd799439011");
+ * ```
+ */
+export const invalidateUserMessages = (
+  queryClient: QueryClient,
+  userId: string,
+) =>
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.wildduck.messages(),
+    predicate: (query) =>
+      Array.isArray(query.queryKey) &&
+      query.queryKey[0] === "wildduck" &&
+      query.queryKey[1] === "messages" &&
+      query.queryKey[2] === userId,
+  });
+
+/**
+ * Invalidate mailbox queries for a specific user.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ * @param userId - The MongoDB ObjectId of the user
+ *
+ * @example
+ * ```ts
+ * invalidateUserMailboxes(queryClient, "507f1f77bcf86cd799439011");
+ * ```
+ */
+export const invalidateUserMailboxes = (
+  queryClient: QueryClient,
+  userId: string,
+) =>
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.wildduck.userMailboxes(userId),
+  });
+
+/**
+ * Invalidate address queries for a specific user.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ * @param userId - The MongoDB ObjectId of the user
+ *
+ * @example
+ * ```ts
+ * invalidateUserAddresses(queryClient, "507f1f77bcf86cd799439011");
+ * ```
+ */
+export const invalidateUserAddresses = (
+  queryClient: QueryClient,
+  userId: string,
+) =>
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.wildduck.userAddresses(userId),
+  });
+
+/**
+ * Invalidate filter queries for a specific user.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ * @param userId - The MongoDB ObjectId of the user
+ *
+ * @example
+ * ```ts
+ * invalidateUserFilters(queryClient, "507f1f77bcf86cd799439011");
+ * ```
+ */
+export const invalidateUserFilters = (
+  queryClient: QueryClient,
+  userId: string,
+) =>
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.wildduck.userFilters(userId),
+  });
+
+/**
+ * Invalidate settings queries for a specific user.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ * @param userId - The MongoDB ObjectId of the user
+ *
+ * @example
+ * ```ts
+ * invalidateUserSettings(queryClient, "507f1f77bcf86cd799439011");
+ * ```
+ */
+export const invalidateUserSettings = (
+  queryClient: QueryClient,
+  userId: string,
+) =>
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.wildduck.userSettings(userId),
+  });
+
+/**
+ * Invalidate a single message query.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ * @param userId - The MongoDB ObjectId of the user
+ * @param mailboxId - The mailbox containing the message
+ * @param messageId - The message ID
+ *
+ * @example
+ * ```ts
+ * invalidateMessage(queryClient, userId, mailboxId, "12345");
+ * ```
+ */
+export const invalidateMessage = (
+  queryClient: QueryClient,
+  userId: string,
+  mailboxId: string,
+  messageId: string,
+) =>
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.wildduck.message(userId, mailboxId, messageId),
+  });
+
+/**
+ * Invalidate auth status queries.
+ *
+ * @param queryClient - TanStack QueryClient instance
+ *
+ * @example
+ * ```ts
+ * invalidateAuthStatus(queryClient);
+ * ```
+ */
+export const invalidateAuthStatus = (queryClient: QueryClient) =>
+  queryClient.invalidateQueries({ queryKey: queryKeys.wildduck.auth() });
