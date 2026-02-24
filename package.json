@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/wildduck_client",
-  "version": "2.3.72",
+  "version": "2.3.73",
   "description": "React and React Native compatible client library for WildDuck email API with TypeScript support",
   "type": "module",
   "main": "dist/index.js",
@@ -38,7 +38,7 @@
   "author": "Sudobility Team",
   "license": "BUSL-1.1",
   "peerDependencies": {
-    "@sudobility/di": "^1.5.40",
+    "@sudobility/di": "^1.5.41",
     "@sudobility/mail_box_types": "^1.0.14",
     "@sudobility/types": "^1.9.54",
     "@tanstack/react-query": ">=5.0.0",
@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@sudobility/configs": "^0.0.66",
-    "@sudobility/di": "^1.5.40",
+    "@sudobility/di": "^1.5.41",
     "@sudobility/mail_box_types": "^1.0.14",
     "@sudobility/types": "^1.9.54",
     "@tanstack/react-query": "^5.90.5",
