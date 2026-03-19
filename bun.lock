@@ -5,10 +5,10 @@
     "": {
       "name": "@sudobility/wildduck_client",
       "devDependencies": {
-        "@sudobility/configs": "^0.0.69",
-        "@sudobility/di": "^1.5.46",
-        "@sudobility/mail_box_types": "^1.0.17",
-        "@sudobility/types": "^1.9.58",
+        "@sudobility/configs": "^0.0.70",
+        "@sudobility/di": "^1.5.48",
+        "@sudobility/mail_box_types": "^1.0.18",
+        "@sudobility/types": "^1.9.59",
         "@tanstack/react-query": "^5.90.5",
         "@testing-library/react": "^16.3.0",
         "@types/node": "^24.9.1",
@@ -30,9 +30,9 @@
         "vitest": "^3.2.4",
       },
       "peerDependencies": {
-        "@sudobility/di": "^1.5.46",
-        "@sudobility/mail_box_types": "^1.0.17",
-        "@sudobility/types": "^1.9.58",
+        "@sudobility/di": "^1.5.48",
+        "@sudobility/mail_box_types": "^1.0.18",
+        "@sudobility/types": "^1.9.59",
         "@tanstack/react-query": ">=5.0.0",
         "react": ">=18.0.0",
       },
@@ -237,13 +237,13 @@
 
     "@scure/bip39": ["@scure/bip39@1.6.0", "", { "dependencies": { "@noble/hashes": "~1.8.0", "@scure/base": "~1.2.5" } }, "sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A=="],
 
-    "@sudobility/configs": ["@sudobility/configs@0.0.69", "", { "peerDependencies": { "@sudobility/types": "^1.9.58" } }, "sha512-eyg7DfEqdUUXlzvpiX8thTlm/q4Bd+F2HQYCEnkN1DA8zxLdWQUnVYdBnQETXmLa9ZWnSPpw59OjQSIv7KLJsA=="],
+    "@sudobility/configs": ["@sudobility/configs@0.0.70", "", { "peerDependencies": { "@sudobility/types": "^1.9.59" } }, "sha512-6NgEvvKGk0+0iPgtVRVF5SYrSvznkPC/EF9M6igxCEquExVVugUo3qS1cjP1HJujih1T/5XaM7igkXZteJeTbg=="],
 
-    "@sudobility/di": ["@sudobility/di@1.5.46", "", { "peerDependencies": { "@notifee/react-native": ">=7.0.0", "@react-native-async-storage/async-storage": ">=1.19.0", "@react-native-community/netinfo": ">=9.0.0", "@react-native-firebase/analytics": ">=18.0.0", "@react-native-firebase/app": ">=18.0.0", "@react-native-firebase/messaging": ">=18.0.0", "@react-native-firebase/remote-config": ">=18.0.0", "@sudobility/types": "^1.9.58", "firebase": ">=11.0.0", "react": ">=18.0.0", "react-native": ">=0.70.0" }, "optionalPeers": ["@notifee/react-native", "@react-native-async-storage/async-storage", "@react-native-community/netinfo", "@react-native-firebase/analytics", "@react-native-firebase/app", "@react-native-firebase/messaging", "@react-native-firebase/remote-config", "firebase", "react-native"] }, "sha512-Ud1S5pQIPrf751PQuupWTC1b4ujp3qrAHvhc4wsaUh5ModPYRCgsbaVB4JqciVk9Sb5XJjQBrZQ8xzd3vwkdBg=="],
+    "@sudobility/di": ["@sudobility/di@1.5.48", "", { "peerDependencies": { "@notifee/react-native": ">=7.0.0", "@react-native-async-storage/async-storage": ">=1.19.0", "@react-native-community/netinfo": ">=9.0.0", "@react-native-firebase/analytics": ">=18.0.0", "@react-native-firebase/app": ">=18.0.0", "@react-native-firebase/messaging": ">=18.0.0", "@react-native-firebase/remote-config": ">=18.0.0", "@sudobility/types": "^1.9.59", "firebase": ">=11.0.0", "react": ">=18.0.0", "react-native": ">=0.70.0" }, "optionalPeers": ["@notifee/react-native", "@react-native-async-storage/async-storage", "@react-native-community/netinfo", "@react-native-firebase/analytics", "@react-native-firebase/app", "@react-native-firebase/messaging", "@react-native-firebase/remote-config", "firebase", "react-native"] }, "sha512-GCB8Le58jbY1b820zANGxPcd7PoLNvptTPQZJk+b4E0he+SQ+kGBB8GPPXeTRsLhiMlMMgQBnSVoGD9oCJ+5Uw=="],
 
-    "@sudobility/mail_box_types": ["@sudobility/mail_box_types@1.0.17", "", { "peerDependencies": { "@sudobility/types": "^1.9.58" } }, "sha512-7+ZMZjMp3jRmkdef1k4S9yGYCqeu824PKBbL1NGwsTHzvmztAQEhq3irseBKjOb+e7uzYbWecJDEwRv7kJHvSw=="],
+    "@sudobility/mail_box_types": ["@sudobility/mail_box_types@1.0.18", "", { "peerDependencies": { "@sudobility/types": "^1.9.59" } }, "sha512-oZEf7h15wMx8D2ZxoHnvF6r2NLRVwYNZ/b2FzvfR3fN4Mua4dp1CETIakl6oruXmqSCvGTk+E43bSeovNBTZRQ=="],
 
-    "@sudobility/types": ["@sudobility/types@1.9.58", "", {}, "sha512-GD6pS8C8loS8SnD7ynzDBCJ++Z9N0vzLTEO03nxFISffrEX67nNOrBEs8LqCU3yFn4LJowiIV7JyigNLCQUAoA=="],
+    "@sudobility/types": ["@sudobility/types@1.9.59", "", {}, "sha512-ysz2JU1wu31H26TktCkgZZD2DQqpMX5KVLMiVuFY7ndPYMjNtoYzZoiigV1juHz0HWSh3LIFbRBR73O6UTg7Aw=="],
 
     "@tanstack/query-core": ["@tanstack/query-core@5.90.16", "", {}, "sha512-MvtWckSVufs/ja463/K4PyJeqT+HMlJWtw6PrCpywznd2NSgO3m4KwO9RqbFqGg6iDE8vVMFWMeQI4Io3eEYww=="],
 
