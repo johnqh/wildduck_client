@@ -1,5 +1,10 @@
 # wildduck_client - AI Development Guide
 
+> **Git policy — never auto-commit or auto-push.** Leave your work in the working tree.
+> Run `git commit`, `git push`, `gh pr create`, or `scripts/push_all.sh` **only when the user
+> explicitly asks in that turn**. Approval for an earlier change does not carry forward, and
+> finishing a task is not permission to commit it.
+
 ## Overview
 
 `@sudobility/wildduck_client` is a TypeScript client library for the WildDuck email API, designed for both React and React Native. It provides a low-level HTTP client (`WildduckClient`), a comprehensive set of TanStack Query-powered React hooks for data fetching and mutations, an optional WebSocket client for real-time updates, utility functions for common settings operations, and ready-made React components for connection status display.
@@ -364,3 +369,7 @@ Optional WebSocket support is layered on top of REST hooks. The pattern is:
 - `prettier` ^3.6.2 - Code formatter
 - `viem` ^2.38.4 - Ethereum utilities (used in blockchain auth context)
 - `axios` ^1.13.0 - HTTP client (dev dependency, not bundled)
+
+## Git Workflow
+
+- Do not use feature branches for code changes. Always stay on the current branch.
