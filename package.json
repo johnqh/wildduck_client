@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/wildduck_client",
-  "version": "2.3.93",
+  "version": "2.3.94",
   "description": "React and React Native compatible client library for WildDuck email API with TypeScript support",
   "type": "module",
   "main": "dist/index.js",
@@ -13,7 +13,7 @@
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
     "prepublishOnly": "bun run clean && bun run build",
-    "test": "vitest",
+    "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest --watch",
@@ -25,7 +25,7 @@
     "format:check": "prettier --check src/**/*.ts",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
-    "check-all": "bun run lint && bun run typecheck && bun run test:run"
+    "check-all": "bun run lint && bun run typecheck && bun run test:unit"
   },
   "keywords": [
     "wildduck",
@@ -39,15 +39,15 @@
   "license": "BUSL-1.1",
   "peerDependencies": {
     "@sudobility/di": "^1.5.65",
-    "@sudobility/mail_box_types": "^1.0.24",
+    "@sudobility/mail_box_types": "^1.0.25",
     "@sudobility/types": "^1.9.67",
     "@tanstack/react-query": ">=5.0.0",
     "react": ">=18.0.0"
   },
   "devDependencies": {
-    "@sudobility/configs": "^0.0.75",
+    "@sudobility/configs": "^0.0.76",
     "@sudobility/di": "^1.5.65",
-    "@sudobility/mail_box_types": "^1.0.24",
+    "@sudobility/mail_box_types": "^1.0.25",
     "@sudobility/types": "^1.9.67",
     "@tanstack/react-query": "^5.90.5",
     "@testing-library/react": "^16.3.0",
